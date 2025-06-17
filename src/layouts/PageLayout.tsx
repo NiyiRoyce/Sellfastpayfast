@@ -7,27 +7,38 @@ interface PageLayoutProps {
   children?: React.ReactNode;
 }
 
+const pathMatches = (patterns: string[], path: string) =>
+  patterns.some((pattern) =>
+    new RegExp("^" + pattern.replace(/:\w+/g, "[^/]+") + "$").test(path)
+  );
+
 const PageLayout: React.FC<PageLayoutProps> = ({ children }) => {
   const location = useLocation();
+  const currentPath = location.pathname;
 
-  const hideHeaderPaths = ["/login","/users"];
-  const hideFooterPaths = ["/rates", "/login","/users"];
+  const hideHeaderPaths = ["/login", "/users", "/market", "/exchange"];
+  const hideFooterPaths = ["/rates", "/login", "/users", "/market", "/exchange"];
 
-  // Detect if the current path is NOT matching any known route (show error page)
-  // This is a rough way since location.pathname isn't '*'
-  // Instead, add the 404 page's path if you want to exclude footer specifically for 404
+  const knownPatterns = [
+    "/",
+    "/rates",
+    "/support",
+    "/about-us",
+    "/login",
+    "/signup",
+    "/users/:id",
+    "/market",
+    "/exchange",
+  ];
+  const is404 = !pathMatches(knownPatterns, currentPath);
 
-  // If you want to hide footer on all unknown routes (404), you can check like this:
-  const knownPaths = ["/", "/rates", "/support", "/about-us", "/login", "/signup"];
-  const is404 = !knownPaths.includes(location.pathname);
-
-  const shouldHideHeader = hideHeaderPaths.includes(location.pathname);
-  const shouldHideFooter = hideFooterPaths.includes(location.pathname) || is404;
+  const shouldHideHeader = hideHeaderPaths.includes(currentPath);
+  const shouldHideFooter = hideFooterPaths.includes(currentPath) || is404;
 
   return (
     <div className="w-full">
       {!shouldHideHeader && <Header />}
-      <div>{children}</div>
+      <main>{children}</main>
       {!shouldHideFooter && <Footer />}
     </div>
   );

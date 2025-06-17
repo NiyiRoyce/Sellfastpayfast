@@ -30,24 +30,34 @@
   padding: 0;
   --body-fonts: "Kaisei Opti", serif !important;
 }
+
 body {
   font-family: var(--body-fonts);
   overflow-x: hidden !important;
 }
 
-body,
-html {
+html,
+body {
   padding: 0;
   margin: 0;
   scroll-behavior: smooth;
   font-family: var(--body-fonts);
+
+  /* ✅ Gradient fallback to prevent white flash */
+  background: linear-gradient(to bottom, #000000, #1f2937, #000000) !important;
+  min-height: 100vh;
 }
 
 p {
   font-family: var(--body-fonts);
 }
 
-h1 h2 h3 h4 h5 h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--body-fonts);
 }
 
@@ -70,18 +80,11 @@ ul li {
 }
 
 .outlined {
-  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000,
-    1px 1px 0 #000; /* Outline color */
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000,
+    -1px 1px 0 #000, 1px 1px 0 #000;
 }
 
-.parallax {
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-}
-
-/* whatsapp icon */
+/* WhatsApp floating icon */
 .float {
   position: fixed;
   width: 60px;
@@ -96,13 +99,12 @@ ul li {
   z-index: 100;
 }
 
-
 .icon-container {
   position: relative;
   width: 70px;
-  height: 70px; /* Height for two stacked squares */
+  height: 70px;
 }
 
 .square {
-  z-index: 1; /* Set a higher z-index to place it on top */
+  z-index: 1;
 }
