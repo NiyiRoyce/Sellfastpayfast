@@ -7,6 +7,8 @@ import Login from "./pages/login";
 import Signup from "./components/signUp/signUp";
 import Error from "./components/error/404";
 import Users from "./components/users/users";
+import Resources from "./components/resources/resources";
+import Settings from "./components/settings/settings";
 
 // Import new pages
 import Market from "./components/market/market";
@@ -19,13 +21,15 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/rates" element={<Rate />} />
-          <Route path="/market" element={<Market />} />       {/* new route */}
-          <Route path="/exchange" element={<Exchange />} />   {/* new route */}
+          <Route path="/market" element={<Market />} />
+          <Route path="/exchange" element={<Exchange />} />
           <Route path="/support" element={<Support />} />
           <Route path="/about-us" element={<AboutUs />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/users" element={<Users />} />
+          <Route path="/settings" element={<Settings />} />   {/* Added settings route */}
+          <Route path="/resources" element={<Resources />} /> {/* Added resources route */}
           {/* 404 route must be last */}
           <Route path="*" element={<Error />} />
         </Routes>

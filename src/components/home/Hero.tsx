@@ -45,20 +45,28 @@ interface Stat {
   label: string;
 }
 
-// Typed AppButton Component
-const AppButton: React.FC<AppButtonProps> = ({ icon: Icon, label, placeholder, href, className = "" }) => (
+// Updated AppButton Component with card-like design matching 24/7 Support
+const AppButton: React.FC<AppButtonProps> = ({
+  icon: Icon,
+  label,
+  placeholder,
+  href,
+  className = ""
+}) => (
   <a
     href={href}
     target="_blank"
     rel="noopener noreferrer"
-    className={`group flex items-center bg-black/60 backdrop-blur-xl border border-[#FEFD0C]/10 rounded-2xl p-4 shadow-2xl shadow-black/50 hover:shadow-[#FEFD0C]/10 hover:border-[#FEFD0C]/30 transition-all duration-500 hover:scale-105 ${className}`}
+    className={`group bg-black/60 backdrop-blur-xl border border-[#FEFD0C]/10 rounded-2xl p-6 shadow-2xl shadow-black/50 hover:shadow-[#FEFD0C]/10 hover:border-[#FEFD0C]/30 transition-all duration-500 hover:scale-105 flex items-center ${className}`}
   >
-    <div className="w-12 h-12 rounded-xl bg-[#FEFD0C]/10 flex items-center justify-center mr-4 group-hover:bg-[#FEFD0C]/20 transition-all duration-300">
-      <Icon className="text-[#FEFD0C] text-xl" />
+    <div className="w-10 h-10 rounded-xl bg-[#FEFD0C]/10 flex items-center justify-center mr-4 group-hover:bg-[#FEFD0C]/20 transition-colors duration-300">
+      <Icon className="text-[#FEFD0C] text-lg drop-shadow-sm" />
     </div>
     <div>
-      <p className="text-xs text-gray-400 group-hover:text-gray-300 transition-colors duration-300">{label}</p>
-      <p className="text-white font-medium group-hover:text-[#FEFD0C] transition-colors duration-300">{placeholder}</p>
+      <h4 className="text-white font-semibold text-sm mb-1 group-hover:text-[#FEFD0C] transition-colors duration-300">
+        {placeholder}
+      </h4>
+      <p className="text-gray-400 text-xs font-light">{label}</p>
     </div>
   </a>
 );
@@ -68,7 +76,7 @@ const cryptoIcons: CryptoIcon[] = [
   { Icon: FaBitcoin, name: "BTC", color: "text-orange-400" },
   { Icon: SiTether, name: "USDT", color: "text-green-400" },
   { Icon: FaEthereum, name: "ETH", color: "text-blue-400" },
-  { Icon: SiRipple, name: "XRP", color: "text-blue-300" },
+  { Icon: SiRipple, name: "XRP", color: "text-blue-300" }
 ];
 
 // Revolving crypto data
@@ -78,7 +86,7 @@ const revolvingCryptos: RevolvingCrypto[] = [
   { Icon: SiRipple, name: "XRP", color: "#23292F", angle: 120 },
   { Icon: SiLitecoin, name: "LTC", color: "#BFBBBB", angle: 180 },
   { Icon: SiCardano, name: "ADA", color: "#0D1E30", angle: 240 },
-  { Icon: FaBitcoin, name: "BTC2", color: "#F7931A", angle: 300 },
+  { Icon: FaBitcoin, name: "BTC2", color: "#F7931A", angle: 300 }
 ];
 
 // Stats data
@@ -86,7 +94,7 @@ const stats: Stat[] = [
   { icon: FaUsers, value: "50K+", label: "Active Users" },
   { icon: FaShieldAlt, value: "99.9%", label: "Security Rate" },
   { icon: FaChartLine, value: "$2M+", label: "Daily Volume" },
-  { icon: MdSpeed, value: "<30s", label: "Transaction Speed" },
+  { icon: MdSpeed, value: "<30s", label: "Transaction Speed" }
 ];
 
 // Features data - Updated to include 24/7 Support
@@ -118,13 +126,17 @@ const Hero: React.FC = () => {
   return (
     <>
       <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600;700;800;900&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap"
         rel="stylesheet"
       />
 
-      <section 
-        className="w-full min-h-screen bg-gradient-to-b from-black via-gray-900 to-black relative overflow-hidden"
-        style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif' }}
+      <section
+        className="w-full min-h-screen bg-black bg-opacity-40 relative overflow-hidden"
+        style={{
+          fontFamily:
+            'Poppins, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif',
+          fontWeight: '300'
+        }}
       >
         {/* Enhanced Background and pattern */}
         <div className="absolute inset-0 opacity-5">
@@ -134,11 +146,11 @@ const Hero: React.FC = () => {
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-[#FEFD0C]/5 to-yellow-400/5 rounded-full blur-3xl"></div>
         </div>
         <div className="absolute inset-0 opacity-8">
-          <div 
+          <div
             className="w-full h-full"
             style={{
               backgroundImage: `radial-gradient(circle at 1px 1px, rgba(254,253,12,0.4) 1px, transparent 0)`,
-              backgroundSize: '40px 40px'
+              backgroundSize: "40px 40px"
             }}
           ></div>
         </div>
@@ -154,7 +166,7 @@ const Hero: React.FC = () => {
                 top: `${20 + Math.random() * 60}%`,
                 animation: `cryptoFloat ${12 + Math.random() * 8}s ease-in-out infinite`,
                 animationDelay: `${Math.random() * 5}s`,
-                filter: 'brightness(1.3) saturate(1.1)',
+                filter: "brightness(1.3) saturate(1.1)"
               }}
             >
               <crypto.Icon className="text-4xl" />
@@ -165,8 +177,8 @@ const Hero: React.FC = () => {
         {/* Hero Content */}
         <div className="container mx-auto px-4 md:px-6 relative z-10 pt-20 pb-16">
           <div className="text-center mb-16">
-            <div 
-              className={`inline-block bg-[#FEFD0C]/15 text-[#FEFD0C] font-medium px-6 py-3 rounded-full text-sm border border-[#FEFD0C]/30 backdrop-blur-sm transition-all duration-1000 shadow-lg shadow-[#FEFD0C]/10 ${
+            <div
+              className={`inline-block bg-[#FEFD0C]/15 text-[#FEFD0C] font-light px-6 py-3 rounded-full text-sm border border-[#FEFD0C]/30 backdrop-blur-sm transition-all duration-1000 shadow-lg shadow-[#FEFD0C]/10 ${
                 isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
               }`}
             >
@@ -183,69 +195,59 @@ const Hero: React.FC = () => {
               }`}
             >
               <div className="mb-8">
-                <h1 
-                  className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-white leading-[0.9] mb-4"
-                  style={{ fontFamily: 'DM Sans, Inter, sans-serif' }}
+                <h1
+                  className="text-5xl md:text-6xl lg:text-7xl font-light tracking-tight text-white leading-[0.9] mb-4"
+                  style={{ fontFamily: "Poppins, sans-serif", fontWeight: '200' }}
                 >
-                  <span className="inline-block animate-float bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent drop-shadow-sm" style={{ animationDelay: '0s' }}>Fast</span>
-                  <span className="mx-3 text-gray-400 font-medium">and</span>
+                  <span
+                    className="inline-block animate-float bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent drop-shadow-sm"
+                    style={{ animationDelay: "0s" }}
+                  >
+                    Fast
+                  </span>
+                  <span className="mx-3 text-gray-400 font-light">and</span>
                   <br />
-                  <span className="text-[#FEFD0C] inline-block animate-float bg-gradient-to-r from-[#FEFD0C] via-yellow-300 to-yellow-400 bg-clip-text text-transparent drop-shadow-lg" style={{ animationDelay: '0.5s' }}>Trusted</span>
+                  <span
+                    className="text-[#FEFD0C] inline-block animate-float bg-gradient-to-r from-[#FEFD0C] via-yellow-300 to-yellow-400 bg-clip-text text-transparent drop-shadow-lg"
+                    style={{ animationDelay: "0.5s" }}
+                  >
+                    Trusted
+                  </span>
                   <br />
-                  <span className="inline-block animate-float bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent drop-shadow-sm" style={{ animationDelay: '1s' }}>Crypto Trading</span>
+                  <span
+                    className="inline-block animate-float bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent drop-shadow-sm"
+                    style={{ animationDelay: "1s" }}
+                  >
+                    Crypto Trading
+                  </span>
                 </h1>
-              </div>
 
-              <div className="w-20 h-1 bg-gradient-to-r from-[#FEFD0C] via-yellow-300 to-[#FEFD0C]/50 rounded-full shadow-lg shadow-[#FEFD0C]/30 mb-8"></div>
-
-              <p className="text-base md:text-lg text-gray-300 leading-relaxed max-w-xl mb-8 font-light">
-                A trusted crypto exchange where you can securely buy, sell, or trade coins—anytime, with instant access to your funds.
-              </p>
-
-              <div className="bg-black/60 backdrop-blur-xl border border-[#FEFD0C]/15 rounded-2xl p-6 mb-12 shadow-2xl shadow-black/50 hover:border-[#FEFD0C]/40 transition-all duration-500 hover:shadow-[#FEFD0C]/10">
-                <p className="text-[#FEFD0C] font-semibold text-lg flex items-center">
-                  <FaShieldAlt className="mr-3 drop-shadow-sm" />
-                  Supports 30+ Cryptocurrencies
+                <p className="text-white/70 max-w-xl leading-relaxed text-lg font-light">
+                  Experience the best platform for lightning-fast, secure cryptocurrency
+                  trading. Join thousands who trust us for seamless transactions and
+                  professional support.
                 </p>
               </div>
 
-              <div className="flex items-center gap-6 mb-12">
-                {cryptoIcons.map((crypto, index) => (
-                  <div
-                    key={index}
-                    className={`h-14 w-14 rounded-2xl bg-black/70 backdrop-blur-xl border border-[#FEFD0C]/15 shadow-2xl shadow-black/50 flex items-center justify-center hover:border-[#FEFD0C]/40 transition-all duration-500 transform hover:scale-110 hover:shadow-[#FEFD0C]/10 ${
-                      isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"
-                    }`}
-                    style={{ transitionDelay: `${index * 100}ms` }}
-                  >
-                    <crypto.Icon className={`text-2xl ${crypto.color} drop-shadow-sm`} style={{ filter: 'brightness(1.2) saturate(1.1)' }} />
-                  </div>
-                ))}
-                <div className="ml-6 text-gray-400">
-                  <span className="text-sm font-light">+ 26 more</span>
-                </div>
-              </div>
-
-              <div
-                className={`flex flex-col sm:flex-row gap-4 mb-12 transition-all duration-700 ${
-                  isLoaded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-5"
-                }`}
-                style={{ transitionDelay: "300ms" }}
-              >
+              {/* App Buttons */}
+              <div className="flex flex-col sm:flex-row gap-6 max-w-2xl mb-12">
                 <AppButton
                   icon={FaGooglePlay}
-                  label="Get it on"
-                  placeholder="Google Play"
-                  href="#"
+                  label="Get it on Google Play"
+                  placeholder="Download Now"
+                  href="https://play.google.com/store/apps/details?id=com.myapp"
+                  className="flex-1"
                 />
                 <AppButton
                   icon={FaApple}
-                  label="Download on the"
-                  placeholder="App Store"
-                  href="#"
+                  label="Download on the App Store"
+                  placeholder="Download Now"
+                  href="https://apps.apple.com/app/id1234567890"
+                  className="flex-1"
                 />
               </div>
 
+              {/* Features */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {features.map((feature, index) => {
                   const Icon = feature.icon;
@@ -260,7 +262,7 @@ const Hero: React.FC = () => {
                       <div className="w-10 h-10 rounded-xl bg-[#FEFD0C]/10 flex items-center justify-center mb-4 group-hover:bg-[#FEFD0C]/20 transition-colors duration-300">
                         <Icon className="text-[#FEFD0C] text-lg drop-shadow-sm" />
                       </div>
-                      <h4 className="text-white font-semibold text-sm mb-2 group-hover:text-[#FEFD0C] transition-colors duration-300">
+                      <h4 className="text-white font-medium text-sm mb-2 group-hover:text-[#FEFD0C] transition-colors duration-300">
                         {feature.title}
                       </h4>
                       <p className="text-gray-400 text-xs font-light">{feature.description}</p>
@@ -341,7 +343,7 @@ const Hero: React.FC = () => {
                 <div className="w-12 h-12 bg-[#FEFD0C]/15 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-[#FEFD0C]/25 transition-colors duration-300 shadow-lg shadow-[#FEFD0C]/10">
                   <Icon className="text-[#FEFD0C] text-xl group-hover:scale-110 transition-transform duration-300 drop-shadow-sm" />
                 </div>
-                <p className="font-bold text-white text-2xl mb-1 group-hover:text-[#FEFD0C] transition-colors duration-300 drop-shadow-sm">{value}</p>
+                <p className="font-medium text-white text-2xl mb-1 group-hover:text-[#FEFD0C] transition-colors duration-300 drop-shadow-sm">{value}</p>
                 <p className="text-gray-400 text-sm font-light uppercase tracking-wider">{label}</p>
               </div>
             ))}

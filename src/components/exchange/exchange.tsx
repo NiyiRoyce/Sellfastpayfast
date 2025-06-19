@@ -3,7 +3,7 @@ import {
   ArrowLeft,
   TrendingUp,
   TrendingDown,
-  RefreshCw,
+  RefreshCw, 
   DollarSign,
   ChevronDown,
   ArrowUpDown,
@@ -24,24 +24,25 @@ interface CryptoCurrency {
   icon: string;
 }
 
-// Theme configuration - dark theme for app integration
+// Theme configuration - matching header color scheme
 const theme = {
-  primary: 'from-amber-400 to-yellow-500',
-  primaryHover: 'from-amber-500 to-yellow-600',
-  secondary: 'from-gray-700 to-gray-800',
-  secondaryHover: 'from-gray-600 to-gray-700',
-  background: 'bg-gray-900',
-  surface: 'bg-gray-800/50 backdrop-blur-sm border-gray-700/50',
-  surfaceHover: 'bg-gray-800/70',
+  primary: 'from-[#FEFD0C] to-[#FEFD0C]/90',
+  primaryHover: 'from-[#FEFD0C]/90 to-[#FEFD0C]',
+  primaryColor: '#FEFD0C',
+  secondary: 'from-gray-800 to-gray-900',
+  secondaryHover: 'from-gray-700 to-gray-800',
+  background: 'bg-black',
+  surface: 'bg-black/60 backdrop-blur-xl border-[#FEFD0C]/10',
+  surfaceHover: 'bg-black/80',
   text: 'text-white',
   textSecondary: 'text-gray-300',
   textMuted: 'text-gray-400',
-  border: 'border-gray-700/50',
-  success: 'text-emerald-400',
+  border: 'border-[#FEFD0C]/10',
+  success: 'text-green-400',
   error: 'text-red-400',
-  warning: 'text-amber-400',
+  warning: 'text-[#FEFD0C]',
   whatsapp: 'from-green-500 to-green-600',
-  input: 'bg-gray-800/50 border-gray-700/50 focus:border-amber-500 focus:ring-amber-500/20'
+  input: 'bg-black/40 border-[#FEFD0C]/20 focus:border-[#FEFD0C] focus:ring-[#FEFD0C]/20'
 } as const;
 
 // Mock cryptocurrency data
@@ -217,31 +218,41 @@ Please confirm this order and provide payment instructions. Thank you!`;
   };
 
   return (
-    <div className={`min-h-screen ${theme.background} py-6`}>
-      <div className="max-w-md mx-auto px-4 space-y-6">
+    <div className={`min-h-screen ${theme.background} py-6`} style={{
+      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif'
+    }}>
+      {/* Background Pattern */}
+      <div className="fixed inset-0 opacity-5 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-r from-[#FEFD0C]/10 via-transparent to-[#FEFD0C]/10"></div>
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#FEFD0C]/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#FEFD0C]/5 rounded-full blur-3xl"></div>
+      </div>
+
+      <div className="max-w-md mx-auto px-4 space-y-6 relative z-10">
         {/* Header */}
         <div className="flex items-center space-x-4 mb-8">
-          <button
-            onClick={handleBack}
-            className={`flex items-center justify-center w-10 h-10 rounded-xl ${theme.surface} hover:${theme.surfaceHover} ${theme.textSecondary} hover:${theme.text} transition-all duration-200 border ${theme.border} shadow-sm`}
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
+         <button
+  onClick={handleBack}
+  className={`flex items-center justify-center p-2 rounded-full ${theme.surface} hover:${theme.surfaceHover} ${theme.textSecondary} hover:${theme.text} transition-all duration-300 border shadow-lg hover:shadow-[#FEFD0C]/20 hover:scale-105`}
+>
+  <ArrowLeft className="w-6 h-6" />
+</button>
+
           <div>
-            <h1 className={`text-xl font-bold ${theme.text}`}>Exchange</h1>
+            <h1 className={`text-2xl font-extrabold tracking-tight flex-1 text-center md:text-left ${theme.text}`}>Exchange</h1>
             <p className={`text-sm ${theme.textSecondary}`}>Trade cryptocurrencies</p>
           </div>
         </div>
 
         {/* Trade Type Selector */}
-        <div className={`${theme.surface} rounded-2xl p-3 border shadow-sm`}>
-          <div className="flex bg-gray-700/30 rounded-xl p-1 space-x-1">
+        <div className={`${theme.surface} rounded-2xl p-4 border shadow-2xl shadow-black/50`}>
+          <div className="flex bg-black/40 rounded-xl p-1 space-x-1 border border-[#FEFD0C]/10">
             <button
               onClick={() => setTradeType('buy')}
-              className={`flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
+              className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-300 ${
                 tradeType === 'buy'
-                  ? `bg-gradient-to-r ${theme.primary} text-black shadow-sm`
-                  : `${theme.textSecondary} hover:${theme.text} hover:bg-gray-600/30`
+                  ? `bg-gradient-to-r ${theme.primary} text-black shadow-lg shadow-[#FEFD0C]/20 scale-105`
+                  : `${theme.textSecondary} hover:${theme.text} hover:bg-[#FEFD0C]/10 hover:scale-105`
               }`}
             >
               <div className="flex items-center justify-center space-x-2">
@@ -251,10 +262,10 @@ Please confirm this order and provide payment instructions. Thank you!`;
             </button>
             <button
               onClick={() => setTradeType('sell')}
-              className={`flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
+              className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-300 ${
                 tradeType === 'sell'
-                  ? `bg-gradient-to-r ${theme.primary} text-black shadow-sm`
-                  : `${theme.textSecondary} hover:${theme.text} hover:bg-gray-600/30`
+                  ? `bg-gradient-to-r ${theme.primary} text-black shadow-lg shadow-[#FEFD0C]/20 scale-105`
+                  : `${theme.textSecondary} hover:${theme.text} hover:bg-[#FEFD0C]/10 hover:scale-105`
               }`}
             >
               <div className="flex items-center justify-center space-x-2">
@@ -266,7 +277,7 @@ Please confirm this order and provide payment instructions. Thank you!`;
         </div>
 
         {/* Main Trading Card */}
-        <div className={`${theme.surface} rounded-2xl p-6 border shadow-sm`}>
+        <div className={`${theme.surface} rounded-2xl p-6 border shadow-2xl shadow-black/50`}>
           {/* Crypto Selection */}
           <div className="mb-6">
             <label className={`block text-sm font-medium ${theme.textSecondary} mb-3`}>
@@ -275,10 +286,10 @@ Please confirm this order and provide payment instructions. Thank you!`;
             <div className="relative crypto-dropdown">
               <button
                 onClick={() => setShowCryptoDropdown(!showCryptoDropdown)}
-                className={`w-full flex items-center justify-between p-4 rounded-xl ${theme.input} hover:bg-gray-700/30 transition-all duration-200 ${theme.text} border focus:outline-none focus:ring-2 focus:ring-amber-500/20`}
+                className={`w-full flex items-center justify-between p-4 rounded-xl ${theme.input} hover:bg-black/60 transition-all duration-300 ${theme.text} border focus:outline-none focus:ring-2 focus:ring-[#FEFD0C]/20 hover:shadow-lg hover:shadow-[#FEFD0C]/10`}
               >
                 <div className="flex items-center space-x-3">
-                  <div className={`w-10 h-10 bg-gradient-to-br ${theme.primary} rounded-full flex items-center justify-center text-black text-sm font-bold shadow-sm`}>
+                  <div className={`w-10 h-10 bg-gradient-to-br ${theme.primary} rounded-full flex items-center justify-center text-black text-sm font-bold shadow-lg shadow-[#FEFD0C]/20`}>
                     {selectedCrypto.icon}
                   </div>
                   <div className="text-left">
@@ -293,12 +304,12 @@ Please confirm this order and provide payment instructions. Thank you!`;
                       {selectedCrypto.change24h >= 0 ? '+' : ''}{selectedCrypto.change24h.toFixed(2)}%
                     </p>
                   </div>
-                  <ChevronDown className={`w-5 h-5 ${theme.textMuted} transition-transform duration-200 ${showCryptoDropdown ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-5 h-5 ${theme.textMuted} transition-transform duration-300 ${showCryptoDropdown ? 'rotate-180' : ''}`} />
                 </div>
               </button>
               
               {showCryptoDropdown && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-gray-800/95 backdrop-blur-xl rounded-xl border border-gray-700/50 shadow-2xl z-20 max-h-80 overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-black/95 backdrop-blur-xl rounded-xl border border-[#FEFD0C]/20 shadow-2xl shadow-black/50 z-20 max-h-80 overflow-y-auto">
                   {availableCryptos.map((crypto) => (
                     <button
                       key={crypto.id}
@@ -308,12 +319,12 @@ Please confirm this order and provide payment instructions. Thank you!`;
                         setAmount('');
                         setUsdValue('');
                       }}
-                      className={`w-full flex items-center justify-between p-4 hover:bg-gray-700/40 transition-all duration-200 text-left first:rounded-t-xl last:rounded-b-xl ${
-                        selectedCrypto.id === crypto.id ? 'bg-amber-500/10 border-l-2 border-amber-500' : ''
+                      className={`w-full flex items-center justify-between p-4 hover:bg-[#FEFD0C]/10 transition-all duration-300 text-left first:rounded-t-xl last:rounded-b-xl ${
+                        selectedCrypto.id === crypto.id ? 'bg-[#FEFD0C]/10 border-l-2 border-[#FEFD0C]' : ''
                       }`}
                     >
                       <div className="flex items-center space-x-3">
-                        <div className={`w-8 h-8 bg-gradient-to-br ${theme.primary} rounded-full flex items-center justify-center text-black text-xs font-bold`}>
+                        <div className={`w-8 h-8 bg-gradient-to-br ${theme.primary} rounded-full flex items-center justify-center text-black text-xs font-bold shadow-sm`}>
                           {crypto.icon}
                         </div>
                         <div>
@@ -347,10 +358,10 @@ Please confirm this order and provide payment instructions. Thank you!`;
                   value={amount}
                   onChange={(e) => handleAmountChange(e.target.value)}
                   placeholder="0.00000000"
-                  className={`w-full p-4 pr-16 rounded-xl ${theme.input} ${theme.text} placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-200`}
+                  className={`w-full p-4 pr-16 rounded-xl ${theme.input} ${theme.text} placeholder-gray-500 focus:outline-none focus:ring-2 transition-all duration-300 hover:shadow-lg hover:shadow-[#FEFD0C]/10`}
                 />
                 <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-                  <span className={`text-sm font-semibold ${theme.textSecondary}`}>
+                  <span className={`text-sm font-semibold text-[#FEFD0C]`}>
                     {selectedCrypto.symbol}
                   </span>
                 </div>
@@ -359,7 +370,7 @@ Please confirm this order and provide payment instructions. Thank you!`;
 
             {/* Conversion Icon */}
             <div className="flex justify-center">
-              <div className={`w-10 h-10 rounded-full bg-gray-700/40 flex items-center justify-center ${theme.textMuted} border ${theme.border}`}>
+              <div className={`w-10 h-10 rounded-full bg-black/60 flex items-center justify-center ${theme.textMuted} border border-[#FEFD0C]/20 shadow-lg`}>
                 <ArrowUpDown className="w-4 h-4" />
               </div>
             </div>
@@ -375,10 +386,10 @@ Please confirm this order and provide payment instructions. Thank you!`;
                   value={usdValue}
                   onChange={(e) => handleUsdValueChange(e.target.value)}
                   placeholder="0.00"
-                  className={`w-full p-4 pl-12 rounded-xl ${theme.input} ${theme.text} placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-200`}
+                  className={`w-full p-4 pl-12 rounded-xl ${theme.input} ${theme.text} placeholder-gray-500 focus:outline-none focus:ring-2 transition-all duration-300 hover:shadow-lg hover:shadow-[#FEFD0C]/10`}
                 />
                 <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
-                  <DollarSign className={`w-4 h-4 ${theme.textMuted}`} />
+                  <DollarSign className={`w-4 h-4 text-[#FEFD0C]`} />
                 </div>
               </div>
               <div className="flex justify-between items-center mt-2">
@@ -396,9 +407,9 @@ Please confirm this order and provide payment instructions. Thank you!`;
 
           {/* Order Summary */}
           {amount && usdValue && parseFloat(usdValue) >= MINIMUM_TRADE && (
-            <div className={`bg-gradient-to-r from-amber-500/10 to-yellow-500/10 rounded-xl p-4 mb-6 border border-amber-500/20`}>
+            <div className={`bg-gradient-to-r from-[#FEFD0C]/10 to-[#FEFD0C]/5 rounded-xl p-4 mb-6 border border-[#FEFD0C]/20 shadow-lg shadow-[#FEFD0C]/10`}>
               <div className="flex items-center space-x-2 mb-3">
-                <Zap className="w-4 h-4 text-amber-400" />
+                <Zap className="w-4 h-4 text-[#FEFD0C]" />
                 <h4 className={`text-sm font-semibold ${theme.text}`}>Order Summary</h4>
               </div>
               <div className="space-y-2">
@@ -414,10 +425,10 @@ Please confirm this order and provide payment instructions. Thank you!`;
                     {parseFloat(amount).toFixed(8)} {selectedCrypto.symbol}
                   </span>
                 </div>
-                <div className="h-px bg-gray-600/30 my-2"></div>
+                <div className="h-px bg-[#FEFD0C]/20 my-2"></div>
                 <div className="flex justify-between">
                   <span className={`text-sm font-semibold ${theme.text}`}>Total:</span>
-                  <span className={`text-sm font-semibold ${theme.text}`}>
+                  <span className={`text-sm font-semibold text-[#FEFD0C]`}>
                     ${parseFloat(usdValue).toFixed(2)}
                   </span>
                 </div>
@@ -426,7 +437,7 @@ Please confirm this order and provide payment instructions. Thank you!`;
           )}
 
           {/* WhatsApp Notice */}
-          <div className={`bg-gradient-to-r from-green-500/10 to-green-600/10 rounded-xl p-4 mb-6 border border-green-500/20`}>
+          <div className={`bg-gradient-to-r from-green-500/10 to-green-600/5 rounded-xl p-4 mb-6 border border-green-500/20 shadow-lg`}>
             <div className="flex items-start space-x-3">
               <MessageCircle className="w-5 h-5 text-green-400 mt-0.5" />
               <div className="flex-1">
@@ -443,7 +454,7 @@ Please confirm this order and provide payment instructions. Thank you!`;
           <button
             onClick={handleTrade}
             disabled={!amount || !usdValue || isLoading || parseFloat(usdValue) < MINIMUM_TRADE}
-            className={`w-full py-4 rounded-xl font-semibold text-base transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r ${theme.whatsapp} hover:from-green-600 hover:to-green-700 text-white`}
+            className={`w-full py-4 rounded-xl font-semibold text-base transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r ${theme.whatsapp} hover:from-green-600 hover:to-green-700 text-white hover:scale-105`}
           >
             {isLoading ? (
               <div className="flex items-center justify-center space-x-2">
@@ -465,7 +476,7 @@ Please confirm this order and provide payment instructions. Thank you!`;
               <button
                 key={quickAmount}
                 onClick={() => handleUsdValueChange(quickAmount.toString())}
-                className={`py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${theme.textSecondary} hover:${theme.text} bg-gray-700/20 hover:bg-gray-600/30 border ${theme.border}`}
+                className={`py-2 px-3 rounded-lg text-sm font-medium transition-all duration-300 ${theme.textSecondary} hover:${theme.text} bg-black/40 hover:bg-[#FEFD0C]/10 border border-[#FEFD0C]/20 hover:border-[#FEFD0C]/40 hover:scale-105 hover:shadow-lg hover:shadow-[#FEFD0C]/10`}
               >
                 ${quickAmount}
               </button>
@@ -475,10 +486,10 @@ Please confirm this order and provide payment instructions. Thank you!`;
 
         {/* Order Status */}
         {orderStatus !== 'idle' && (
-          <div className={`${theme.surface} rounded-2xl p-5 border shadow-sm ${
+          <div className={`${theme.surface} rounded-2xl p-5 border shadow-2xl shadow-black/50 ${
             orderStatus === 'success' 
-              ? 'border-green-500/30 bg-green-500/10' 
-              : 'border-red-500/30 bg-red-500/10'
+              ? 'border-green-500/30 bg-green-500/5' 
+              : 'border-red-500/30 bg-red-500/5'
           }`}>
             <div className="flex items-start space-x-4">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center ${

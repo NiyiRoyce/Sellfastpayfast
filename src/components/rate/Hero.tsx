@@ -217,20 +217,13 @@ const RateSection: React.FC = () => {
       />
       
       <section 
-        className="w-full py-16 md:py-24 lg:py-32 bg-gradient-to-b from-black via-gray-900 to-black relative overflow-hidden"
+        className="w-full py-16 md:py-24 lg:py-32 bg-black relative overflow-hidden"
         style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif' }}
       >
-        {/* Enhanced Background Pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#FEFD0C]/10 via-transparent to-[#FEFD0C]/10"></div>
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#FEFD0C]/5 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#FEFD0C]/5 rounded-full blur-3xl"></div>
-        </div>
-
         <div className="container mx-auto px-4 md:px-6 relative z-10 max-w-7xl">
-          {/* Enhanced Header */}
+          {/* Header */}
           <div className="text-center mb-16">
-            <div className="inline-block bg-[#FEFD0C]/10 text-[#FEFD0C] font-medium px-4 py-2 rounded-full text-sm mb-4 border border-[#FEFD0C]/20 backdrop-blur-sm">
+            <div className="inline-block bg-black/40 text-[#FEFD0C] font-medium px-4 py-2 rounded-full text-sm mb-4 border border-[#FEFD0C]">
               <Zap className="inline w-4 h-4 mr-2" />
               Real-Time Data
             </div>
@@ -238,35 +231,35 @@ const RateSection: React.FC = () => {
               Live Bitcoin 
               <span className="text-[#FEFD0C] block mt-2">Exchange Rates</span>
             </h2>
-            <div className="w-20 h-1 bg-gradient-to-r from-[#FEFD0C] to-[#FEFD0C]/50 rounded-full mx-auto shadow-lg shadow-[#FEFD0C]/20 mb-8"></div>
+            <div className="w-20 h-1 bg-[#FEFD0C] rounded-full mx-auto mb-8"></div>
             <p className="text-base md:text-lg text-gray-300 leading-relaxed max-w-3xl mx-auto mb-12">
               Powered by CoinGecko API for authentic market data with real-time updates every 30 seconds.
             </p>
             
-            {/* Enhanced Market Stats */}
+            {/* Market Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-              <div className="bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-lg p-4 hover:border-[#FEFD0C]/30 transition-all duration-300 group hover:scale-105">
+              <div className="bg-black/40 border border-[#FEFD0C] rounded-lg p-4 hover:bg-black/60 transition-all duration-300 group hover:scale-105">
                 <div className="flex items-center justify-center mb-2">
                   <DollarSign className="h-5 w-5 text-[#FEFD0C] group-hover:scale-110 transition-transform duration-300" />
                 </div>
                 <p className="text-lg font-bold text-[#FEFD0C]">${marketStats.avgBuy}</p>
                 <p className="text-xs text-gray-400">Avg Buy Rate</p>
               </div>
-              <div className="bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-lg p-4 hover:border-[#FEFD0C]/30 transition-all duration-300 group hover:scale-105">
+              <div className="bg-black/40 border border-[#FEFD0C] rounded-lg p-4 hover:bg-black/60 transition-all duration-300 group hover:scale-105">
                 <div className="flex items-center justify-center mb-2">
                   <DollarSign className="h-5 w-5 text-[#FEFD0C] rotate-180 group-hover:scale-110 transition-transform duration-300" />
                 </div>
                 <p className="text-lg font-bold text-[#FEFD0C]">${marketStats.avgSell}</p>
                 <p className="text-xs text-gray-400">Avg Sell Rate</p>
               </div>
-              <div className="bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-lg p-4 hover:border-[#FEFD0C]/30 transition-all duration-300 group hover:scale-105">
+              <div className="bg-black/40 border border-[#FEFD0C] rounded-lg p-4 hover:bg-black/60 transition-all duration-300 group hover:scale-105">
                 <div className="flex items-center justify-center mb-2">
                   <Activity className="h-5 w-5 text-[#FEFD0C] group-hover:scale-110 transition-transform duration-300" />
                 </div>
                 <p className="text-lg font-bold text-[#FEFD0C]">{marketStats.totalVolume}</p>
                 <p className="text-xs text-gray-400">Total Volume</p>
               </div>
-              <div className="bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-lg p-4 hover:border-[#FEFD0C]/30 transition-all duration-300 group hover:scale-105">
+              <div className="bg-black/40 border border-[#FEFD0C] rounded-lg p-4 hover:bg-black/60 transition-all duration-300 group hover:scale-105">
                 <div className="flex items-center justify-center mb-2">
                   <BarChart3 className="h-5 w-5 text-[#FEFD0C] group-hover:scale-110 transition-transform duration-300" />
                 </div>
@@ -276,7 +269,7 @@ const RateSection: React.FC = () => {
             </div>
           </div>
 
-          {/* Enhanced Controls */}
+          {/* Controls */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
             {/* Search Input */}
             <div className="relative w-full md:w-1/3">
@@ -285,19 +278,19 @@ const RateSection: React.FC = () => {
                 placeholder="Search by country or currency"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full rounded-xl bg-black/60 backdrop-blur-xl border border-[#FEFD0C]/10 text-white placeholder-gray-400 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FEFD0C]/50 focus:border-[#FEFD0C]/30 transition-all duration-300"
+                className="w-full rounded-xl bg-black/40 border border-[#FEFD0C] text-white placeholder-gray-400 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FEFD0C] focus:border-[#FEFD0C] transition-all duration-300"
               />
               <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#FEFD0C]" />
             </div>
 
             {/* View Mode Toggle */}
-            <div className="inline-flex rounded-xl bg-black/60 backdrop-blur-xl border border-[#FEFD0C]/10 p-1.5 shadow-2xl shadow-black/50">
+            <div className="inline-flex rounded-xl bg-black/40 border border-[#FEFD0C] p-1.5">
               <button
                 onClick={() => setViewMode("table")}
                 className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                   viewMode === "table" 
-                    ? "bg-[#FEFD0C] text-black shadow-lg transform scale-105" 
-                    : "text-white hover:text-[#FEFD0C] hover:bg-white/5"
+                    ? "bg-[#FEFD0C] text-black transform scale-105" 
+                    : "text-white hover:text-[#FEFD0C] hover:bg-black/20"
                 }`}
                 aria-label="Table view"
                 title="Table View"
@@ -309,8 +302,8 @@ const RateSection: React.FC = () => {
                 onClick={() => setViewMode("cards")}
                 className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                   viewMode === "cards" 
-                    ? "bg-[#FEFD0C] text-black shadow-lg transform scale-105" 
-                    : "text-white hover:text-[#FEFD0C] hover:bg-white/5"
+                    ? "bg-[#FEFD0C] text-black transform scale-105" 
+                    : "text-white hover:text-[#FEFD0C] hover:bg-black/20"
                 }`}
                 aria-label="Card view"
                 title="Card View"
@@ -340,17 +333,17 @@ const RateSection: React.FC = () => {
             </button>
           </div>
 
-          {/* Enhanced Tabs */}
+          {/* Tabs */}
           <div className="flex justify-center mb-12">
-            <div className="inline-flex rounded-xl bg-black/60 backdrop-blur-xl border border-[#FEFD0C]/10 p-1.5 shadow-2xl shadow-black/50">
+            <div className="inline-flex rounded-xl bg-black/40 border border-[#FEFD0C] p-1.5">
               {tabConfig.map(({ key, label, icon: Icon, count }) => (
                 <button
                   key={key}
                   onClick={() => setActiveTab(key as any)}
                   className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${
                     activeTab === key
-                      ? "bg-[#FEFD0C] text-black shadow-lg transform scale-105"
-                      : "text-white hover:text-[#FEFD0C] hover:bg-white/5"
+                      ? "bg-[#FEFD0C] text-black transform scale-105"
+                      : "text-white hover:text-[#FEFD0C] hover:bg-black/20"
                   }`}
                   aria-current={activeTab === key ? "page" : undefined}
                 >
@@ -380,7 +373,7 @@ const RateSection: React.FC = () => {
               <p className="text-gray-400">Try adjusting your search terms or filters.</p>
             </div>
           ) : viewMode === "table" ? (
-            <div className="overflow-x-auto rounded-2xl border border-[#FEFD0C]/10 bg-black/60 backdrop-blur-xl shadow-2xl shadow-black/50">
+            <div className="overflow-x-auto rounded-2xl border border-[#FEFD0C] bg-black/40">
               <table className="w-full border-collapse text-white">
                 <thead>
                   <tr className="bg-[#FEFD0C] text-black text-left">
@@ -428,8 +421,8 @@ const RateSection: React.FC = () => {
                   {filteredData.map((item, index) => (
                     <tr
                       key={item.country}
-                      className={`border-t border-[#FEFD0C]/10 hover:bg-white/10 transition-colors duration-300 ${
-                        index % 2 === 0 ? 'bg-black/20' : 'bg-white/5'
+                      className={`border-t border-[#FEFD0C]/20 hover:bg-black/60 transition-colors duration-300 ${
+                        index % 2 === 0 ? 'bg-black/20' : 'bg-black/10'
                       }`}
                     >
                       <td className="px-6 py-4 flex items-center gap-3 font-medium">
@@ -481,7 +474,7 @@ const RateSection: React.FC = () => {
               {filteredData.map((item) => (
                 <div
                   key={item.country}
-                  className="bg-black/60 backdrop-blur-xl border border-[#FEFD0C]/10 rounded-2xl p-6 shadow-2xl shadow-black/50 hover:shadow-[#FEFD0C]/10 hover:border-[#FEFD0C]/30 transition-all duration-500 group hover:scale-105"
+                  className="bg-black/40 border border-[#FEFD0C] rounded-2xl p-6 hover:bg-black/60 hover:border-[#FEFD0C] transition-all duration-500 group hover:scale-105"
                 >
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-bold text-white text-lg group-hover:text-[#FEFD0C] transition-colors duration-300">{item.country}</h3>
@@ -509,7 +502,7 @@ const RateSection: React.FC = () => {
                       className="w-16 h-10 rounded-lg shadow-md mr-3"
                       loading="lazy"
                     />
-                    <div className="text-sm bg-[#FEFD0C]/10 text-[#FEFD0C] px-3 py-1 rounded-full border border-[#FEFD0C]/20 font-mono font-semibold">
+                    <div className="text-sm bg-black/40 text-[#FEFD0C] px-3 py-1 rounded-full border border-[#FEFD0C] font-mono font-semibold">
                       {item.currency}
                     </div>
                   </div>
@@ -536,7 +529,7 @@ const RateSection: React.FC = () => {
                       <span className="text-gray-400 text-sm">Volume:</span>
                       <span className="font-mono text-gray-300">{Number(item.volume).toLocaleString()}</span>
                     </div>
-                    <div className="pt-3 border-t border-[#FEFD0C]/10 flex justify-between items-center">
+                    <div className="pt-3 border-t border-[#FEFD0C]/20 flex justify-between items-center">
                       <span className="text-gray-400 text-sm">Spread:</span>
                       <span className="font-mono font-bold text-[#FEFD0C]">{getRateDifference(item.buyRate, item.sellRate)}%</span>
                     </div>
@@ -546,10 +539,10 @@ const RateSection: React.FC = () => {
             </div>
           )}
 
-          {/* Enhanced Footer */}
-          <div className="mt-20 bg-black/80 backdrop-blur-xl border border-[#FEFD0C]/10 rounded-3xl p-8 md:p-12 text-center shadow-2xl shadow-black/50">
+          {/* Footer */}
+          <div className="mt-20 bg-black/40 border border-[#FEFD0C] rounded-3xl p-8 md:p-12 text-center">
             <div className="max-w-3xl mx-auto">
-              <div className="inline-block bg-[#FEFD0C]/10 text-[#FEFD0C] px-4 py-2 rounded-full text-sm mb-4 border border-[#FEFD0C]/20 backdrop-blur-sm">
+              <div className="inline-block bg-black/40 text-[#FEFD0C] px-4 py-2 rounded-full text-sm mb-4 border border-[#FEFD0C]">
                 <Activity className="inline w-4 h-4 mr-2" />
                 Last Updated: {lastUpdated}
               </div>

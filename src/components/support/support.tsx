@@ -158,20 +158,13 @@ const Support: React.FC = () => {
       />
       
       <section 
-        className="w-full py-16 md:py-24 lg:py-32 bg-gradient-to-b from-black via-gray-900 to-black relative overflow-hidden"
+        className="w-full py-16 md:py-24 lg:py-32 bg-black relative overflow-hidden"
         style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif' }}
       >
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#FEFD0C]/10 via-transparent to-[#FEFD0C]/10"></div>
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#FEFD0C]/5 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#FEFD0C]/5 rounded-full blur-3xl"></div>
-        </div>
-
         <div className="container mx-auto px-4 md:px-6 relative z-10">
           {/* Enhanced Header with Stats */}
           <div className="text-center mb-16">
-            <div className="inline-block bg-[#FEFD0C]/10 text-[#FEFD0C] font-medium px-4 py-2 rounded-full text-sm mb-4 border border-[#FEFD0C]/20 backdrop-blur-sm">
+            <div className="inline-block bg-black/40 text-[#FEFD0C] font-medium px-4 py-2 rounded-full text-sm mb-4 border border-[#FEFD0C]/20 backdrop-blur-sm">
               <MdAccessTime className="inline mr-2" />
               24/7 Support Available
             </div>
@@ -179,7 +172,7 @@ const Support: React.FC = () => {
               We're Here to 
               <span className="text-[#FEFD0C] block mt-2">Help You</span>
             </h2>
-            <div className="w-20 h-1 bg-gradient-to-r from-[#FEFD0C] to-[#FEFD0C]/50 rounded-full mx-auto shadow-lg shadow-[#FEFD0C]/20 mb-8"></div>
+            <div className="w-20 h-1 bg-[#FEFD0C] rounded-full mx-auto shadow-lg shadow-[#FEFD0C]/20 mb-8"></div>
             <p className="text-base md:text-lg text-gray-300 leading-relaxed max-w-3xl mx-auto mb-12">
               Our dedicated team is always available to help you navigate the crypto world with confidence and security.
             </p>
@@ -207,7 +200,7 @@ const Support: React.FC = () => {
 
           {/* Enhanced Tabs */}
           <div className="flex justify-center mb-12">
-            <div className="inline-flex rounded-xl bg-black/60 backdrop-blur-xl border border-[#FEFD0C]/10 p-1.5 shadow-2xl shadow-black/50">
+            <div className="inline-flex rounded-xl bg-black/40 backdrop-blur-xl border border-[#FEFD0C]/10 p-1.5 shadow-2xl shadow-black/50">
               <button
                 onClick={() => setActiveTab("channels")}
                 className={`flex items-center px-6 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${
@@ -253,7 +246,7 @@ const Support: React.FC = () => {
                   <a
                     href={item.url}
                     key={item.id}
-                    className="bg-black/60 backdrop-blur-xl border border-[#FEFD0C]/10 rounded-2xl p-6 shadow-2xl shadow-black/50 hover:shadow-[#FEFD0C]/10 hover:border-[#FEFD0C]/30 transition-all duration-500 group hover:scale-105"
+                    className="bg-black/40 backdrop-blur-xl border border-[#FEFD0C]/10 rounded-2xl p-6 shadow-2xl shadow-black/50 hover:shadow-[#FEFD0C]/10 hover:border-[#FEFD0C]/30 transition-all duration-500 group hover:scale-105"
                   >
                     <div className="w-12 h-12 flex items-center justify-center bg-[#FEFD0C]/10 text-[#FEFD0C] rounded-lg mb-4 group-hover:bg-[#FEFD0C]/20 transition-all duration-300">
                       <Icon className="text-xl" />
@@ -310,7 +303,7 @@ const Support: React.FC = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                       key={item.id}
-                      className="flex items-center bg-black/60 backdrop-blur-xl border border-[#FEFD0C]/10 rounded-2xl p-6 shadow-2xl shadow-black/50 hover:shadow-[#FEFD0C]/10 hover:border-[#FEFD0C]/30 transition-all duration-500 group hover:scale-105"
+                      className="flex items-center bg-black/40 backdrop-blur-xl border border-[#FEFD0C]/10 rounded-2xl p-6 shadow-2xl shadow-black/50 hover:shadow-[#FEFD0C]/10 hover:border-[#FEFD0C]/30 transition-all duration-500 group hover:scale-105"
                     >
                       <div className="w-16 h-16 rounded-2xl bg-[#FEFD0C]/10 flex items-center justify-center mr-4 group-hover:bg-[#FEFD0C]/20 group-hover:scale-110 transition-all duration-300">
                         <Icon className="text-[#FEFD0C] text-2xl" />
@@ -371,7 +364,7 @@ const Support: React.FC = () => {
 
               <div className="space-y-4">
                 {filteredFaqs.map((faq, index) => (
-                  <div key={index} className="bg-black/60 backdrop-blur-xl border border-[#FEFD0C]/10 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden hover:border-[#FEFD0C]/30 transition-all duration-500">
+                  <div key={index} className="bg-black/40 backdrop-blur-xl border border-[#FEFD0C]/10 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden hover:border-[#FEFD0C]/30 transition-all duration-500">
                     <button
                       className="w-full px-6 py-5 text-left flex justify-between items-center focus:outline-none hover:bg-[#FEFD0C]/5 transition-colors duration-300"
                       onClick={() => toggleFaq(index)}
@@ -418,7 +411,7 @@ const Support: React.FC = () => {
           )}
 
           {/* Enhanced Contact CTA Section */}
-          <div className="mt-20 bg-black/80 backdrop-blur-xl border border-[#FEFD0C]/10 rounded-3xl p-8 md:p-12 text-center shadow-2xl shadow-black/50">
+          <div className="mt-20 bg-black/40 backdrop-blur-xl border border-[#FEFD0C]/10 rounded-3xl p-8 md:p-12 text-center shadow-2xl shadow-black/50">
             <div className="max-w-3xl mx-auto">
               <div className="inline-block bg-[#FEFD0C]/10 text-[#FEFD0C] font-medium px-4 py-2 rounded-full text-sm mb-4 border border-[#FEFD0C]/20 backdrop-blur-sm">
                 Personal Assistance
@@ -427,7 +420,7 @@ const Support: React.FC = () => {
                 Still Need 
                 <span className="text-[#FEFD0C] block mt-2">Personal Help?</span>
               </h3>
-              <div className="w-20 h-1 bg-gradient-to-r from-[#FEFD0C] to-[#FEFD0C]/50 rounded-full mx-auto shadow-lg shadow-[#FEFD0C]/20 mb-8"></div>
+              <div className="w-20 h-1 bg-[#FEFD0C] rounded-full mx-auto shadow-lg shadow-[#FEFD0C]/20 mb-8"></div>
               <p className="mb-8 text-gray-300 text-base md:text-lg leading-relaxed">
                 Our expert support team is available around the clock to provide personalized help with your crypto trading journey. Don't hesitate to reach out!
               </p>

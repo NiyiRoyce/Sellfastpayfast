@@ -16,8 +16,23 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children }) => {
   const location = useLocation();
   const currentPath = location.pathname;
 
-  const hideHeaderPaths = ["/login", "/users", "/market", "/exchange"];
-  const hideFooterPaths = ["/rates", "/login", "/users", "/market", "/exchange"];
+  const hideHeaderPaths = [
+    "/login",
+    "/users",
+    "/market",
+    "/exchange",
+    "/settings",
+    "/resources", // <-- Added
+  ];
+
+  const hideFooterPaths = [
+    "/login",
+    "/users",
+    "/market",
+    "/exchange",
+    "/settings",
+    "/resources", // <-- Added
+  ];
 
   const knownPatterns = [
     "/",
@@ -29,7 +44,10 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children }) => {
     "/users/:id",
     "/market",
     "/exchange",
+    "/settings",
+    "/resources", // <-- Added
   ];
+
   const is404 = !pathMatches(knownPatterns, currentPath);
 
   const shouldHideHeader = hideHeaderPaths.includes(currentPath);

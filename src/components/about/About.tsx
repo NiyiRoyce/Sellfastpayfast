@@ -9,8 +9,8 @@ const About = () => {
         rel="stylesheet"
       />
       
-      <section 
-        className="w-full py-16 md:py-24 lg:py-32 bg-gradient-to-b from-black via-gray-900 to-black relative overflow-hidden"
+       <section 
+        className="w-full py-16 md:py-24 lg:py-32 bg-black/40 relative overflow-hidden"
         style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif' }}
       >
         {/* Background Pattern */}
