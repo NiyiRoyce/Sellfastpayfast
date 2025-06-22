@@ -10,12 +10,12 @@ const About = () => {
       />
       
        <section 
-        className="w-full py-16 md:py-24 lg:py-32 bg-black/40 relative overflow-hidden"
+        className="w-full py-16 md:py-24 lg:py-32 bg-black relative overflow-hidden"
         style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif' }}
       >
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#FEFD0C]/10 via-transparent to-[#FEFD0C]/10"></div>
+          <div className="absolute inset-0 bg-[#FEFD0C]/10"></div>
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#FEFD0C]/5 rounded-full blur-3xl"></div>
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#FEFD0C]/5 rounded-full blur-3xl"></div>
         </div>
@@ -32,7 +32,7 @@ const About = () => {
                   Transforming the future of 
                   <span className="text-[#FEFD0C] block mt-2">digital finance</span>
                 </h2>
-                <div className="w-20 h-1 bg-gradient-to-r from-[#FEFD0C] to-[#FEFD0C]/50 rounded-full shadow-lg shadow-[#FEFD0C]/20"></div>
+                <div className="w-20 h-1 bg-[#FEFD0C] rounded-full shadow-lg shadow-[#FEFD0C]/20"></div>
                 <p className="text-base md:text-lg text-gray-300 leading-relaxed">
                   Founded in 2020, our exchange was born from a vision to create the most trustworthy cryptocurrency platform in the market. We've built our reputation on security, reliability, and transparent operations, ensuring our users always have quick access to their assets.
                 </p>
@@ -56,7 +56,7 @@ const About = () => {
                       className="w-full h-auto object-cover aspect-video md:aspect-square group-hover:scale-105 transition-transform duration-700"
                     />
                   </div>
-                  <div className="absolute -bottom-6 -right-6 bg-black/80 backdrop-blur-md border border-[#FEFD0C]/20 text-white p-4 rounded-lg shadow-xl shadow-black/50 hidden md:block">
+                  <div className="absolute -bottom-6 -right-6 bg-black/90 backdrop-blur-md border border-[#FEFD0C]/20 text-white p-4 rounded-lg shadow-xl shadow-black/50 hidden md:block">
                     <p className="font-semibold text-[#FEFD0C]">Adewale Adebayo</p>
                     <p className="text-sm text-gray-300">Founder & CEO</p>
                   </div>
@@ -78,7 +78,7 @@ const About = () => {
                       className="w-full h-auto object-cover aspect-video md:aspect-square group-hover:scale-105 transition-transform duration-700"
                     />
                   </div>
-                  <div className="absolute -bottom-6 -left-6 bg-black/80 backdrop-blur-md border border-[#FEFD0C]/20 text-white p-4 rounded-lg shadow-xl shadow-black/50 hidden md:block">
+                  <div className="absolute -bottom-6 -left-6 bg-black/90 backdrop-blur-md border border-[#FEFD0C]/20 text-white p-4 rounded-lg shadow-xl shadow-black/50 hidden md:block">
                     <p className="font-semibold text-[#FEFD0C]">Est. 2020</p>
                     <p className="text-sm text-gray-300">Building the future</p>
                   </div>
@@ -92,7 +92,7 @@ const About = () => {
                   Meet our 
                   <span className="text-[#FEFD0C] block mt-2">visionary CEO</span>
                 </h2>
-                <div className="w-20 h-1 bg-gradient-to-r from-[#FEFD0C] to-[#FEFD0C]/50 rounded-full shadow-lg shadow-[#FEFD0C]/20"></div>
+                <div className="w-20 h-1 bg-[#FEFD0C] rounded-full shadow-lg shadow-[#FEFD0C]/20"></div>
                 <p className="text-base md:text-lg text-gray-300 leading-relaxed">
                   With over 15 years of experience in fintech and blockchain technologies, our CEO has guided our exchange to become one of the most respected platforms in the cryptocurrency space.
                 </p>
@@ -100,15 +100,15 @@ const About = () => {
                   Prior to founding our exchange, she led digital transformation initiatives at major financial institutions and contributed to pioneering blockchain research. Her vision combines cutting-edge technology with unwavering ethics to create a platform that truly serves its users.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-lg p-4 hover:border-[#FEFD0C]/30 transition-all duration-300 group">
+                  <div className="bg-black/60 backdrop-blur-md border border-[#FEFD0C]/10 rounded-lg p-4 hover:border-[#FEFD0C]/30 transition-all duration-300 group">
                     <p className="text-2xl font-bold text-[#FEFD0C] group-hover:scale-110 transition-transform duration-300">200+</p>
                     <p className="text-sm text-gray-400">Team members worldwide</p>
                   </div>
-                  <div className="bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-lg p-4 hover:border-[#FEFD0C]/30 transition-all duration-300 group">
+                  <div className="bg-black/60 backdrop-blur-md border border-[#FEFD0C]/10 rounded-lg p-4 hover:border-[#FEFD0C]/30 transition-all duration-300 group">
                     <p className="text-2xl font-bold text-[#FEFD0C] group-hover:scale-110 transition-transform duration-300">30+</p>
                     <p className="text-sm text-gray-400">Countries supported</p>
                   </div>
-                  <div className="bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-lg p-4 hover:border-[#FEFD0C]/30 transition-all duration-300 group">
+                  <div className="bg-black/60 backdrop-blur-md border border-[#FEFD0C]/10 rounded-lg p-4 hover:border-[#FEFD0C]/30 transition-all duration-300 group">
                     <p className="text-2xl font-bold text-[#FEFD0C] group-hover:scale-110 transition-transform duration-300">$100M+</p>
                     <p className="text-sm text-gray-400">Monthly trading volume</p>
                   </div>
@@ -127,14 +127,14 @@ const About = () => {
                 What drives us 
                 <span className="text-[#FEFD0C] block mt-2">forward</span>
               </h2>
-              <div className="w-20 h-1 bg-gradient-to-r from-[#FEFD0C] to-[#FEFD0C]/50 rounded-full mx-auto shadow-lg shadow-[#FEFD0C]/20"></div>
+              <div className="w-20 h-1 bg-[#FEFD0C] rounded-full mx-auto shadow-lg shadow-[#FEFD0C]/20"></div>
               <p className="text-base md:text-lg text-gray-300 leading-relaxed">
                 We're committed to making cryptocurrency accessible to everyone while maintaining the highest standards of security and service.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="bg-black/60 backdrop-blur-xl border border-[#FEFD0C]/10 rounded-2xl p-6 shadow-2xl shadow-black/50 hover:shadow-[#FEFD0C]/10 hover:border-[#FEFD0C]/30 transition-all duration-500 group hover:scale-105">
+              <div className="bg-black/80 backdrop-blur-xl border border-[#FEFD0C]/10 rounded-2xl p-6 shadow-2xl shadow-black/50 hover:shadow-[#FEFD0C]/10 hover:border-[#FEFD0C]/30 transition-all duration-500 group hover:scale-105">
                 <div className="w-12 h-12 flex items-center justify-center bg-[#FEFD0C]/10 text-[#FEFD0C] rounded-lg mb-4 group-hover:bg-[#FEFD0C]/20 transition-all duration-300">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
@@ -147,7 +147,7 @@ const About = () => {
                 </p>
               </div>
               
-              <div className="bg-black/60 backdrop-blur-xl border border-[#FEFD0C]/10 rounded-2xl p-6 shadow-2xl shadow-black/50 hover:shadow-[#FEFD0C]/10 hover:border-[#FEFD0C]/30 transition-all duration-500 group hover:scale-105">
+              <div className="bg-black/80 backdrop-blur-xl border border-[#FEFD0C]/10 rounded-2xl p-6 shadow-2xl shadow-black/50 hover:shadow-[#FEFD0C]/10 hover:border-[#FEFD0C]/30 transition-all duration-500 group hover:scale-105">
                 <div className="w-12 h-12 flex items-center justify-center bg-[#FEFD0C]/10 text-[#FEFD0C] rounded-lg mb-4 group-hover:bg-[#FEFD0C]/20 transition-all duration-300">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
@@ -159,7 +159,7 @@ const About = () => {
                 </p>
               </div>
               
-              <div className="bg-black/60 backdrop-blur-xl border border-[#FEFD0C]/10 rounded-2xl p-6 shadow-2xl shadow-black/50 hover:shadow-[#FEFD0C]/10 hover:border-[#FEFD0C]/30 transition-all duration-500 group hover:scale-105">
+              <div className="bg-black/80 backdrop-blur-xl border border-[#FEFD0C]/10 rounded-2xl p-6 shadow-2xl shadow-black/50 hover:shadow-[#FEFD0C]/10 hover:border-[#FEFD0C]/30 transition-all duration-500 group hover:scale-105">
                 <div className="w-12 h-12 flex items-center justify-center bg-[#FEFD0C]/10 text-[#FEFD0C] rounded-lg mb-4 group-hover:bg-[#FEFD0C]/20 transition-all duration-300">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>

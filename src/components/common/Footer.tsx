@@ -61,10 +61,6 @@ const Footer = () => {
         role="contentinfo"
         aria-label="Site Footer"
       >
-        {/* Background Pattern - Removed glowing circular animations */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#FEFD0C]/20 rounded-full"></div>
-        </div>
 
         <div className="flex flex-col items-center w-full justify-between xl:px-[96px] px-[16px] mx-auto xl:pt-[120px] pb-[40px] pt-[100px] relative z-10">
           
@@ -217,7 +213,7 @@ const Footer = () => {
                 </div>
               </div>
 
-              {/* App Download Section - GLOW EFFECT REMOVED */}
+              {/* App Download Section - */}
               <div className="w-full">
                 <div className="bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-8 hover:border-[#FEFD0C]/30 transition-all duration-500 hover:scale-105">
                   <div className="text-center mb-6">

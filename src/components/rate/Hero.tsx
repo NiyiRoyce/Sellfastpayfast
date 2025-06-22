@@ -4,6 +4,9 @@ import {
   TrendingUp,
   TrendingDown,
   Search,
+  Shield,
+  Clock,
+  Cpu,
   RefreshCw,
   Activity,
   Globe,
@@ -90,6 +93,7 @@ const RateSection: React.FC = () => {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<"table" | "cards">("table");
   const [lastUpdated, setLastUpdated] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -138,6 +142,20 @@ const RateSection: React.FC = () => {
       newFavorites.add(country);
     }
     setFavorites(newFavorites);
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    
+    try {
+      const items = await fetchCoinData();
+      setData(items);
+      setLastUpdated(new Date().toLocaleTimeString());
+    } catch (error) {
+      console.error("Failed to refresh data:", error);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const filteredData = useMemo(() => {
@@ -315,21 +333,22 @@ const RateSection: React.FC = () => {
 
             {/* Refresh Button */}
             <button
-              onClick={() => {
-                setIsLoading(true);
-                fetchCoinData().then((items) => {
-                  setData(items);
-                  setLastUpdated(new Date().toLocaleTimeString());
-                  setIsLoading(false);
-                });
-              }}
-              disabled={isLoading}
-              className="group inline-flex items-center justify-center px-6 py-3 rounded-xl bg-transparent border-2 border-[#FEFD0C] text-[#FEFD0C] font-bold hover:bg-[#FEFD0C] hover:text-black transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className={`group inline-flex items-center justify-center px-6 py-3 rounded-xl font-bold transition-all duration-500 transform disabled:cursor-not-allowed ${
+                isRefreshing
+                  ? "bg-[#FEFD0C]/20 border-2 border-[#FEFD0C] text-[#FEFD0C] scale-105 animate-pulse"
+                  : "bg-transparent border-2 border-[#FEFD0C] text-[#FEFD0C] hover:bg-[#FEFD0C] hover:text-black hover:scale-105 hover:shadow-lg hover:shadow-[#FEFD0C]/25"
+              }`}
               aria-label="Refresh data"
               title="Refresh Data"
             >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : "group-hover:rotate-180"} transition-transform duration-300`} />
-              Refresh Data
+              <RefreshCw className={`h-4 w-4 mr-2 transition-transform duration-900 ${
+                isRefreshing 
+                  ? "animate-spin" 
+                  : "group-hover:rotate-180"
+              }`} />
+              {isRefreshing ? "Refreshing..." : "Refresh Data"}
             </button>
           </div>
 
@@ -539,40 +558,54 @@ const RateSection: React.FC = () => {
             </div>
           )}
 
-          {/* Footer */}
-          <div className="mt-20 bg-black/40 border border-[#FEFD0C] rounded-3xl p-8 md:p-12 text-center">
-            <div className="max-w-3xl mx-auto">
-              <div className="inline-block bg-black/40 text-[#FEFD0C] px-4 py-2 rounded-full text-sm mb-4 border border-[#FEFD0C]">
-                <Activity className="inline w-4 h-4 mr-2" />
-                Last Updated: {lastUpdated}
-              </div>
-              <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
-                Real-Time Bitcoin Exchange Data
-              </h3>
-              <p className="text-gray-300 leading-relaxed mb-6">
-                All rates are fetched live from CoinGecko API and updated every 30 seconds. 
-                Buy and sell rates include realistic market spreads for accurate trading insights.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center text-sm text-gray-400">
-                <div className="flex items-center">
-                  <Globe className="h-4 w-4 mr-2 text-[#FEFD0C]" />
-                  {data.length} Global Markets
-                </div>
-                <div className="flex items-center">
-                  <Zap className="h-4 w-4 mr-2 text-[#FEFD0C]" />
-                  Auto-refresh every 30s
-                </div>
-                <div className="flex items-center">
-                  <BarChart3 className="h-4 w-4 mr-2 text-[#FEFD0C]" />
-                  Live market spreads
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </>
-  );
-};
-
-export default RateSection;
+         {/* Footer with last updated info */}
+                   <div className="mt-12 text-center">
+                     <div className="inline-flex items-center gap-2 bg-gradient-to-r from-black/60 to-black/40 border border-[#FEFD0C]/30 rounded-full px-6 py-3 backdrop-blur-sm">
+                       <Clock className="h-4 w-4 text-[#FEFD0C]" />
+                       <span className="text-gray-300 text-sm">
+                         Last updated: {lastUpdated}
+                       </span>
+                       <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                     </div>
+                     <p className="text-gray-400 text-xs mt-4 max-w-2xl mx-auto">
+                       Exchange rates are updated every 30 seconds using real-time data from CoinGecko API. 
+                       Buy and sell rates include simulated market spreads for demonstration purposes.
+                     </p>
+                   </div>
+         
+                   {/* Security and reliability badges */}
+                   <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                     <div className="flex items-center justify-center gap-3 p-4 bg-gradient-to-r from-black/40 to-black/20 border border-[#FEFD0C]/20 rounded-xl backdrop-blur-sm">
+                       <Shield className="h-6 w-6 text-[#FEFD0C]" />
+                       <div>
+                         <p className="text-white font-semibold text-sm">Secure API</p>
+                         <p className="text-gray-400 text-xs">SSL Encrypted</p>
+                       </div>
+                     </div>
+                     <div className="flex items-center justify-center gap-3 p-4 bg-gradient-to-r from-black/40 to-black/20 border border-[#FEFD0C]/20 rounded-xl backdrop-blur-sm">
+                       <Cpu className="h-6 w-6 text-[#FEFD0C]" />
+                       <div>
+                         <p className="text-white font-semibold text-sm">Real-Time</p>
+                         <p className="text-gray-400 text-xs">30s Updates</p>
+                       </div>
+                     </div>
+                     <div className="flex items-center justify-center gap-3 p-4 bg-gradient-to-r from-black/40 to-black/20 border border-[#FEFD0C]/20 rounded-xl backdrop-blur-sm">
+                       <Activity className="h-6 w-6 text-[#FEFD0C]" />
+                       <div>
+                         <p className="text-white font-semibold text-sm">Live Data</p>
+                         <p className="text-gray-400 text-xs">CoinGecko API</p>
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+         
+                 {/* Floating elements for visual appeal */}
+                 <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-r from-[#FEFD0C]/10 to-yellow-400/10 rounded-full blur-xl animate-pulse"></div>
+                 <div className="absolute bottom-20 right-10 w-24 h-24 bg-gradient-to-r from-[#FEFD0C]/5 to-yellow-400/5 rounded-full blur-xl animate-pulse delay-1000"></div>
+                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-[#FEFD0C]/5 to-yellow-400/5 rounded-full blur-3xl animate-pulse delay-500 -z-10"></div>
+               </section>
+             </>
+           );
+         };
+         
+         export default RateSection;
