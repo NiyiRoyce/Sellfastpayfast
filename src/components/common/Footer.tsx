@@ -18,7 +18,7 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   const linkStyle =
-    "xl:text-[16px] text-[14px] font-inter text-white font-normal hover:text-[#FEFD0C] focus:text-[#FEFD0C] focus:outline-none transition-all duration-300 hover:scale-105";
+    "xl:text-[16px] text-[14px] font-inter text-white font-normal hover:text-[#FEFD0C] focus:text-[#FEFD0C] focus:outline-none transition-all duration-300 hover:scale-105 relative group";
 
   const socialLinks = [
     {
@@ -67,15 +67,15 @@ const Footer = () => {
           {/* Trust Metrics Section */}
           <div className="w-full mb-16">
             <div className="text-center mb-12">
-              <div className="inline-block bg-black/40 text-[#FEFD0C] font-medium px-4 py-2 rounded-full text-sm mb-4 border border-[#FEFD0C]/20 backdrop-blur-sm">
+              <div className="inline-block bg-black/40 text-[#FEFD0C] font-medium px-4 py-2 rounded-full text-sm mb-4 border border-[#FEFD0C]/20 backdrop-blur-sm hover:bg-[#FEFD0C]/10 hover:scale-105 transition-all duration-300 cursor-default">
                 <MdSecurity className="inline mr-2" />
                 Trusted Platform
               </div>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white leading-tight mb-4">
                 Join the Future of 
-                <span className="text-[#FEFD0C] block mt-2">Crypto Trading</span>
+                <span className="text-[#FEFD0C] block mt-2 hover:text-[#FEFD0C]/90 transition-colors duration-300">Crypto Trading</span>
               </h2>
-              <div className="w-20 h-1 bg-[#FEFD0C] rounded-full mx-auto shadow-lg shadow-[#FEFD0C]/20 mb-8"></div>
+              <div className="w-20 h-1 bg-[#FEFD0C] rounded-full mx-auto shadow-lg shadow-[#FEFD0C]/20 mb-8 hover:w-24 hover:shadow-[#FEFD0C]/40 transition-all duration-500"></div>
             </div>
             
             {/* Trust Metrics Grid */}
@@ -83,9 +83,9 @@ const Footer = () => {
               {trustMetrics.map((metric, index) => {
                 const Icon = metric.icon;
                 return (
-                  <div key={index} className="bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-6 hover:border-[#FEFD0C]/30 transition-all duration-500 group hover:scale-105 hover:shadow-lg hover:shadow-[#FEFD0C]/10">
+                  <div key={index} className="bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-6 hover:border-[#FEFD0C]/30 transition-all duration-500 group hover:scale-105 hover:shadow-lg hover:shadow-[#FEFD0C]/10 cursor-default hover:bg-black/60 hover:backdrop-blur-lg">
                     <div className="flex flex-col items-center text-center">
-                      <Icon className="text-[#FEFD0C] text-2xl mb-3 group-hover:scale-110 transition-transform duration-300" />
+                      <Icon className="text-[#FEFD0C] text-2xl mb-3 group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(254,253,12,0.5)] transition-all duration-300" />
                       <p className="text-2xl font-bold text-white group-hover:text-[#FEFD0C] transition-colors duration-300">{metric.value}</p>
                       <p className="text-sm text-white/70 group-hover:text-white transition-colors duration-300">{metric.label}</p>
                     </div>
@@ -99,11 +99,11 @@ const Footer = () => {
             {/* Left Column */}
             <div className="xl:w-[35%] w-full">
               <Link to="/" aria-label="SellFastPayFast Home" className="inline-block group">
-                <div className="bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-6 hover:border-[#FEFD0C]/30 transition-all duration-500 hover:scale-105 hover:shadow-lg hover:shadow-[#FEFD0C]/10">
+                <div className="bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-6 hover:border-[#FEFD0C]/30 transition-all duration-500 hover:scale-105 hover:shadow-lg hover:shadow-[#FEFD0C]/10 hover:bg-black/60 hover:backdrop-blur-lg">
                   <img
                     src={logo}
                     alt="SellFastPayFast Logo"
-                    className="h-[60px] w-[200px] object-contain group-hover:scale-105 transition-transform duration-300"
+                    className="h-[60px] w-[200px] object-contain group-hover:scale-105 group-hover:drop-shadow-[0_0_15px_rgba(254,253,12,0.3)] transition-all duration-300"
                     loading="lazy"
                     width="200"
                     height="60"
@@ -111,60 +111,60 @@ const Footer = () => {
                 </div>
               </Link>
               
-              <div className="mt-8 bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-6 hover:border-[#FEFD0C]/30 transition-all duration-500">
-                <p className="font-normal xl:text-[18px] tracking-wide text-[14px] leading-[30px] text-[#FEFD0C] font-inter mb-6">
+              <div className="mt-8 bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-6 hover:border-[#FEFD0C]/30 transition-all duration-500 hover:bg-black/60 hover:backdrop-blur-lg hover:shadow-lg hover:shadow-[#FEFD0C]/5 cursor-default">
+                <p className="font-normal xl:text-[18px] tracking-wide text-[14px] leading-[30px] text-[#FEFD0C] font-inter mb-6 hover:text-[#FEFD0C]/90 transition-colors duration-300">
                   The most trustworthy cryptocurrency exchange platform available.
                   Where you can have quick access to your money whenever you desire.
                 </p>
                 
-                <div className="inline-block bg-black/40 text-[#FEFD0C] font-medium px-3 py-1 rounded-full text-xs mb-4 border border-[#FEFD0C]/20">
+                <div className="inline-block bg-black/40 text-[#FEFD0C] font-medium px-3 py-1 rounded-full text-xs mb-4 border border-[#FEFD0C]/20 hover:bg-[#FEFD0C]/10 hover:scale-105 transition-all duration-300 cursor-default">
                   Verified & Secure
                 </div>
               </div>
 
               {/* Contact Information */}
-              <div className="mt-6 bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-6 hover:border-[#FEFD0C]/30 transition-all duration-500">
-                <h3 className="text-[#FEFD0C] font-semibold text-lg mb-4 flex items-center">
-                  <RiCustomerService2Line className="mr-2" />
+              <div className="mt-6 bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-6 hover:border-[#FEFD0C]/30 transition-all duration-500 hover:bg-black/60 hover:backdrop-blur-lg hover:shadow-lg hover:shadow-[#FEFD0C]/5">
+                <h3 className="text-[#FEFD0C] font-semibold text-lg mb-4 flex items-center hover:text-[#FEFD0C]/90 transition-colors duration-300">
+                  <RiCustomerService2Line className="mr-2 hover:scale-110 transition-transform duration-300" />
                   Contact Us
                 </h3>
                 <address className="not-italic text-white font-inter text-[14px] xl:text-[16px] space-y-4">
-                  <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-black/40 transition-colors duration-300 group">
-                    <div className="w-10 h-10 bg-black/40 rounded-lg flex items-center justify-center group-hover:bg-[#FEFD0C]/20 transition-colors duration-300">
-                      <FiPhoneCall className="text-[#FEFD0C] text-lg" aria-hidden="true" />
+                  <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-black/60 transition-all duration-300 group hover:scale-[1.02] hover:shadow-md hover:shadow-[#FEFD0C]/10">
+                    <div className="w-10 h-10 bg-black/40 rounded-lg flex items-center justify-center group-hover:bg-[#FEFD0C]/20 transition-all duration-300 group-hover:scale-110">
+                      <FiPhoneCall className="text-[#FEFD0C] text-lg group-hover:drop-shadow-[0_0_8px_rgba(254,253,12,0.5)] transition-all duration-300" aria-hidden="true" />
                     </div>
                     <a
                       href="tel:+447510755472"
-                      className={linkStyle}
-                      aria-label="Call us at +447510755472"
+                      className={`${linkStyle} after:content-[''] after:absolute after:w-0 after:h-0.5 after:bg-[#FEFD0C] after:left-0 after:bottom-0 after:transition-all after:duration-300 hover:after:w-full`}
+                      aria-label="Call us at +447721863850"
                     >
-                      +447510755472
+                      +447721863850
                     </a>
                   </div>
-                  <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-black/40 transition-colors duration-300 group">
-                    <div className="w-10 h-10 bg-black/40 rounded-lg flex items-center justify-center group-hover:bg-[#FEFD0C]/20 transition-colors duration-300">
-                      <MdOutlineAlternateEmail className="text-[#FEFD0C] text-lg" aria-hidden="true" />
+                  <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-black/60 transition-all duration-300 group hover:scale-[1.02] hover:shadow-md hover:shadow-[#FEFD0C]/10">
+                    <div className="w-10 h-10 bg-black/40 rounded-lg flex items-center justify-center group-hover:bg-[#FEFD0C]/20 transition-all duration-300 group-hover:scale-110">
+                      <MdOutlineAlternateEmail className="text-[#FEFD0C] text-lg group-hover:drop-shadow-[0_0_8px_rgba(254,253,12,0.5)] transition-all duration-300" aria-hidden="true" />
                     </div>
                     <a
                       href="mailto:tradewithbnaira01@gmail.com"
-                      className={linkStyle}
+                      className={`${linkStyle} after:content-[''] after:absolute after:w-0 after:h-0.5 after:bg-[#FEFD0C] after:left-0 after:bottom-0 after:transition-all after:duration-300 hover:after:w-full`}
                       aria-label="Email us"
                     >
                       tradewithbnaira01@gmail.com
                     </a>
                   </div>
-                  <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-black/40 transition-colors duration-300 group">
-                    <div className="w-10 h-10 bg-black/40 rounded-lg flex items-center justify-center group-hover:bg-[#FEFD0C]/20 transition-colors duration-300">
-                      <HiOutlineLocationMarker className="text-[#FEFD0C] text-lg" aria-hidden="true" />
+                  <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-black/60 transition-all duration-300 group hover:scale-[1.02] hover:shadow-md hover:shadow-[#FEFD0C]/10 cursor-default">
+                    <div className="w-10 h-10 bg-black/40 rounded-lg flex items-center justify-center group-hover:bg-[#FEFD0C]/20 transition-all duration-300 group-hover:scale-110">
+                      <HiOutlineLocationMarker className="text-[#FEFD0C] text-lg group-hover:drop-shadow-[0_0_8px_rgba(254,253,12,0.5)] transition-all duration-300" aria-hidden="true" />
                     </div>
-                    <span className={linkStyle}>London, United Kingdom</span>
+                    <span className="xl:text-[16px] text-[14px] font-inter text-white font-normal group-hover:text-[#FEFD0C] transition-colors duration-300">London, United Kingdom</span>
                   </div>
                 </address>
               </div>
 
               {/* Social Media Links */}
-              <div className="mt-6 bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-6 hover:border-[#FEFD0C]/30 transition-all duration-500">
-                <h3 className="text-[#FEFD0C] font-semibold text-lg mb-4">Connect With Us</h3>
+              <div className="mt-6 bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-6 hover:border-[#FEFD0C]/30 transition-all duration-500 hover:bg-black/60 hover:backdrop-blur-lg hover:shadow-lg hover:shadow-[#FEFD0C]/5">
+                <h3 className="text-[#FEFD0C] font-semibold text-lg mb-4 hover:text-[#FEFD0C]/90 transition-colors duration-300">Connect With Us</h3>
                 <div className="flex flex-wrap gap-3">
                   {socialLinks.map((social, index) => {
                     const Icon = social.icon;
@@ -174,11 +174,11 @@ const Footer = () => {
                         href={social.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 bg-black/40 hover:bg-[#FEFD0C]/20 border border-[#FEFD0C]/20 hover:border-[#FEFD0C]/40 rounded-lg px-3 py-2 transition-all duration-300 group hover:scale-105"
+                        className="flex items-center gap-2 bg-black/40 hover:bg-[#FEFD0C]/20 border border-[#FEFD0C]/20 hover:border-[#FEFD0C]/40 rounded-lg px-3 py-2 transition-all duration-300 group hover:scale-105 hover:shadow-lg hover:shadow-[#FEFD0C]/20 hover:backdrop-blur-md"
                         aria-label={`Follow us on ${social.label}`}
                       >
-                        <Icon className="text-[#FEFD0C] text-lg group-hover:scale-110 transition-transform duration-300" />
-                        <span className="text-xs text-[#FEFD0C] font-medium">{social.handle}</span>
+                        <Icon className="text-[#FEFD0C] text-lg group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(254,253,12,0.5)] transition-all duration-300" />
+                        <span className="text-xs text-[#FEFD0C] font-medium group-hover:text-[#FEFD0C]/90 transition-colors duration-300">{social.handle}</span>
                       </a>
                     );
                   })}
@@ -190,13 +190,13 @@ const Footer = () => {
             <div className="xl:w-[65%] w-full xl:grid xl:grid-cols-2 flex flex-col gap-8 z-10">
               {/* QR Code Section */}
               <div className="w-full">
-                <div className="bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-8 hover:border-[#FEFD0C]/30 transition-all duration-500 hover:scale-105 hover:shadow-lg hover:shadow-[#FEFD0C]/10 text-center">
-                  <div className="inline-block bg-black/40 text-[#FEFD0C] font-medium px-4 py-2 rounded-full text-sm mb-6 border border-[#FEFD0C]/20">
+                <div className="bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-8 hover:border-[#FEFD0C]/30 transition-all duration-500 hover:scale-105 hover:shadow-lg hover:shadow-[#FEFD0C]/10 text-center hover:bg-black/60 hover:backdrop-blur-lg cursor-default">
+                  <div className="inline-block bg-black/40 text-[#FEFD0C] font-medium px-4 py-2 rounded-full text-sm mb-6 border border-[#FEFD0C]/20 hover:bg-[#FEFD0C]/10 hover:scale-105 transition-all duration-300">
                     Quick Access
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-4">
                     Scan & 
-                    <span className="text-[#FEFD0C] block">Get Started</span>
+                    <span className="text-[#FEFD0C] block hover:text-[#FEFD0C]/90 transition-colors duration-300">Get Started</span>
                   </h3>
                   <div className="hidden xl:block">
                     <Suspense fallback={
@@ -204,27 +204,27 @@ const Footer = () => {
                         <div className="text-[#FEFD0C]">Loading QR Code...</div>
                       </div>
                     }>
-                      <div className="bg-black/40 backdrop-blur-sm rounded-lg p-4 inline-block">
+                      <div className="bg-black/40 backdrop-blur-sm rounded-lg p-4 inline-block hover:bg-black/60 hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-[#FEFD0C]/10">
                         <Qrcode variant="secondary" aria-label="Scan QR code to download our app" />
                       </div>
                     </Suspense>
                   </div>
-                  <p className="text-white/70 text-sm mt-4">Instant access to trading</p>
+                  <p className="text-white/70 text-sm mt-4 hover:text-white transition-colors duration-300">Instant access to trading</p>
                 </div>
               </div>
 
-              {/* App Download Section - */}
+              {/* App Download Section */}
               <div className="w-full">
-                <div className="bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-8 hover:border-[#FEFD0C]/30 transition-all duration-500 hover:scale-105">
+                <div className="bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-8 hover:border-[#FEFD0C]/30 transition-all duration-500 hover:scale-105 hover:bg-black/60 hover:backdrop-blur-lg hover:shadow-lg hover:shadow-[#FEFD0C]/5">
                   <div className="text-center mb-6">
-                    <div className="inline-block bg-black/40 text-[#FEFD0C] font-medium px-4 py-2 rounded-full text-sm mb-4 border border-[#FEFD0C]/20">
+                    <div className="inline-block bg-black/40 text-[#FEFD0C] font-medium px-4 py-2 rounded-full text-sm mb-4 border border-[#FEFD0C]/20 hover:bg-[#FEFD0C]/10 hover:scale-105 transition-all duration-300 cursor-default">
                       Mobile Apps
                     </div>
                     <h3 className="text-2xl font-bold text-white mb-2">
                       Download Our 
-                      <span className="text-[#FEFD0C] block">Trading App</span>
+                      <span className="text-[#FEFD0C] block hover:text-[#FEFD0C]/90 transition-colors duration-300">Trading App</span>
                     </h3>
-                    <p className="text-white/70 text-sm">Trade crypto on the go</p>
+                    <p className="text-white/70 text-sm hover:text-white transition-colors duration-300">Trade crypto on the go</p>
                   </div>
                   
                   <div className="flex flex-col items-center gap-4">
@@ -234,7 +234,7 @@ const Footer = () => {
                         <div className="bg-black/40 rounded-lg p-4 animate-pulse">Loading App Buttons...</div>
                       </div>
                     }>
-                      <div className="transform hover:scale-105 transition-transform duration-300 w-full">
+                      <div className="transform hover:scale-110 transition-all duration-300 w-full hover:shadow-lg hover:shadow-[#FEFD0C]/10">
                         <AppButton
                           icon={FaGooglePlay}
                           label="Get it on"
@@ -243,7 +243,7 @@ const Footer = () => {
                           aria-label="Download our app on Google Play"
                         />
                       </div>
-                      <div className="transform hover:scale-105 transition-transform duration-300 w-full">
+                      <div className="transform hover:scale-110 transition-all duration-300 w-full hover:shadow-lg hover:shadow-[#FEFD0C]/10">
                         <AppButton
                           icon={FaApple}
                           label="Download on the"
@@ -256,7 +256,7 @@ const Footer = () => {
                   </div>
                   
                   <div className="mt-6 pt-4 border-t border-[#FEFD0C]/10 text-center">
-                    <div className="flex items-center justify-center gap-2 text-xs text-white/70">
+                    <div className="flex items-center justify-center gap-2 text-xs text-white/70 hover:text-white transition-colors duration-300">
                       <div className="w-2 h-2 bg-[#FEFD0C] rounded-full animate-pulse"></div>
                       Available on both platforms
                     </div>
@@ -264,23 +264,16 @@ const Footer = () => {
                 </div>
               </div>
             </div>
-
-            {/* Background Decoration - Removed pulsing animations */}
-            <div className="absolute right-[-100px] top-[100px] xl:block hidden opacity-20">
-              <div className="relative">
-                <div className="w-[400px] h-[600px] bg-[#FEFD0C] rounded-full blur-3xl"></div>
-              </div>
-            </div>
           </div>
 
           {/* Copyright Section */}
           <div className="flex items-center xl:mt-[80px] mt-[60px] w-full">
-            <div className="w-full bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-6 hover:border-[#FEFD0C]/30 transition-all duration-500">
+            <div className="w-full bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-6 hover:border-[#FEFD0C]/30 transition-all duration-500 hover:bg-black/60 hover:backdrop-blur-lg hover:shadow-lg hover:shadow-[#FEFD0C]/5 cursor-default">
               <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                <h3 className="xl:text-base text-[14px] text-white opacity-70 font-inter">
+                <h3 className="xl:text-base text-[14px] text-white opacity-70 font-inter hover:opacity-90 transition-opacity duration-300">
                   © {currentYear} Sellfastpayfast. All rights reserved.
                 </h3>
-                <div className="flex items-center gap-4 text-sm text-white/70">
+                <div className="flex items-center gap-4 text-sm text-white/70 hover:text-white/90 transition-colors duration-300">
                   <span className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-[#FEFD0C] rounded-full animate-pulse"></div>
                     Secure & Trusted
@@ -293,7 +286,7 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* WhatsApp Floating Button - Updated with green gradient background */}
+        {/* WhatsApp Floating Button - Enhanced with better hover effects */}
         <a
           href="https://wa.link/vprjk4"
           className="fixed bottom-6 right-6 z-50 group"
@@ -302,12 +295,12 @@ const Footer = () => {
           aria-label="Chat with us on WhatsApp"
         >
           <div className="relative">
-            <div className="absolute inset-0 bg-green-500 rounded-full blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-300 animate-pulse"></div>
-            <div className="relative bg-gradient-to-br from-green-500 to-green-600 p-4 rounded-full hover:from-green-400 hover:to-green-500 transition-all duration-300 transform group-hover:scale-110 shadow-2xl border-2 border-green-400/30">
-              <FaWhatsapp className="text-[28px] text-white" aria-hidden="true" />
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-ping"></div>
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
-                <div className="w-2 h-2 bg-white rounded-full"></div>
+            <div className="absolute inset-0 bg-green-500 rounded-full blur-xl opacity-50 group-hover:opacity-100 group-hover:blur-2xl transition-all duration-500 animate-pulse group-hover:scale-125"></div>
+            <div className="relative bg-gradient-to-br from-green-500 to-green-600 p-4 rounded-full hover:from-green-400 hover:to-green-500 transition-all duration-300 transform group-hover:scale-125 shadow-2xl border-2 border-green-400/30 group-hover:border-green-300/50 group-hover:shadow-green-500/30 group-hover:shadow-2xl">
+              <FaWhatsapp className="text-[28px] text-white group-hover:scale-110 transition-transform duration-300 group-hover:drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]" aria-hidden="true" />
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-ping group-hover:bg-red-400"></div>
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center group-hover:bg-red-400 group-hover:scale-110 transition-all duration-300">
+                <div className="w-2 h-2 bg-white rounded-full group-hover:animate-pulse"></div>
               </div>
             </div>
           </div>

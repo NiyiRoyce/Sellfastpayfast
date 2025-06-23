@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { MdStar, MdVerified, MdTrendingUp, MdPeople, MdThumbUp, MdShield } from "react-icons/md";
+import { Star, CheckCircle, TrendingUp, Users, ThumbsUp, Shield, Quote, Lock, MapPin } from "lucide-react";
 
 interface ReviewProps {
   review?: any;
@@ -7,57 +7,58 @@ interface ReviewProps {
 
 const Review = () => {
   const [hoveredReview, setHoveredReview] = useState<number | null>(null);
+  const [hoveredMetric, setHoveredMetric] = useState<number | null>(null);
 
   const reviews = [
     {
       id: 1,
       name: "Agofure Michael",
-      title:
-        "Sellfastpayfast is just the best!! Quick response and good rate! He's honest and he's one person you can trust 100 ! Trade your bitcoin now with sellfastpayfast.",
+      title: "Sellfastpayfast is just the best!! Quick response and good rate! He's honest and he's one person you can trust 100% ! Trade your bitcoin now with sellfastpayfast.",
       rating: 5,
       verified: true,
       tradingVolume: "₦2.5M+",
-      timeframe: "6 months"
+      timeframe: "6 months",
+      location: "Lagos, Nigeria"
     },
     {
       id: 2,
       name: "Ayibaby",
-      title:
-        "Reliable, responsible, trustworthy & swift platform. I'm glad it's been working as expected, great platform, well done to the team.",
+      title: "Reliable, responsible, trustworthy & swift platform. I'm glad it's been working as expected, great platform, well done to the team.",
       rating: 5,
       verified: true,
       tradingVolume: "₦1.8M+",
-      timeframe: "4 months"
+      timeframe: "4 months",
+      location: "Abuja, Nigeria"
     },
     {
       id: 3,
       name: "Monalisa Sibanda",
-      title:
-        "Sellfastpayfast is just the best!! Service is excellent. And best platform to use Quick response and good rate! One of the best, reliable honest person I have met 100 ! Trade your bitcoin now with sellfastpayfast. Life changing platform",
+      title: "Sellfastpayfast is just the best!! Service is excellent. And best platform to use Quick response and good rate! One of the best, reliable honest person I have met 100% ! Trade your bitcoin now with sellfastpayfast. Life changing platform",
       rating: 5,
       verified: true,
       tradingVolume: "₦3.2M+",
-      timeframe: "8 months"
+      timeframe: "8 months",
+      location: "Port Harcourt, Nigeria"
     },
     {
       id: 4,
       name: "Kesten Bliss",
-      title:
-        "I like this app.. so fast and reliable. It's also worth trusting it because it's easy and secure. I'm so glad I came thru this app. Please you guys should keep this standard. Thanks Trustpilot.",
+      title: "I like this app.. so fast and reliable. It's also worth trusting it because it's easy and secure. I'm so glad I came thru this app. Please you guys should keep this standard. Thanks Trustpilot.",
       rating: 5,
       verified: true,
       tradingVolume: "₦950K+",
-      timeframe: "3 months"
+      timeframe: "3 months",
+      location: "Kano, Nigeria"
     },
     {
       id: 5,
       name: "Oladunjoye Emmanuel",
-      title:
-        "It has been great since trading BTC with the best platform (Sellfastpayfast). The unique benefits are Fast trade, secured platforms, good rates and being available everytime. I rate you more than 5stars",
+      title: "It has been great since trading BTC with the best platform (Sellfastpayfast). The unique benefits are Fast trade, secured platforms, good rates and being available everytime. I rate you more than 5stars",
       rating: 5,
       verified: true,
       tradingVolume: "₦4.1M+",
-      timeframe: "1 year"
+      timeframe: "1 year",
+      location: "Ibadan, Nigeria"
     },
   ];
 
@@ -67,74 +68,121 @@ const Review = () => {
 
     return (
       <div 
-        className="relative bg-black/70 backdrop-blur-xl border border-[#FEFD0C]/10 rounded-3xl p-8 shadow-2xl shadow-black/50 hover:shadow-[#FEFD0C]/10 hover:border-[#FEFD0C]/30 transition-all duration-500 group hover:scale-105 overflow-hidden"
+        className="group relative h-full transform transition-all duration-500 ease-out hover:-translate-y-1"
         onMouseEnter={() => setHoveredReview(review?.id)}
         onMouseLeave={() => setHoveredReview(null)}
       >
-        {/* Animated Background Glow */}
-        <div className={`absolute inset-0 bg-gradient-to-br from-[#FEFD0C]/8 via-transparent to-[#FEFD0C]/3 rounded-3xl transition-opacity duration-500 ${isHovered ? 'opacity-100' : 'opacity-0'}`}></div>
-        
-        <div className="relative z-10">
-          {/* Rating Stars - Moved to Top */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
-                <MdStar 
-                  key={i} 
-                  className={`text-xl ${i < (review?.rating || 5) ? 'text-[#FEFD0C] drop-shadow-lg' : 'text-gray-600'} transition-all duration-300 group-hover:scale-110`} 
-                  style={{ filter: 'drop-shadow(0 0 8px rgba(254, 253, 12, 0.3))' }}
-                />
-              ))}
-            </div>
-            {review?.verified && (
-              <div className="flex items-center gap-2 bg-[#FEFD0C]/10 border border-[#FEFD0C]/20 px-3 py-1 rounded-full backdrop-blur-sm">
-                <MdShield className="text-[#FEFD0C] text-sm" />
-                <span className="text-xs text-[#FEFD0C] font-medium">Verified</span>
+        <div className={`relative bg-black/40 backdrop-blur-md border rounded-2xl p-6 h-full transition-all duration-500 ease-out ${
+          isHovered 
+            ? 'border-[#FEFD0C]/30 shadow-2xl shadow-[#FEFD0C]/10 bg-black/60 backdrop-blur-lg' 
+            : 'border-[#FEFD0C]/10 shadow-xl shadow-black/20'
+        }`}>
+          
+          {/* Quote decoration */}
+          <div className={`absolute top-4 right-4 transition-all duration-500 ease-out ${
+            isHovered ? 'opacity-20 scale-105' : 'opacity-10'
+          }`}>
+            <Quote className="text-[#FEFD0C] w-6 h-6" />
+          </div>
+          
+          <div className="flex flex-col h-full space-y-4">
+            
+            {/* Header: Rating and Verification */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star 
+                    key={i} 
+                    className={`w-4 h-4 transition-all duration-300 ease-out ${
+                      i < (review?.rating || 5) 
+                        ? 'text-[#FEFD0C] fill-[#FEFD0C]' 
+                        : 'text-gray-600 fill-gray-600'
+                    } ${isHovered ? 'scale-105' : ''}`}
+                  />
+                ))}
               </div>
-            )}
-          </div>
-
-          {/* Review Content */}
-          <div className="mb-8">
-            <p className="text-gray-200 leading-relaxed group-hover:text-white transition-colors duration-300 text-base font-light italic">
-              "{review?.title}"
-            </p>
-          </div>
-
-          {/* User Info Section - Redesigned */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-[#FEFD0C] to-yellow-300 flex items-center justify-center text-black font-bold text-2xl shadow-xl shadow-[#FEFD0C]/20 group-hover:scale-110 transition-transform duration-300 border-2 border-[#FEFD0C]/30">
-                  {firstLetter}
+              {review?.verified && (
+                <div className={`flex items-center gap-2 bg-black/40 text-[#FEFD0C] px-2.5 py-1 rounded-full text-xs font-semibold border transition-all duration-400 ease-out ${
+                  isHovered 
+                    ? 'border-[#FEFD0C]/40 bg-[#FEFD0C]/10 scale-102' 
+                    : 'border-[#FEFD0C]/20'
+                }`}>
+                  <CheckCircle className="w-3 h-3" />
+                  Verified
                 </div>
-                {review?.verified && (
-                  <div className="absolute -bottom-2 -right-2 bg-[#FEFD0C] rounded-full p-1.5 border-2 border-black shadow-lg">
-                    <MdVerified className="text-black text-sm" />
+              )}
+            </div>
+
+            {/* Review Content */}
+            <div className="flex-1">
+              <p className={`leading-relaxed transition-colors duration-400 ease-out font-medium text-sm ${
+                isHovered ? 'text-white' : 'text-white/90'
+              }`}>
+                "{review?.title}"
+              </p>
+            </div>
+
+            {/* User Info Section */}
+            <div className="pt-3 border-t border-[#FEFD0C]/10">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="relative flex-shrink-0">
+                  <div className={`h-10 w-10 rounded-full bg-gradient-to-br from-[#FEFD0C] to-yellow-500 flex items-center justify-center text-black font-bold text-sm transition-all duration-400 ease-out ${
+                    isHovered ? 'scale-105 shadow-lg shadow-[#FEFD0C]/20' : ''
+                  }`}>
+                    {firstLetter}
                   </div>
-                )}
+                  {review?.verified && (
+                    <div className="absolute -bottom-0.5 -right-0.5 bg-[#FEFD0C] rounded-full p-0.5">
+                      <CheckCircle className="text-black w-2.5 h-2.5" />
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex-1">
+                  <h3 className={`font-semibold text-base mb-0.5 transition-colors duration-400 ease-out ${
+                    isHovered ? 'text-[#FEFD0C]' : 'text-white'
+                  }`}>
+                    {review?.name}
+                  </h3>
+                  <div className="flex items-center gap-1 text-xs text-white/60">
+                    <MapPin className="w-3 h-3" />
+                    <span>{review?.location}</span>
+                  </div>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-xl text-white group-hover:text-[#FEFD0C] transition-colors duration-300 mb-1">
-                  {review?.name}
-                </h3>
-                <p className="text-sm text-gray-400 mb-2">Verified Customer</p>
-                <div className="flex items-center gap-4 text-xs text-gray-500">
-                  <div className="flex items-center gap-1">
-                    <MdTrendingUp className="text-[#FEFD0C]" />
-                    <span>{review?.tradingVolume}</span>
+              
+              {/* Trading Stats */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className={`bg-black/30 rounded-lg p-2.5 transition-all duration-400 ease-out ${
+                  isHovered ? 'bg-black/50 border border-[#FEFD0C]/20' : ''
+                }`}>
+                  <div className="flex items-center gap-1.5 text-[#FEFD0C] text-xs font-medium mb-0.5">
+                    <TrendingUp className="w-3 h-3" />
+                    Volume
                   </div>
-                  <div className="flex items-center gap-1">
-                    <MdPeople className="text-[#FEFD0C]" />
-                    <span>{review?.timeframe}</span>
+                  <p className="text-white font-semibold text-sm">{review?.tradingVolume}</p>
+                </div>
+                
+                <div className={`bg-black/30 rounded-lg p-2.5 transition-all duration-300 ${
+                  isHovered ? 'bg-black/50 border border-[#FEFD0C]/20' : ''
+                }`}>
+                  <div className="flex items-center gap-1.5 text-[#FEFD0C] text-xs font-medium mb-0.5">
+                    <Users className="w-3 h-3" />
+                    Trading
                   </div>
+                  <p className="text-white font-semibold text-sm">{review?.timeframe}</p>
                 </div>
               </div>
             </div>
             
-            <div className="flex items-center gap-2 text-gray-500 hover:text-[#FEFD0C] transition-colors duration-300 cursor-pointer opacity-60 hover:opacity-100">
-              <MdThumbUp className="text-lg" />
-              <span className="text-sm font-medium">Helpful</span>
+            {/* Helpful Button */}
+            <div className={`transition-all duration-500 ease-out ${
+              isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'
+            }`}>
+              <button className="flex items-center gap-2 text-white/60 hover:text-[#FEFD0C] transition-colors duration-300 ease-out text-xs font-medium group">
+                <ThumbsUp className="w-3 h-3 group-hover:scale-105 transition-transform duration-300 ease-out" />
+                <span>Was this helpful?</span>
+              </button>
             </div>
           </div>
         </div>
@@ -142,98 +190,94 @@ const Review = () => {
     );
   };
 
+  const trustMetrics = [
+    { icon: Star, value: "4.9/5", label: "Average Rating", description: "From 10,000+ reviews" },
+    { icon: CheckCircle, value: "10K+", label: "Verified Reviews", description: "Real customer feedback" },
+    { icon: Users, value: "50K+", label: "Happy Customers", description: "Across Nigeria" },
+    { icon: ThumbsUp, value: "99%", label: "Recommend Us", description: "Would trade again" }
+  ];
+
   return (
-    <>
-      <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet"
-      />
-      
-      <section 
-        className="w-full py-16 md:py-24 lg:py-32 bg-gradient-to-b from-black via-gray-900 to-black relative overflow-hidden"
-        style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif' }}
-      >
-        {/* Enhanced Background Pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#FEFD0C]/10 via-transparent to-[#FEFD0C]/10"></div>
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#FEFD0C]/5 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#FEFD0C]/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-          <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-[#FEFD0C]/3 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '4s' }}></div>
+    <section className="w-full py-20 bg-black relative overflow-hidden">
+      {/* Enhanced Background */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-black to-black"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#FEFD0C]/5 via-transparent to-transparent"></div>
+        <div 
+          className="absolute inset-0 opacity-5"
+          style={{
+            backgroundImage: `radial-gradient(circle at 2px 2px, rgba(254,253,12,0.1) 1px, transparent 0)`,
+            backgroundSize: '40px 40px'
+          }}
+        ></div>
+        <div className="absolute top-20 left-1/4 w-32 h-32 bg-[#FEFD0C]/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-1/4 w-40 h-40 bg-[#FEFD0C]/3 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#FEFD0C]/2 rounded-full blur-3xl"></div>
+      </div>
+
+      <div className="container mx-auto px-6 xl:px-24 relative z-10">
+        
+        {/* Header Section */}
+        <div className="text-center mb-20">
+          <div className="inline-flex items-center gap-2 bg-black/40 text-[#FEFD0C] font-semibold px-6 py-3 rounded-full text-sm mb-8 border border-[#FEFD0C]/20 backdrop-blur-sm hover:bg-[#FEFD0C]/10 hover:scale-105 transition-all duration-300">
+            <Shield className="w-4 h-4" />
+            Trusted by Thousands
+          </div>
+          
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+            What Our{' '}
+            <span className="text-[#FEFD0C] hover:text-[#FEFD0C]/90 transition-colors duration-300">
+              Customers
+            </span>
+            <br />Say About Us
+          </h2>
+          
+          <div className="w-20 h-1 bg-[#FEFD0C] rounded-full mx-auto shadow-lg shadow-[#FEFD0C]/20 mb-8 hover:w-24 hover:shadow-[#FEFD0C]/40 transition-all duration-500"></div>
+          
+          <p className="text-xl text-white/70 max-w-3xl mx-auto leading-relaxed hover:text-white/90 transition-colors duration-300">
+            Trusted by thousands of traders across Nigeria. See what our verified customers have to say about their trading experience.
+          </p>
         </div>
-        <div className="absolute inset-0 opacity-5">
-          <div 
-            className="w-full h-full"
-            style={{
-              backgroundImage: `radial-gradient(circle at 1px 1px, rgba(254,253,12,0.3) 1px, transparent 0)`,
-              backgroundSize: '40px 40px'
-            }}
-          ></div>
+        
+        {/* Trust Metrics */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto mb-20">
+          {trustMetrics.map((metric, index) => {
+            const Icon = metric.icon;
+            const isHovered = hoveredMetric === index;
+            return (
+              <div 
+                key={index} 
+                className="group cursor-default transform transition-all duration-400 ease-out hover:-translate-y-0.5"
+                onMouseEnter={() => setHoveredMetric(index)}
+                onMouseLeave={() => setHoveredMetric(null)}
+              >
+                <div className={`bg-black/40 backdrop-blur-md border rounded-2xl p-6 text-center transition-all duration-400 ease-out ${
+                  isHovered 
+                    ? 'border-[#FEFD0C]/30 shadow-2xl shadow-[#FEFD0C]/10 bg-black/60 backdrop-blur-lg' 
+                    : 'border-[#FEFD0C]/10 shadow-xl shadow-black/20'
+                }`}>
+                  <Icon className={`text-[#FEFD0C] w-8 h-8 mx-auto mb-4 transition-transform duration-400 ease-out ${
+                    isHovered ? 'scale-105' : ''
+                  }`} />
+                  <p className={`text-3xl font-bold mb-2 transition-colors duration-400 ease-out ${
+                    isHovered ? 'text-[#FEFD0C]' : 'text-white'
+                  }`}>{metric.value}</p>
+                  <p className="text-sm font-semibold text-white/70 mb-1">{metric.label}</p>
+                  <p className="text-xs text-white/60">{metric.description}</p>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
-        <div className="container mx-auto px-4 md:px-6 relative z-10">
-          {/* Enhanced Header */}
-          <div className="text-center mb-16">
-            <div className="inline-block bg-[#FEFD0C]/10 text-[#FEFD0C] font-medium px-6 py-3 rounded-full text-sm mb-6 border border-[#FEFD0C]/20 backdrop-blur-sm hover:bg-[#FEFD0C]/15 transition-all duration-300">
-              <MdStar className="inline mr-2" />
-              Trusted Reviews
-            </div>
-            <h2 
-              className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-white leading-[0.9] mb-6"
-              style={{ fontFamily: 'Space Grotesk, Inter, sans-serif' }}
-            >
-              What Our{' '}
-              <span className="text-[#FEFD0C] bg-gradient-to-r from-[#FEFD0C] to-yellow-300 bg-clip-text text-transparent drop-shadow-lg">
-                Customers
-              </span>
-              <span className="block mt-2">Say About Us</span>
-            </h2>
-            <div className="w-24 h-1.5 bg-gradient-to-r from-[#FEFD0C] to-[#FEFD0C]/50 rounded-full mx-auto shadow-xl shadow-[#FEFD0C]/30 mb-8"></div>
-            <p className="text-lg md:text-xl text-gray-300 leading-relaxed max-w-4xl mx-auto mb-16 font-light">
-              Trusted by thousands of traders across Nigeria. See what our verified customers have to say about their exceptional trading experience with us.
-            </p>
-            
-            {/* Enhanced Review Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto mb-16">
-              <div className="bg-black/60 backdrop-blur-xl border border-[#FEFD0C]/10 rounded-2xl p-6 hover:border-[#FEFD0C]/30 transition-all duration-500 group hover:scale-105 shadow-xl shadow-black/50">
-                <div className="w-12 h-12 bg-[#FEFD0C]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#FEFD0C]/20 transition-colors duration-300 mx-auto">
-                  <MdStar className="text-[#FEFD0C] text-2xl" />
-                </div>
-                <p className="text-3xl font-bold text-white group-hover:text-[#FEFD0C] transition-colors duration-300 mb-2">4.9/5</p>
-                <p className="text-sm text-gray-400 font-medium">Average Rating</p>
-              </div>
-              <div className="bg-black/60 backdrop-blur-xl border border-[#FEFD0C]/10 rounded-2xl p-6 hover:border-[#FEFD0C]/30 transition-all duration-500 group hover:scale-105 shadow-xl shadow-black/50">
-                <div className="w-12 h-12 bg-[#FEFD0C]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#FEFD0C]/20 transition-colors duration-300 mx-auto">
-                  <MdVerified className="text-[#FEFD0C] text-2xl" />
-                </div>
-                <p className="text-3xl font-bold text-white group-hover:text-[#FEFD0C] transition-colors duration-300 mb-2">10K+</p>
-                <p className="text-sm text-gray-400 font-medium">Reviews</p>
-              </div>
-              <div className="bg-black/60 backdrop-blur-xl border border-[#FEFD0C]/10 rounded-2xl p-6 hover:border-[#FEFD0C]/30 transition-all duration-500 group hover:scale-105 shadow-xl shadow-black/50">
-                <div className="w-12 h-12 bg-[#FEFD0C]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#FEFD0C]/20 transition-colors duration-300 mx-auto">
-                  <MdPeople className="text-[#FEFD0C] text-2xl" />
-                </div>
-                <p className="text-3xl font-bold text-white group-hover:text-[#FEFD0C] transition-colors duration-300 mb-2">50K+</p>
-                <p className="text-sm text-gray-400 font-medium">Happy Customers</p>
-              </div>
-              <div className="bg-black/60 backdrop-blur-xl border border-[#FEFD0C]/10 rounded-2xl p-6 hover:border-[#FEFD0C]/30 transition-all duration-500 group hover:scale-105 shadow-xl shadow-black/50">
-                <div className="w-12 h-12 bg-[#FEFD0C]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#FEFD0C]/20 transition-colors duration-300 mx-auto">
-                  <MdThumbUp className="text-[#FEFD0C] text-2xl" />
-                </div>
-                <p className="text-3xl font-bold text-white group-hover:text-[#FEFD0C] transition-colors duration-300 mb-2">99%</p>
-                <p className="text-sm text-gray-400 font-medium">Recommend Us</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Reviews Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
-            {reviews.map((review) => (
-              <Item key={review.id} review={review} />
-            ))}
-          </div>
+        {/* Reviews Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-20">
+          {reviews.map((review) => (
+            <Item key={review.id} review={review} />
+          ))}
         </div>
-      </section>
-    </>
+      </div>
+    </section>
   );
 };
 
