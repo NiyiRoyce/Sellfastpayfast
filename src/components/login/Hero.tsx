@@ -68,6 +68,13 @@ const Login = () => {
     }, 1500);
   };
 
+  // Simple navigation handler for demo purposes
+  const handleSignupClick = () => {
+    // In a real app with React Router, this would be: navigate('/signup')
+    console.log("Navigating to /signup");
+    alert("Would navigate to /signup in a real app with React Router");
+  };
+
   const passwordStrength = getPasswordStrength(password);
 
   return (
@@ -251,6 +258,7 @@ const Login = () => {
               Don't have an account?{" "}
               <button 
                 type="button"
+                onClick={handleSignupClick}
                 className="text-[#FEFD0C] hover:text-white font-medium transition-colors duration-200 hover:underline"
               >
                 Create Account

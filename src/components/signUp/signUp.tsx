@@ -130,6 +130,13 @@ const SignUp = () => {
     }, 2000);
   };
 
+  // Simple navigation handler for demo purposes
+  const handleLoginClick = () => {
+    // In a real app with React Router, this would be: navigate('/login')
+    console.log("Navigating to /login");
+    alert("Would navigate to /login in a real app with React Router");
+  };
+
   const passwordStrength = getPasswordStrength(formData.password);
 
   return (
@@ -437,11 +444,12 @@ const SignUp = () => {
               Already have an account?{" "}
               <button 
                 type="button"
+                onClick={handleLoginClick}
                 className="text-[#FEFD0C] hover:text-white font-medium transition-colors duration-200 hover:underline"
               >
                 Sign In
               </button>
-            </p>
+            </p> 
             
             {/* Security Features */}
             <div className="flex items-center justify-center space-x-4 mt-4 text-xs text-gray-500">
