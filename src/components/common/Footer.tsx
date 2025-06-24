@@ -288,7 +288,7 @@ const Footer = () => {
 
         {/* WhatsApp Floating Button - Enhanced with better hover effects */}
         <a
-          href="https://wa.link/vprjk4"
+          href="https://wa.me/+447721863850"
           className="fixed bottom-6 right-6 z-50 group"
           target="_blank"
           rel="noopener noreferrer"
