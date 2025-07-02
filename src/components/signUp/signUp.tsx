@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Lock, Mail, Shield, Clock, AlertCircle, CheckCircle, User, Phone } from "lucide-react";
 
 const SignUp = () => {
+  const navigate =useNavigate();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -50,85 +52,65 @@ const SignUp = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    setFormError("");
-    setSuccessMessage("");
-    setIsLoading(true);
+const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  e.preventDefault();
+  setFormError("");
+  setSuccessMessage("");
+  setIsLoading(true);
 
-    // Enhanced validation
-    if (!formData.firstName.trim()) {
-      setFormError("First name is required");
-      setIsLoading(false);
-      return;
+  const requiredFields: (keyof typeof formData)[] = [
+    "firstName",
+    "lastName",
+    "email",
+    "phone",
+    "password",
+  ];
+
+  const isEmpty = requiredFields.some(
+    (field) => !formData[field] || formData[field].trim() === ""
+  );
+
+  if (isEmpty) {
+    setFormError("Please fill in all required fields");
+    setIsLoading(false);
+    return;
+  }
+
+  try {
+    const res = await fetch("https://www.sellfastpayfast.com/api/auth/sign-up-one", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message || "Registration failed");
     }
 
-    if (!formData.lastName.trim()) {
-      setFormError("Last name is required");
-      setIsLoading(false);
-      return;
-    }
+    setSuccessMessage("Account created successfully. Redirecting to login...");
 
-    if (!formData.email.trim()) {
-      setFormError("Email is required");
-      setIsLoading(false);
-      return;
-    }
-
-    if (!isValidEmail(formData.email)) {
-      setFormError("Please enter a valid email address");
-      setIsLoading(false);
-      return;
-    }
-
-    if (!formData.phone.trim()) {
-      setFormError("Phone number is required");
-      setIsLoading(false);
-      return;
-    }
-
-    if (!isValidPhone(formData.phone)) {
-      setFormError("Please enter a valid phone number");
-      setIsLoading(false);
-      return;
-    }
-
-    if (!formData.password.trim()) {
-      setFormError("Password is required");
-      setIsLoading(false);
-      return;
-    }
-
-    if (formData.password.length < 8) {
-      setFormError("Password must be at least 8 characters long");
-      setIsLoading(false);
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setFormError("Passwords do not match");
-      setIsLoading(false);
-      return;
-    }
-
-    if (!acceptTerms) {
-      setFormError("Please accept the terms and conditions");
-      setIsLoading(false);
-      return;
-    }
-
-    // Simulate API call
+    // Wait 2 seconds then redirect to login page
     setTimeout(() => {
-      console.log("Sign up data:", formData);
-      setSuccessMessage("Account created successfully! Welcome aboard!");
-      setIsLoading(false);
-      
-      // Simulate redirect after success
-      setTimeout(() => {
-        console.log("Redirecting to dashboard...");
-      }, 1500);
+      navigate ? navigate("/login") : (window.location.href = "/login");
     }, 2000);
-  };
+
+  } catch (error: any) {
+    setFormError(error.message || "An unknown error occurred");
+
+    // Optional: refresh page after showing error for 2 seconds
+    setTimeout(() => {
+      window.location.reload();
+    }, 2000);
+
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   // Simple navigation handler for demo purposes
   const handleLoginClick = () => {

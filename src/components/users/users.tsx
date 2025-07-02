@@ -11,17 +11,15 @@ import {
   BookOpen,
   MessageCircle,
   BarChart3,
-  Home,
+  Activity,
   ChevronDown,
   ArrowUpRight,
-  ArrowDownRight,
-  Activity,
   Globe,
   Zap,
   Star,
   Send,
   User,
-  HelpCircle
+ 
 } from 'lucide-react';
 
 // Import Poppins font

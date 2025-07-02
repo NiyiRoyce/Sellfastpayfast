@@ -1,7 +1,9 @@
 import React, { useState, FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Lock, Mail, Shield, Clock, AlertCircle, CheckCircle } from "lucide-react";
 
 const Login = () => {
+  const navigate = useNavigate(); 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -24,48 +26,68 @@ const Login = () => {
     return { strength: "Strong", color: "text-green-400" };
   };
 
-  const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
+  
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setFormError("");
     setSuccessMessage("");
     setIsLoading(true);
 
-    // Enhanced validation
+    // Validate email and password
     if (!email.trim()) {
       setFormError("Email is required");
       setIsLoading(false);
       return;
     }
-
     if (!isValidEmail(email)) {
       setFormError("Please enter a valid email address");
       setIsLoading(false);
       return;
     }
-
     if (!password.trim()) {
       setFormError("Password is required");
       setIsLoading(false);
       return;
     }
-
     if (password.length < 6) {
       setFormError("Password must be at least 6 characters long");
       setIsLoading(false);
       return;
     }
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log({ email, password, rememberMe });
+    try {
+      const res = await fetch("https://www.sellfastpayfast.com/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        // If backend sends message with error, display it
+        throw new Error(data.message || "Login failed");
+      }
+
       setSuccessMessage("Login successful! Redirecting...");
-      setIsLoading(false);
-      
-      // Simulate redirect after success
+
+      // Optionally save token if returned (example)
+      if (data.data?.token) {
+        localStorage.setItem("token", data.data.token);
+      }
+
+      // Redirect after a short delay
       setTimeout(() => {
-        console.log("Redirecting to dashboard...");
-      }, 1000);
-    }, 1500);
+        navigate("/users"); // or your desired route after login
+      }, 1500);
+
+    } catch (error: any) {
+      setFormError(error.message || "An unknown error occurred");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Simple navigation handler for demo purposes
