@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Add this import
 import { Eye, EyeOff, Lock, Mail, Shield, AlertCircle, CheckCircle } from "lucide-react";
 
 const Login = () => {
+  const navigate = useNavigate(); // Add this hook
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -66,10 +68,9 @@ const Login = () => {
 
       setSuccessMessage("Login successful! Redirecting...");
 
-      // Redirect after a short delay (in a real app, you'd use your router)
+      // Redirect after a short delay using router navigation
       setTimeout(() => {
-        console.log("Redirecting to dashboard...");
-        // navigate("/users");
+        navigate("/dashboard"); // or wherever you want to redirect after login
       }, 1500);
 
     } catch (error: unknown) {
@@ -80,13 +81,13 @@ const Login = () => {
     }
   };
 
-  // Handle navigation (in a real app, you'd use your router)
+  // Handle navigation using router
   const handleSignupClick = (): void => {
-    console.log("Navigate to signup page");
+    navigate("/signup"); // Navigate to signup page
   };
 
   const handleForgotPasswordClick = (): void => {
-    console.log("Navigate to forgot password page");
+    navigate("/forgot-password"); // Navigate to forgot password page
   };
 
   return (
