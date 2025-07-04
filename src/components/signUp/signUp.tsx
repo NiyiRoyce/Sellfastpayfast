@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Lock, Mail, Shield, Clock, AlertCircle, CheckCircle, User, Phone, X, Info } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { Eye, EyeOff, Lock, Mail, Shield, User, Phone, X, Info, CheckCircle, AlertCircle } from "lucide-react";
 
 interface FormData {
   firstName: string;
@@ -13,11 +12,6 @@ interface FormData {
 
 interface FormErrors {
   [key: string]: string;
-}
-
-interface ValidationResult {
-  isValid: boolean;
-  errors: FormErrors;
 }
 
 interface PasswordStrength {
@@ -34,8 +28,6 @@ interface PasswordStrength {
 }
 
 const SignUp = () => {
-  const navigate = useNavigate();
-  const formRef = useRef<HTMLFormElement>(null);
   const [formData, setFormData] = useState<FormData>({
     firstName: "",
     lastName: "",
@@ -53,37 +45,8 @@ const SignUp = () => {
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const [successMessage, setSuccessMessage] = useState("");
   const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
-  const [formProgress, setFormProgress] = useState(0);
 
-  // Auto-save form data to prevent loss
-  useEffect(() => {
-    const savedData = localStorage.getItem('signupFormData');
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        setFormData(parsed);
-      } catch (error) {
-        console.error('Error parsing saved form data:', error);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      localStorage.setItem('signupFormData', JSON.stringify(formData));
-    }, 1000);
-    return () => clearTimeout(timeoutId);
-  }, [formData]);
-
-  // Calculate form progress
-  useEffect(() => {
-    const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'password', 'confirmPassword'];
-    const filledFields = requiredFields.filter(field => formData[field as keyof FormData].trim() !== '');
-    const progress = Math.round((filledFields.length / requiredFields.length) * 100);
-    setFormProgress(progress);
-  }, [formData]);
-
-  // Comprehensive validation functions
+  // Validation functions
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -129,7 +92,7 @@ const SignUp = () => {
     return { strength, color, score, requirements };
   };
 
-  const validateForm = useCallback((): ValidationResult => {
+  const validateForm = useCallback((): { isValid: boolean; errors: FormErrors } => {
     const newErrors: FormErrors = {};
 
     // Name validation
@@ -192,7 +155,6 @@ const SignUp = () => {
     const timeoutId = setTimeout(() => {
       if (touchedFields.size > 0) {
         const validation = validateForm();
-        // Only show errors for touched fields
         const touchedErrors: FormErrors = {};
         Array.from(touchedFields).forEach(field => {
           if (validation.errors[field]) {
@@ -210,7 +172,6 @@ const SignUp = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setTouchedFields(prev => new Set(prev).add(field));
     
-    // Clear field error when user starts typing
     if (errors[field]) {
       setErrors(prev => {
         const newErrors = { ...prev };
@@ -235,18 +196,13 @@ const SignUp = () => {
       setErrors(validation.errors);
       setIsLoading(false);
       
-      // Focus on first error field
       const firstErrorField = Object.keys(validation.errors)[0];
       const errorElement = document.getElementById(firstErrorField);
-      if (errorElement) {
-        errorElement.focus();
-        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+      errorElement?.focus();
       return;
     }
 
     try {
-      // Sanitize data before submission
       const sanitizedData = {
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
@@ -271,47 +227,35 @@ const SignUp = () => {
       }
 
       setSuccessMessage("Account created successfully! Redirecting to login...");
-      localStorage.removeItem('signupFormData'); // Clear saved data on success
       
       setTimeout(() => {
-        if (navigate) {
-          navigate("/login");
-        } else {
-          window.location.href = "/login";
-        }
+        window.location.href = "/login";
       }, 2000);
 
     } catch (error) {
-      if (error instanceof Error) {
-        setErrors({ general: error.message });
-      } else {
-        setErrors({ general: "An unexpected error occurred. Please try again." });
-      }
+      setErrors({ 
+        general: error instanceof Error ? error.message : "An unexpected error occurred. Please try again." 
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleLoginClick = () => {
-    if (navigate) {
-      navigate('/login');
-    } else {
-      console.log("Navigating to /login");
-      alert("Would navigate to /login in a real app with React Router");
-    }
+    window.location.href = "/login";
   };
 
   const passwordStrength = validatePassword(formData.password);
   const isFormValid = validateForm().isValid;
 
+  // Form progress calculation
+  const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'password', 'confirmPassword'];
+  const filledFields = requiredFields.filter(field => formData[field as keyof FormData].trim() !== '');
+  const formProgress = Math.round((filledFields.length / requiredFields.length) * 100);
+
   return (
-    <div 
-      className="min-h-screen w-full flex items-center justify-center bg-black py-8 px-4"
-      style={{
-        fontFamily: 'Poppins, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif'
-      }}
-    >
-      {/* Animated Background Pattern */}
+    <div className="min-h-screen w-full flex items-center justify-center bg-black py-8 px-4">
+      {/* Background Effects */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0 animate-pulse" style={{
           backgroundImage: `radial-gradient(circle at 1px 1px, rgba(254, 253, 12, 0.3) 1px, transparent 0)`,
@@ -319,19 +263,15 @@ const SignUp = () => {
         }}></div>
       </div>
 
-      {/* Floating Elements */}
       <div className="absolute top-20 left-20 w-32 h-32 bg-[#FEFD0C]/5 rounded-full blur-xl animate-pulse"></div>
-      <div className="absolute bottom-20 right-20 w-48 h-48 bg-[#FEFD0C]/3 rounded-full blur-2xl animate-pulse delay-1000"></div>
-      <div className="absolute top-1/2 left-10 w-24 h-24 bg-[#FEFD0C]/4 rounded-full blur-lg animate-pulse delay-500"></div>
+      <div className="absolute bottom-20 right-20 w-48 h-48 bg-[#FEFD0C]/3 rounded-full blur-2xl animate-pulse"></div>
 
-      {/* Main Container */}
       <div className="relative z-10 w-full max-w-md">
         {/* Security Badge */}
         <div className="flex justify-center mb-6">
-          <div className="bg-black/90 backdrop-blur-sm border border-[#FEFD0C]/30 rounded-full px-4 py-2 flex items-center space-x-2 hover:border-[#FEFD0C]/50 transition-all duration-300">
+          <div className="bg-black/90 backdrop-blur-sm border border-[#FEFD0C]/30 rounded-full px-4 py-2 flex items-center space-x-2">
             <Shield className="w-4 h-4 text-[#FEFD0C] animate-pulse" />
             <span className="text-xs font-medium text-[#FEFD0C] tracking-wide">SECURE REGISTRATION</span>
-            <Clock className="w-4 h-4 text-[#FEFD0C]" />
           </div>
         </div>
 
@@ -350,26 +290,22 @@ const SignUp = () => {
         </div>
 
         {/* Main Card */}
-        <div className="bg-black/90 backdrop-blur-sm border border-gray-800 rounded-2xl p-8 shadow-2xl hover:border-gray-700 transition-all duration-300">
+        <div className="bg-black/90 backdrop-blur-sm border border-gray-800 rounded-2xl p-8 shadow-2xl">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="mx-auto h-14 w-14 bg-gradient-to-br from-[#FEFD0C]/20 to-[#FEFD0C]/10 border border-[#FEFD0C]/30 rounded-xl flex items-center justify-center mb-4 transition-transform duration-300 hover:scale-105 hover:rotate-3">
+            <div className="mx-auto h-14 w-14 bg-gradient-to-br from-[#FEFD0C]/20 to-[#FEFD0C]/10 border border-[#FEFD0C]/30 rounded-xl flex items-center justify-center mb-4">
               <User className="text-[#FEFD0C] w-7 h-7" />
             </div>
-            
             <h1 className="text-3xl font-bold text-white mb-2">
               Create <span className="text-[#FEFD0C]">Account</span>
             </h1>
-            <p className="text-gray-400 text-sm">
-              Join us and start your journey today
-            </p>
+            <p className="text-gray-400 text-sm">Join us and start your journey today</p>
           </div>
 
-          {/* Form */}
-          <form ref={formRef} onSubmit={handleSubmit} className="space-y-5" noValidate>
+          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
             {/* Success Message */}
             {successMessage && (
-              <div className="bg-green-500/10 border border-green-500/30 text-green-400 px-4 py-3 rounded-lg flex items-center space-x-3 animate-fade-in">
+              <div className="bg-green-500/10 border border-green-500/30 text-green-400 px-4 py-3 rounded-lg flex items-center space-x-3">
                 <CheckCircle className="h-4 w-4 flex-shrink-0" />
                 <span className="text-sm">{successMessage}</span>
               </div>
@@ -377,18 +313,16 @@ const SignUp = () => {
 
             {/* General Error Message */}
             {errors.general && (
-              <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg flex items-center space-x-3 animate-shake">
+              <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg flex items-center space-x-3">
                 <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                <div className="flex-1">
-                  <span className="text-sm">{errors.general}</span>
-                </div>
+                <span className="text-sm flex-1">{errors.general}</span>
                 <button
                   type="button"
                   onClick={() => setErrors(prev => {
-                  const { general, ...rest } = prev;
-                  return rest;})}
+                    const { general, ...rest } = prev;
+                    return rest;
+                  })}
                   className="text-red-400 hover:text-red-300"
-                  aria-label="Dismiss error"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -416,13 +350,11 @@ const SignUp = () => {
                     }`}
                     placeholder="John"
                     autoComplete="given-name"
-                    aria-invalid={errors.firstName ? 'true' : 'false'}
-                    aria-describedby={errors.firstName ? 'firstName-error' : undefined}
                     required
                   />
                 </div>
                 {errors.firstName && (
-                  <p id="firstName-error" className="text-red-400 text-xs flex items-center space-x-1">
+                  <p className="text-red-400 text-xs flex items-center space-x-1">
                     <AlertCircle className="w-3 h-3" />
                     <span>{errors.firstName}</span>
                   </p>
@@ -448,13 +380,11 @@ const SignUp = () => {
                     }`}
                     placeholder="Doe"
                     autoComplete="family-name"
-                    aria-invalid={errors.lastName ? 'true' : 'false'}
-                    aria-describedby={errors.lastName ? 'lastName-error' : undefined}
                     required
                   />
                 </div>
                 {errors.lastName && (
-                  <p id="lastName-error" className="text-red-400 text-xs flex items-center space-x-1">
+                  <p className="text-red-400 text-xs flex items-center space-x-1">
                     <AlertCircle className="w-3 h-3" />
                     <span>{errors.lastName}</span>
                   </p>
@@ -482,13 +412,11 @@ const SignUp = () => {
                   }`}
                   placeholder="john.doe@example.com"
                   autoComplete="email"
-                  aria-invalid={errors.email ? 'true' : 'false'}
-                  aria-describedby={errors.email ? 'email-error' : undefined}
                   required
                 />
               </div>
               {errors.email && (
-                <p id="email-error" className="text-red-400 text-xs flex items-center space-x-1">
+                <p className="text-red-400 text-xs flex items-center space-x-1">
                   <AlertCircle className="w-3 h-3" />
                   <span>{errors.email}</span>
                 </p>
@@ -515,13 +443,11 @@ const SignUp = () => {
                   }`}
                   placeholder="+1 (555) 123-4567"
                   autoComplete="tel"
-                  aria-invalid={errors.phone ? 'true' : 'false'}
-                  aria-describedby={errors.phone ? 'phone-error' : undefined}
                   required
                 />
               </div>
               {errors.phone && (
-                <p id="phone-error" className="text-red-400 text-xs flex items-center space-x-1">
+                <p className="text-red-400 text-xs flex items-center space-x-1">
                   <AlertCircle className="w-3 h-3" />
                   <span>{errors.phone}</span>
                 </p>
@@ -558,22 +484,19 @@ const SignUp = () => {
                   }`}
                   placeholder="Create a strong password"
                   autoComplete="new-password"
-                  aria-invalid={errors.password ? 'true' : 'false'}
-                  aria-describedby={errors.password ? 'password-error' : 'password-strength'}
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#FEFD0C] transition-colors duration-200"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
               
               {errors.password && (
-                <p id="password-error" className="text-red-400 text-xs flex items-center space-x-1">
+                <p className="text-red-400 text-xs flex items-center space-x-1">
                   <AlertCircle className="w-3 h-3" />
                   <span>{errors.password}</span>
                 </p>
@@ -612,7 +535,7 @@ const SignUp = () => {
               
               {/* Password Strength Indicator */}
               {formData.password && (
-                <div className="space-y-2" id="password-strength">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-gray-500">Password strength:</span>
                     <span className={`font-medium ${passwordStrength.color}`}>
@@ -655,22 +578,19 @@ const SignUp = () => {
                   }`}
                   placeholder="Confirm your password"
                   autoComplete="new-password"
-                  aria-invalid={errors.confirmPassword ? 'true' : 'false'}
-                  aria-describedby={errors.confirmPassword ? 'confirmPassword-error' : undefined}
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#FEFD0C] transition-colors duration-200"
-                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                 >
-                 {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
               
               {errors.confirmPassword && (
-                <p id="confirmPassword-error" className="text-red-400 text-xs flex items-center space-x-1">
+                <p className="text-red-400 text-xs flex items-center space-x-1">
                   <AlertCircle className="w-3 h-3" />
                   <span>{errors.confirmPassword}</span>
                 </p>
@@ -704,8 +624,6 @@ const SignUp = () => {
                     checked={acceptTerms}
                     onChange={(e) => setAcceptTerms(e.target.checked)}
                     className="w-4 h-4 text-[#FEFD0C] bg-black/40 border-gray-800 rounded focus:ring-[#FEFD0C]/20 focus:ring-2 focus:ring-offset-0"
-                    aria-invalid={errors.terms ? 'true' : 'false'}
-                    aria-describedby={errors.terms ? 'terms-error' : undefined}
                     required
                   />
                 </div>
@@ -721,7 +639,7 @@ const SignUp = () => {
                 </label>
               </div>
               {errors.terms && (
-                <p id="terms-error" className="text-red-400 text-xs flex items-center space-x-1">
+                <p className="text-red-400 text-xs flex items-center space-x-1">
                   <AlertCircle className="w-3 h-3" />
                   <span>{errors.terms}</span>
                 </p>
@@ -754,32 +672,29 @@ const SignUp = () => {
 
           {/* Footer */}
           <div className="mt-8 text-center">
-            <p className="text-gray-400 text-sm">
+            <p className="text-sm text-gray-400">
               Already have an account?{' '}
               <button
+                type="button"
                 onClick={handleLoginClick}
-                className="text-[#FEFD0C] hover:text-[#FEFD0C]/80 font-medium underline hover:no-underline transition-all duration-200"
+                className="text-[#FEFD0C] hover:text-[#FEFD0C]/80 underline font-medium"
               >
-                Sign in here
+                Sign in
               </button>
             </p>
           </div>
         </div>
 
         {/* Security Features */}
-        <div className="mt-6 flex justify-center">
-          <div className="flex items-center space-x-6 text-xs text-gray-500">
+        <div className="mt-6 text-center">
+          <div className="flex items-center justify-center space-x-4 text-xs text-gray-500">
             <div className="flex items-center space-x-1">
               <Shield className="w-3 h-3" />
-              <span>SSL Encrypted</span>
+              <span>SSL Protected</span>
             </div>
             <div className="flex items-center space-x-1">
               <Lock className="w-3 h-3" />
-              <span>Secure Storage</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <Eye className="w-3 h-3" />
-              <span>Privacy Protected</span>
+              <span>Data Encrypted</span>
             </div>
           </div>
         </div>
