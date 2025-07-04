@@ -43,10 +43,9 @@ body {
   scroll-behavior: smooth;
   font-family: var(--body-fonts);
 
-  /* ✅ Gradient fallback to prevent white flash */
-background-color: rgba(0, 0, 0, 0.4) !important;
-min-height: 100vh;
-
+  /* ✅ Solid black background to prevent white flash */
+  background-color: #000000 !important;
+  min-height: 100vh;
 }
 
 p {

@@ -1,16 +1,14 @@
-import React, { useState, FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Lock, Mail, Shield, Clock, AlertCircle, CheckCircle } from "lucide-react";
+import React, { useState } from "react";
+import { Eye, EyeOff, Lock, Mail, Shield, AlertCircle, CheckCircle } from "lucide-react";
 
 const Login = () => {
-  const navigate = useNavigate(); 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [formError, setFormError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [rememberMe, setRememberMe] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [formError, setFormError] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string>("");
 
   // Email validation
   const isValidEmail = (email: string): boolean => {
@@ -18,22 +16,13 @@ const Login = () => {
     return emailRegex.test(email);
   };
 
-  // Password strength check
-  const getPasswordStrength = (password: string): { strength: string; color: string } => {
-    if (password.length === 0) return { strength: "", color: "" };
-    if (password.length < 6) return { strength: "Weak", color: "text-red-400" };
-    if (password.length < 10) return { strength: "Medium", color: "text-yellow-400" };
-    return { strength: "Strong", color: "text-green-400" };
-  };
-
-  
-  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFormError("");
     setSuccessMessage("");
     setIsLoading(true);
 
-    // Validate email and password
+    // Basic validation
     if (!email.trim()) {
       setFormError("Email is required");
       setIsLoading(false);
@@ -49,55 +38,56 @@ const Login = () => {
       setIsLoading(false);
       return;
     }
-    if (password.length < 6) {
-      setFormError("Password must be at least 6 characters long");
-      setIsLoading(false);
-      return;
-    }
 
     try {
-      const res = await fetch("https://www.sellfastpayfast.com/api/auth/login", {
+      // Simulate API call for demo
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // In a real app, you'd make an actual API call here
+      const res = await fetch("https://loquacious-crisp-65c64c.netlify.app/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
       });
-
-      const data = await res.json();
+      
+      let data: { message?: string } | null = null;
+      try {
+        const text = await res.text();
+        data = text ? JSON.parse(text) : {};
+      } catch (parseError) {
+        throw new Error("Invalid response from server");
+      }
 
       if (!res.ok) {
-        // If backend sends message with error, display it
-        throw new Error(data.message || "Login failed");
+        throw new Error(data?.message || "Login failed");
       }
 
       setSuccessMessage("Login successful! Redirecting...");
 
-      // Optionally save token if returned (example)
-      if (data.data?.token) {
-        localStorage.setItem("token", data.data.token);
-      }
-
-      // Redirect after a short delay
+      // Redirect after a short delay (in a real app, you'd use your router)
       setTimeout(() => {
-        navigate("/users"); // or your desired route after login
+        console.log("Redirecting to dashboard...");
+        // navigate("/users");
       }, 1500);
 
-    } catch (error: any) {
-      setFormError(error.message || "An unknown error occurred");
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Invalid email or password";
+      setFormError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Simple navigation handler for demo purposes
-  const handleSignupClick = () => {
-    // In a real app with React Router, this would be: navigate('/signup')
-    console.log("Navigating to /signup");
-    alert("Would navigate to /signup in a real app with React Router");
+  // Handle navigation (in a real app, you'd use your router)
+  const handleSignupClick = (): void => {
+    console.log("Navigate to signup page");
   };
 
-  const passwordStrength = getPasswordStrength(password);
+  const handleForgotPasswordClick = (): void => {
+    console.log("Navigate to forgot password page");
+  };
 
   return (
     <div 
@@ -123,9 +113,8 @@ const Login = () => {
         {/* Security Badge */}
         <div className="flex justify-center mb-6">
           <div className="bg-black/90 backdrop-blur-sm border border-[#FEFD0C]/30 rounded-full px-4 py-2 flex items-center space-x-2 hover:border-[#FEFD0C]/50 transition-all duration-300">
-            <Shield className="w-4 h-4 text-[#FEFD0C] animate-pulse" />
+            <Shield className="w-4 h-4 text-[#FEFD0C]" />
             <span className="text-xs font-medium text-[#FEFD0C] tracking-wide">SECURE LOGIN</span>
-            <Clock className="w-4 h-4 text-[#FEFD0C]" />
           </div>
         </div>
 
@@ -133,7 +122,7 @@ const Login = () => {
         <div className="bg-black/90 backdrop-blur-sm border border-gray-800 rounded-2xl p-8 shadow-2xl hover:border-gray-700 transition-all duration-300">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="mx-auto h-14 w-14 bg-gradient-to-br from-[#FEFD0C]/20 to-[#FEFD0C]/10 border border-[#FEFD0C]/30 rounded-xl flex items-center justify-center mb-4 transition-transform duration-300 hover:scale-105 hover:rotate-3">
+            <div className="mx-auto h-14 w-14 bg-gradient-to-br from-[#FEFD0C]/20 to-[#FEFD0C]/10 border border-[#FEFD0C]/30 rounded-xl flex items-center justify-center mb-4 transition-transform duration-300 hover:scale-105">
               <Lock className="text-[#FEFD0C] w-7 h-7" />
             </div>
             
@@ -141,12 +130,12 @@ const Login = () => {
               Welcome <span className="text-[#FEFD0C]">Back</span>
             </h1>
             <p className="text-gray-400 text-sm">
-              Sign in to access your dashboard
+              Sign in to access your account
             </p>
           </div>
 
           {/* Form */}
-          <div className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Success Message */}
             {successMessage && (
               <div className="bg-green-500/10 border border-green-500/30 text-green-400 px-4 py-3 rounded-lg flex items-center space-x-3 animate-fade-in">
@@ -169,12 +158,12 @@ const Login = () => {
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 transition-colors duration-200" />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                   className="w-full bg-black/40 border border-gray-800 text-white rounded-lg py-3 pl-10 pr-4 text-sm placeholder-gray-500 transition-all duration-200 focus:outline-none focus:border-[#FEFD0C]/50 focus:bg-black/60 focus:ring-1 focus:ring-[#FEFD0C]/20"
                   placeholder="Enter your email"
                   autoComplete="email"
@@ -185,24 +174,16 @@ const Login = () => {
 
             {/* Password Field */}
             <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <label htmlFor="password" className="text-sm font-medium text-white">
-                  Password
-                </label>
-                <button
-                  type="button"
-                  className="text-xs text-[#FEFD0C] hover:text-white transition-colors duration-200 hover:underline"
-                >
-                  Forgot Password?
-                </button>
-              </div>
+              <label htmlFor="password" className="block text-sm font-medium text-white">
+                Password
+              </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                   className="w-full bg-black/40 border border-gray-800 text-white rounded-lg py-3 pl-10 pr-10 text-sm placeholder-gray-500 transition-all duration-200 focus:outline-none focus:border-[#FEFD0C]/50 focus:bg-black/60 focus:ring-1 focus:ring-[#FEFD0C]/20"
                   placeholder="Enter your password"
                   autoComplete="current-password"
@@ -217,19 +198,9 @@ const Login = () => {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              
-              {/* Password Strength Indicator */}
-              {password && (
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-500">Password strength:</span>
-                  <span className={`font-medium ${passwordStrength.color}`}>
-                    {passwordStrength.strength}
-                  </span>
-                </div>
-              )}
             </div>
 
-            {/* Remember Me */}
+            {/* Remember Me & Forgot Password */}
             <div className="flex items-center justify-between">
               <label className="flex items-center space-x-3 cursor-pointer group">
                 <div className="relative">
@@ -252,14 +223,22 @@ const Login = () => {
                   </div>
                 </div>
                 <span className="text-sm text-gray-400 group-hover:text-white transition-colors duration-200">
-                  Remember me for 30 days
+                  Remember me
                 </span>
               </label>
+              
+              <button
+                type="button"
+                onClick={handleForgotPasswordClick}
+                className="text-sm text-[#FEFD0C] hover:text-white transition-colors duration-200 hover:underline"
+              >
+                Forgot Password?
+              </button>
             </div>
 
             {/* Submit Button */}
             <button
-              onClick={handleSubmit}
+              type="submit"
               disabled={isLoading}
               className={`w-full py-3 text-sm font-semibold rounded-lg transition-all duration-200 relative overflow-hidden ${
                 isLoading
@@ -270,12 +249,12 @@ const Login = () => {
               {isLoading && (
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer"></div>
               )}
-              {isLoading ? "Signing you in..." : "Sign In"}
+              {isLoading ? "Signing In..." : "Sign In"}
             </button>
-          </div>
+          </form>
 
           {/* Footer */}
-          <div className="text-center mt-6 pt-6 border-t border-gray-800">
+          <div className="text-center mt-8 pt-6 border-t border-gray-800">
             <p className="text-gray-400 text-sm">
               Don't have an account?{" "}
               <button 
@@ -283,23 +262,19 @@ const Login = () => {
                 onClick={handleSignupClick}
                 className="text-[#FEFD0C] hover:text-white font-medium transition-colors duration-200 hover:underline"
               >
-                Create Account
+                Sign Up
               </button>
             </p>
             
             {/* Security Features */}
-            <div className="flex items-center justify-center space-x-4 mt-4 text-xs text-gray-500">
+            <div className="flex items-center justify-center space-x-6 mt-4 text-xs text-gray-500">
               <div className="flex items-center space-x-1 hover:text-gray-400 transition-colors duration-200">
                 <Shield className="w-3 h-3" />
                 <span>SSL Encrypted</span>
               </div>
               <div className="flex items-center space-x-1 hover:text-gray-400 transition-colors duration-200">
                 <Lock className="w-3 h-3" />
-                <span>Secure</span>
-              </div>
-              <div className="flex items-center space-x-1 hover:text-gray-400 transition-colors duration-200">
-                <Clock className="w-3 h-3" />
-                <span>24/7 Protected</span>
+                <span>Secure Login</span>
               </div>
             </div>
           </div>
