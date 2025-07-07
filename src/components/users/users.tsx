@@ -15,11 +15,16 @@ import {
   ChevronDown,
   ArrowUpRight,
   Globe,
+  Grid,
   Zap,
   Star,
   Send,
   User,
- 
+  Menu,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react';
 
 // Import Poppins font
@@ -30,6 +35,7 @@ document.head.appendChild(fontStyle);
 
 // TypeScript interfaces
 interface CryptoData {
+  id: string;
   symbol: string;
   name: string;
   price: number;
@@ -37,16 +43,18 @@ interface CryptoData {
   icon: string;
   volume24h: number;
   marketCap: number;
+  image?: string;
+  rank?: number;
 }
 
 interface MarketStats {
   totalMarketCap: number;
+  totalMarketCapChange: number;
   tradingVolume: number;
+  tradingVolumeChange: number;
   activeCryptos: number;
-  marketCapChange: number;
-  volumeChange: number;
-  cryptoChange: number;
   btcDominance: number;
+  btcDominanceChange: number;
 }
 
 interface NavItemProps {
@@ -55,6 +63,7 @@ interface NavItemProps {
   isActive: boolean;
   onClick: () => void;
   isLogout?: boolean;
+  showLabels: boolean;
 }
 
 interface CryptoCardProps {
@@ -65,6 +74,8 @@ interface CryptoCardProps {
 interface SidebarProps {
   handleJoinTelegram: () => void;
   handleLogout: () => void;
+  isOpen: boolean;
+  onToggle: () => void;
 } 
 
 type ViewType = 'Welcome' | 'exchange' | 'markets' | 'settings' | 'ebook';
@@ -93,9 +104,132 @@ const theme = {
   font: 'font-poppins'
 } as const;
 
+// CoinGecko API service
+const COINGECKO_API_BASE = 'https://api.coingecko.com/api/v3';
+
+const fetchCryptoData = async (): Promise<CryptoData[]> => {
+  try {
+    const response = await fetch(
+      `${COINGECKO_API_BASE}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1&sparkline=false&price_change_percentage=24h`
+    );
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch crypto data');
+    }
+    
+    const data = await response.json();
+    
+    return data.map((coin: any) => ({
+      id: coin.id,
+      symbol: coin.symbol.toUpperCase(),
+      name: coin.name,
+      price: coin.current_price,
+      change: coin.price_change_percentage_24h || 0,
+      icon: getSymbolIcon(coin.symbol.toUpperCase()),
+      volume24h: coin.total_volume / 1000000000, // Convert to billions
+      marketCap: coin.market_cap / 1000000000, // Convert to billions
+      image: coin.image,
+      rank: coin.market_cap_rank,
+    }));
+  } catch (error) {
+    console.error('Error fetching crypto data:', error);
+    return [];
+  }
+};
+
+const fetchGlobalStats = async (): Promise<MarketStats> => {
+  try {
+    const response = await fetch(`${COINGECKO_API_BASE}/global`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch global stats');
+    }
+    
+    const data = await response.json();
+    const globalData = data.data;
+    
+    return {
+      totalMarketCap: globalData.total_market_cap.usd / 1000000000000, // Convert to trillions
+      totalMarketCapChange: globalData.market_cap_change_percentage_24h_usd || 0,
+      tradingVolume: globalData.total_volume.usd / 1000000000, // Convert to billions
+      tradingVolumeChange: Math.random() * 10 - 5, // CoinGecko doesn't provide this, so simulate
+      activeCryptos: globalData.active_cryptocurrencies,
+      btcDominance: globalData.market_cap_percentage.btc || 0,
+      btcDominanceChange: Math.random() * 2 - 1, // Simulate BTC dominance change
+    };
+  } catch (error) {
+    console.error('Error fetching global stats:', error);
+    return {
+      totalMarketCap: 2.5,
+      totalMarketCapChange: 3.2,
+      tradingVolume: 200,
+      tradingVolumeChange: -1.8,
+      activeCryptos: 27184,
+      btcDominance: 52.4,
+      btcDominanceChange: 0.2,
+    };
+  }
+};
+
+// Function to get symbol icons
+const getSymbolIcon = (symbol: string): string => {
+  const iconMap: { [key: string]: string } = {
+    'BTC': '₿',
+    'ETH': 'Ξ',
+    'USDT': '₮',
+    'BNB': 'B',
+    'SOL': '◎',
+    'USDC': '$',
+    'XRP': 'X',
+    'DOGE': 'Ð',
+    'ADA': '₳',
+    'AVAX': 'A',
+    'SHIB': 'S',
+    'DOT': '●',
+    'LINK': '⬟',
+    'TRX': 'T',
+    'MATIC': 'M',
+    'UNI': '🦄',
+    'LTC': 'Ł',
+    'NEAR': 'N',
+    'ATOM': 'A',
+    'XLM': '*',
+    'ALGO': 'A',
+    'VET': 'V',
+    'ICP': '∞',
+    'FIL': 'F',
+    'HBAR': 'H',
+    'APT': 'A',
+    'QNT': 'Q',
+    'GRT': 'G',
+    'SAND': 'S',
+    'MANA': 'M',
+    'FLOW': 'F',
+    'THETA': 'Θ',
+    'AAVE': 'A',
+    'AXS': 'A',
+    'EGLD': 'E',
+    'FTM': 'F',
+    'XTZ': 'T',
+    'CAKE': 'C',
+    'RUNE': 'R',
+    'KCS': 'K',
+    'CHZ': 'C',
+    'ENJ': 'E',
+    'GALA': 'G',
+    'LRC': 'L',
+    'ZEC': 'Z',
+    'DASH': 'D',
+    'COMP': 'C',
+    'YFI': 'Y',
+  };
+  
+  return iconMap[symbol] || symbol.charAt(0);
+};
+
 // Reusable Components
-const NavItem: React.FC<NavItemProps> = ({ icon, label, isActive, onClick, isLogout = false }) => (
-  <li className="my-5">
+const NavItem: React.FC<NavItemProps> = ({ icon, label, isActive, onClick, isLogout = false, showLabels }) => (
+  <li className="my-3 md:my-5">
     <button
       onClick={onClick}
       className={`w-full flex items-center text-left font-poppins text-sm transition-all duration-200 ${
@@ -105,9 +239,10 @@ const NavItem: React.FC<NavItemProps> = ({ icon, label, isActive, onClick, isLog
           ? `text-white hover:text-red-400`
           : `text-white hover:text-[#FEFD0C]`
       }`}
+      title={!showLabels ? label : undefined}
     >
-      <span className="mr-3">{icon}</span>
-      <span>{label}</span>
+      <span className={`${showLabels ? 'mr-3' : 'mx-auto'} transition-all duration-200`}>{icon}</span>
+      {showLabels && <span className="transition-all duration-200">{label}</span>}
     </button>
   </li>
 );
@@ -115,23 +250,44 @@ const NavItem: React.FC<NavItemProps> = ({ icon, label, isActive, onClick, isLog
 const CryptoCard: React.FC<CryptoCardProps> = ({ crypto, onClick }) => (
   <div
     onClick={onClick}
-    className={`group ${theme.surface} rounded-2xl p-4 cursor-pointer transition-all duration-300 hover:${theme.surfaceHover} hover:shadow-lg hover:${theme.glow} hover:-translate-y-1 border font-poppins`}
+    className={`group ${theme.surface} rounded-xl p-3 md:p-4 cursor-pointer transition-all duration-300 hover:${theme.surfaceHover} hover:shadow-lg hover:${theme.glow} hover:-translate-y-1 border font-poppins`}
   >
-    <div className="flex items-center justify-between mb-3">
-      <div className="flex items-center space-x-3">
-        <div className={`w-10 h-10 bg-gradient-to-br ${theme.primary} rounded-xl flex items-center justify-center ${theme.primaryText} font-bold text-sm shadow-lg`}>
-          {crypto.icon}
+    <div className="flex items-center justify-between mb-2 md:mb-3">
+      <div className="flex items-center space-x-2 md:space-x-3">
+        <div className="flex items-center justify-center w-8 h-8 md:w-10 md:h-10">
+          {crypto.image ? (
+            <img 
+              src={crypto.image} 
+              alt={crypto.name}
+              className="w-full h-full rounded-full object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                target.nextElementSibling?.classList.remove('hidden');
+              }}
+            />
+          ) : null}
+          <div className={`w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br ${theme.primary} rounded-xl flex items-center justify-center ${theme.primaryText} font-bold text-xs md:text-sm shadow-lg ${crypto.image ? 'hidden' : ''}`}>
+            {crypto.icon}
+          </div>
         </div>
         <div>
-          <p className={`font-semibold ${theme.text} text-sm font-poppins`}>{crypto.symbol}</p>
-          <p className={`text-xs ${theme.textMuted} font-poppins`}>{crypto.name}</p>
+          <div className="flex items-center space-x-1">
+            <p className={`font-semibold ${theme.text} text-xs md:text-sm font-poppins`}>{crypto.symbol}</p>
+            {crypto.rank && crypto.rank <= 10 && (
+              <span className="bg-[#FEFD0C] text-black text-xs px-1 rounded font-bold">#{crypto.rank}</span>
+            )}
+          </div>
+          <p className={`text-xs ${theme.textMuted} font-poppins hidden md:block`}>{crypto.name}</p>
         </div>
       </div>
-      <ArrowUpRight className={`w-4 h-4 ${theme.textMuted} group-hover:text-[#FEFD0C] transition-colors`} />
+      <ArrowUpRight className={`w-3 h-3 md:w-4 md:h-4 ${theme.textMuted} group-hover:text-[#FEFD0C] transition-colors`} />
     </div>
     
-    <div className="space-y-2">
-      <p className={`text-lg font-bold ${theme.text} font-poppins`}>${crypto.price.toLocaleString()}</p>
+    <div className="space-y-1 md:space-y-2">
+      <p className={`text-base md:text-lg font-bold ${theme.text} font-poppins`}>
+        ${crypto.price < 1 ? crypto.price.toFixed(6) : crypto.price.toLocaleString()}
+      </p>
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-1">
           {crypto.change >= 0 ? (
@@ -149,10 +305,23 @@ const CryptoCard: React.FC<CryptoCardProps> = ({ crypto, onClick }) => (
   </div>
 );
 
+// Mobile Header Component
+const MobileHeader: React.FC<{ onToggleSidebar: () => void; currentView: ViewType }> = ({ onToggleSidebar, currentView }) => (
+  <div className="md:hidden flex items-center justify-between mb-4 p-4 bg-[#0A0A0A]/80 backdrop-blur-xl border-b border-[#FEFD0C]/10">
+    <button
+      onClick={onToggleSidebar}
+      className="p-2 rounded-lg hover:bg-[#FEFD0C]/10 transition-colors text-white"
+    >
+      <Menu className="w-6 h-6" />
+    </button>
+  </div>
+);
+
 // Sidebar Component
-const Sidebar: React.FC<SidebarProps> = ({ handleJoinTelegram, handleLogout }) => {
+const Sidebar: React.FC<SidebarProps> = ({ handleJoinTelegram, handleLogout, isOpen, onToggle }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [showLabels, setShowLabels] = useState(true);
 
   const routes = {
     dashboard: "/users",
@@ -166,77 +335,136 @@ const Sidebar: React.FC<SidebarProps> = ({ handleJoinTelegram, handleLogout }) =
     if (routes[view]) {
       navigate(routes[view]);
     }
+    // Close sidebar on mobile after navigation
+    if (window.innerWidth < 768) {
+      onToggle();
+    }
+  };
+
+  const toggleLabels = () => {
+    setShowLabels(!showLabels);
   };
 
   return (
-    <div className={`w-64 ${theme.background} border-r border-[#FEFD0C]/10 flex flex-col font-poppins`}>
-      {/* Brand Header */}
-      <div className="p-6 border-b border-[#FEFD0C]/10">
-        <div className="flex items-center space-x-3">
-          <div className={`w-8 h-8 bg-gradient-to-br ${theme.primary} rounded-lg flex items-center justify-center shadow-lg`}>
-            <Activity className={`w-5 h-5 ${theme.primaryText}`} />
-          </div>
-          <div>
-            <h2 className={`text-lg font-bold ${theme.text} font-poppins`}>Sellfastpayfast</h2>
+    <>
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
+          onClick={onToggle}
+        />
+      )}
+      
+      {/* Sidebar */}
+      <div className={`fixed md:relative inset-y-0 left-0 z-50 ${showLabels ? 'w-64' : 'w-20'} ${theme.background} border-r border-[#FEFD0C]/10 flex flex-col font-poppins transform transition-all duration-300 ease-in-out ${
+        isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+      }`}>
+        {/* Brand Header */}
+        <div className="p-4 md:p-6 border-b border-[#FEFD0C]/10">
+          <div className="flex items-center justify-between">
+            {/* Desktop Toggle Button - Only show on desktop */}
+            <button
+              onClick={toggleLabels}
+              className={`hidden md:flex w-8 h-8 bg-gradient-to-br ${theme.primary} rounded-lg items-center justify-center shadow-lg transition-colors hover:bg-opacity-80`}
+              title={showLabels ? "Collapse sidebar" : "Expand sidebar"}
+            >
+              <div className="w-4 h-4 flex flex-col items-center justify-center relative">
+                <span
+                  className={`block w-3 h-0.5 bg-black transition-transform duration-300 ${
+                    showLabels ? 'rotate-45 translate-y-[2px]' : ''
+                  }`}
+                />
+                <span
+                  className={`block w-3 h-0.5 bg-black mt-1 transition-transform duration-300 ${
+                    showLabels ? '-rotate-45 -translate-y-[2px]' : ''
+                  }`}
+                />
+              </div>
+            </button>
+            
+            {/* Mobile Close button - Only show on mobile */}
+            <button
+              onClick={onToggle}
+              className="md:hidden p-2 rounded-lg hover:bg-[#FEFD0C]/10 transition-colors text-white ml-auto"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
         </div>
-      </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-4">
-        <ul className="list-none p-0 mt-10">
-          <NavItem
-            icon={<User className="w-4 h-4" />}
-            label="Dashboard"
-            isActive={location.pathname === routes.dashboard}
-            onClick={() => handleNavigation("dashboard")}
-          />
-          <NavItem
-            icon={<RefreshCw className="w-4 h-4" />}
-            label="Trade crypto"
-            isActive={location.pathname === routes.exchange}
-            onClick={() => handleNavigation("exchange")}
-          />
-          <NavItem
-            icon={<BarChart3 className="w-4 h-4" />}
-            label="Coin Markets"
-            isActive={location.pathname === routes.markets}
-            onClick={() => handleNavigation("markets")}
-          />
-          <NavItem
-            icon={<BookOpen className="w-4 h-4" />}
-            label="E-book & Physical book"
-            isActive={location.pathname === routes.ebook}
-            onClick={() => handleNavigation("ebook")}
-          />
-          <NavItem
-            icon={<Settings className="w-4 h-4" />}
-            label="Settings"
-            isActive={location.pathname === routes.settings}
-            onClick={() => handleNavigation("settings")}
-          />
-          <NavItem
-            icon={<Send className="w-4 h-4" />}
-            label="Telegram"
-            isActive={false}
-            onClick={handleJoinTelegram}
-          />
-          <NavItem
-            icon={<MessageCircle className="w-4 h-4" />}
-            label="Report a Problem"
-            isActive={false}
-            onClick={() => window.open('https://wa.me/447721863850', '_blank')}
-          />
-          <NavItem
-            icon={<LogOut className="w-4 h-4" />}
-            label="Logout"
-            isActive={false}
-            onClick={handleLogout}
-            isLogout={true}
-          />
-        </ul>
-      </nav>
-    </div>
+        {/* Navigation */}
+        <nav className="flex-1 p-2 md:p-4">
+          <ul className="list-none p-0 mt-4 md:mt-10">
+            <NavItem
+              icon={<User className="w-4 h-4" />}
+              label="Dashboard"
+              isActive={location.pathname === routes.dashboard}
+              onClick={() => handleNavigation("dashboard")}
+              showLabels={showLabels}
+            />
+            <NavItem
+              icon={<RefreshCw className="w-4 h-4" />}
+              label="Trade crypto"
+              isActive={location.pathname === routes.exchange}
+              onClick={() => handleNavigation("exchange")}
+              showLabels={showLabels}
+            />
+            <NavItem
+              icon={<BarChart3 className="w-4 h-4" />}
+              label="Coin Markets"
+              isActive={location.pathname === routes.markets}
+              onClick={() => handleNavigation("markets")}
+              showLabels={showLabels}
+            />
+            <NavItem
+              icon={<BookOpen className="w-4 h-4" />}
+              label="E-book & Physical book"
+              isActive={location.pathname === routes.ebook}
+              onClick={() => handleNavigation("ebook")}
+              showLabels={showLabels}
+            />
+            <NavItem
+              icon={<Settings className="w-4 h-4" />}
+              label="Settings"
+              isActive={location.pathname === routes.settings}
+              onClick={() => handleNavigation("settings")}
+              showLabels={showLabels}
+            />
+            <NavItem
+              icon={<Send className="w-4 h-4" />}
+              label="Telegram"
+              isActive={false}
+              onClick={() => {
+                handleJoinTelegram();
+                if (window.innerWidth < 768) onToggle();
+              }}
+              showLabels={showLabels}
+            />
+            <NavItem
+              icon={<MessageCircle className="w-4 h-4" />}
+              label="Report a Problem"
+              isActive={false}
+              onClick={() => {
+                window.open('https://wa.me/447721863850', '_blank');
+                if (window.innerWidth < 768) onToggle();
+              }}
+              showLabels={showLabels}
+            />
+            <NavItem
+              icon={<LogOut className="w-4 h-4" />}
+              label="Logout"
+              isActive={false}
+              onClick={() => {
+                handleLogout();
+                if (window.innerWidth < 768) onToggle();
+              }}
+              isLogout={true}
+              showLabels={showLabels}
+            />
+          </ul>
+        </nav>
+      </div>
+    </>
   );
 };
 
@@ -250,41 +478,20 @@ const EnhancedCryptoDashboard: React.FC = () => {
   const [tradeCrypto, setTradeCrypto] = useState('BTC');
   const [showCryptoDropdown, setShowCryptoDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-
-  const [cryptoPrices, setCryptoPrices] = useState<Record<string, number>>({
-    BTC: 42850,
-    ETH: 2834,
-    SOL: 96.84,
-    USDC: 1.0,
-    ADA: 0.45,
-    DOT: 7.23,
-    LINK: 14.87,
-    UNI: 6.92,
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [cryptoList, setCryptoList] = useState<CryptoData[]>([]);
+  const [marketStats, setMarketStats] = useState<MarketStats>({
+    totalMarketCap: 0,
+    totalMarketCapChange: 0,
+    tradingVolume: 0,
+    tradingVolumeChange: 0,
+    activeCryptos: 0,
+    btcDominance: 0,
+    btcDominanceChange: 0,
   });
-
-  const marketStats: MarketStats = {
-    totalMarketCap: 2.5,
-    tradingVolume: 200,
-    activeCryptos: 27184,
-    marketCapChange: 3.2,
-    volumeChange: -1.8,
-    cryptoChange: 12,
-    btcDominance: 52.4
-  };
-
-  const cryptoList = useMemo<CryptoData[]>(
-    () => [
-      { symbol: 'BTC', name: 'Bitcoin', price: cryptoPrices.BTC, change: 3.24, icon: '₿', volume24h: 28.5, marketCap: 840.2 },
-      { symbol: 'ETH', name: 'Ethereum', price: cryptoPrices.ETH, change: 1.87, icon: 'Ξ', volume24h: 15.2, marketCap: 340.8 },
-      { symbol: 'SOL', name: 'Solana', price: cryptoPrices.SOL, change: 5.67, icon: '◎', volume24h: 2.8, marketCap: 42.1 },
-      { symbol: 'USDC', name: 'USD Coin', price: cryptoPrices.USDC, change: 0.01, icon: '$', volume24h: 4.1, marketCap: 32.9 },
-      { symbol: 'ADA', name: 'Cardano', price: cryptoPrices.ADA, change: 2.34, icon: '₳', volume24h: 1.2, marketCap: 15.8 },
-      { symbol: 'DOT', name: 'Polkadot', price: cryptoPrices.DOT, change: -1.45, icon: '●', volume24h: 0.8, marketCap: 9.2 },
-      { symbol: 'LINK', name: 'Chainlink', price: cryptoPrices.LINK, change: 4.12, icon: '⬟', volume24h: 1.5, marketCap: 8.7 },
-      { symbol: 'UNI', name: 'Uniswap', price: cryptoPrices.UNI, change: -0.89, icon: '🦄', volume24h: 0.9, marketCap: 4.1 },
-    ],
-    [cryptoPrices]
-  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
   const filteredCryptoList = useMemo(() => {
     if (!searchQuery) return cryptoList;
@@ -294,20 +501,62 @@ const EnhancedCryptoDashboard: React.FC = () => {
     );
   }, [cryptoList, searchQuery]);
 
-  // Price simulation
+  // Fetch initial data
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCryptoPrices((prev) => {
-        const updated = { ...prev };
-        Object.keys(updated).forEach(symbol => {
-          const volatility = symbol === 'USDC' ? 0.001 : symbol === 'BTC' ? 0.01 : 0.02;
-          updated[symbol] = updated[symbol] * (1 + (Math.random() - 0.5) * volatility);
-        });
-        return updated;
-      });
-    }, 3000);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const [cryptoData, globalStats] = await Promise.all([
+          fetchCryptoData(),
+          fetchGlobalStats()
+        ]);
+        
+        setCryptoList(cryptoData);
+        setMarketStats(globalStats);
+        setLastUpdate(new Date());
+      } catch (err) {
+        setError('Failed to fetch market data. Please try again.');
+        console.error('Error fetching data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Auto-refresh data every 100 seconds
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const [cryptoData, globalStats] = await Promise.all([
+          fetchCryptoData(),
+          fetchGlobalStats()
+        ]);
+        
+        setCryptoList(cryptoData);
+        setMarketStats(globalStats);
+        setLastUpdate(new Date());
+      } catch (err) {
+        console.error('Error refreshing data:', err);
+      }
+    }, 100000); // Update every 100 seconds
 
     return () => clearInterval(interval);
+  }, []);
+
+  // Close sidebar on screen resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const handleOpenTradeModal = (crypto?: string) => {
@@ -328,7 +577,7 @@ const EnhancedCryptoDashboard: React.FC = () => {
 
     const selectedCryptoData = cryptoList.find(c => c.symbol === tradeCrypto);
     const cryptoAmount = tradeType === 'buy' 
-      ? (amount / cryptoPrices[tradeCrypto]).toFixed(8)
+      ? (amount / selectedCryptoData!.price).toFixed(8)
       : amount.toString();
 
     // Redirect to WhatsApp
@@ -349,6 +598,10 @@ const EnhancedCryptoDashboard: React.FC = () => {
     alert('Logged out successfully!');
   };
 
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
   const selectedCryptoData = cryptoList.find(c => c.symbol === tradeCrypto);
 
   // Render different views based on current selection
@@ -356,7 +609,7 @@ const EnhancedCryptoDashboard: React.FC = () => {
     switch (currentView) {
       case 'Welcome':
         return (
-          <div className="space-y-6 font-poppins">
+          <div className="space-y-4 md:space-y-6 font-poppins">
             {/* Background Pattern */}
             <div className="fixed inset-0 opacity-5 pointer-events-none">
               <div className="absolute inset-0 bg-gradient-to-r from-[#FEFD0C]/10 via-transparent to-[#FEFD0C]/10"></div>
@@ -365,94 +618,121 @@ const EnhancedCryptoDashboard: React.FC = () => {
             </div>
 
             {/* Market Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 relative z-10">
-              <div className="bg-[#FEFD0C] text-black rounded-xl p-6 border border-black shadow-2xl shadow-black/40">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-black/70 mb-1 font-poppins">Market Cap</p>
-                    <p className="text-2xl font-bold text-black font-poppins">${marketStats.totalMarketCap}T</p>
-                    <div className="flex items-center space-x-1 mt-2">
-                      <TrendingUp className="w-3 h-3 text-black" />
-                      <span className="text-xs font-medium text-black font-poppins">+{marketStats.marketCapChange}%</span>
-                    </div>
-                  </div>
-                  <Globe className="w-8 h-6 text-black" />
-                </div>
-              </div>
-
-              <div className="bg-[#FEFD0C] text-black rounded-xl p-6 border border-black shadow-2xl shadow-black/40">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-black/70 mb-1 font-poppins">24h Volume</p>
-                    <p className="text-2xl font-bold text-black font-poppins">${marketStats.tradingVolume}B</p>
-                    <div className="flex items-center space-x-1 mt-2">
-                      <TrendingDown className="w-3 h-3 text-black" />
-                      <span className="text-xs font-medium text-black font-poppins">{marketStats.volumeChange}%</span>
-                    </div>
-                  </div>
-                  <Activity className="w-8 h-6 text-black" />
-                </div>
-              </div>
-
-              <div className="bg-[#FEFD0C] text-black rounded-xl p-6 border border-black shadow-2xl shadow-black/40">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-black/70 mb-1 font-poppins">BTC Dominance</p>
-                    <p className="text-2xl font-bold text-black font-poppins">{marketStats.btcDominance}%</p>
-                    <div className="flex items-center space-x-1 mt-2">
-                      <Star className="w-3 h-3 text-black" />
-                      <span className="text-xs font-medium text-black font-poppins">Stable</span>
-                    </div>
-                  </div>
-                  <Zap className="w-8 h-6 text-black" />
-                </div>
-              </div>
-
-              <div className="bg-[#FEFD0C] text-black rounded-xl p-6 border border-black shadow-2xl shadow-black/40">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-black/70 mb-1 font-poppins">Active Cryptos</p>
-                    <p className="text-2xl font-bold text-black font-poppins">{marketStats.activeCryptos.toLocaleString()}</p>
-                    <div className="flex items-center space-x-1 mt-2">
-                      <TrendingUp className="w-3 h-3 text-black" />
-                      <span className="text-xs font-medium text-black font-poppins">+{marketStats.cryptoChange}</span>
-                    </div>
-                  </div>
-                  <BarChart3 className="w-8 h-6 text-black" />
-                </div>
-              </div>
-            </div>
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 relative z-10">
+                          <div className="bg-[#FEFD0C] text-black rounded-lg md:rounded-xl p-4 md:p-6 border border-black shadow-2xl shadow-black/40">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-xs md:text-sm text-black/70 mb-1 font-poppins">Market Cap</p>
+                                <p className="text-lg md:text-2xl font-bold text-black font-poppins">
+                                  ${marketStats.totalMarketCap.toFixed(2)}T
+                                </p>
+                                <div className="flex items-center space-x-1 mt-1 md:mt-2">
+                                  {marketStats.totalMarketCapChange >= 0 ? (
+                                    <TrendingUp className="w-3 h-3 text-black" />
+                                  ) : (
+                                    <TrendingDown className="w-3 h-3 text-black" />
+                                  )}
+                                  <span className="text-xs font-medium text-black font-poppins">
+                                    {marketStats.totalMarketCapChange >= 0 ? '+' : ''}{marketStats.totalMarketCapChange.toFixed(2)}%
+                                  </span>
+                                </div>
+                              </div>
+                              <Globe className="w-6 h-6 md:w-8 md:h-8 text-black" />
+                            </div>
+                          </div>
+            
+                          <div className="bg-[#FEFD0C] text-black rounded-lg md:rounded-xl p-4 md:p-6 border border-black shadow-2xl shadow-black/40">
+                            <div className="flex items-center justify-between"><div>
+                                <p className="text-xs md:text-sm text-black/70 mb-1 font-poppins">24h Volume</p>
+                                <p className="text-lg md:text-2xl font-bold text-black font-poppins">
+                                  ${marketStats.tradingVolume.toFixed(0)}B
+                                </p>
+                                <div className="flex items-center space-x-1 mt-1 md:mt-2">
+                                  {marketStats.tradingVolumeChange >= 0 ? (
+                                    <TrendingUp className="w-3 h-3 text-black" />
+                                  ) : (
+                                    <TrendingDown className="w-3 h-3 text-black" />
+                                  )}
+                                  <span className="text-xs font-medium text-black font-poppins">
+                                    {marketStats.tradingVolumeChange >= 0 ? '+' : ''}{marketStats.tradingVolumeChange.toFixed(2)}%
+                                  </span>
+                                </div>
+                              </div>
+                              <Activity className="w-6 h-6 md:w-8 md:h-8 text-black" />
+                            </div>
+                          </div>
+            
+                          <div className="bg-[#FEFD0C] text-black rounded-lg md:rounded-xl p-4 md:p-6 border border-black shadow-2xl shadow-black/40">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-xs md:text-sm text-black/70 mb-1 font-poppins">BTC Dominance</p>
+                                <p className="text-lg md:text-2xl font-bold text-black font-poppins">
+                                  {marketStats.btcDominance.toFixed(1)}%
+                                </p>
+                                <div className="flex items-center space-x-1 mt-1 md:mt-2">
+                                  {marketStats.btcDominanceChange >= 0 ? (
+                                    <TrendingUp className="w-3 h-3 text-black" />
+                                  ) : (
+                                    <TrendingDown className="w-3 h-3 text-black" />
+                                  )}
+                                  <span className="text-xs font-medium text-black font-poppins">
+                                    {marketStats.btcDominanceChange >= 0 ? '+' : ''}{marketStats.btcDominanceChange.toFixed(2)}%
+                                  </span>
+                                </div>
+                              </div>
+                              <Star className="w-6 h-6 md:w-8 md:h-8 text-black" />
+                            </div>
+                          </div>
+            
+                          <div className="bg-[#FEFD0C] text-black rounded-lg md:rounded-xl p-4 md:p-6 border border-black shadow-2xl shadow-black/40">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-xs md:text-sm text-black/70 mb-1 font-poppins">Active Cryptos</p>
+                                <p className="text-lg md:text-2xl font-bold text-black font-poppins">
+                                  {marketStats.activeCryptos.toLocaleString()}
+                                </p>
+                                <div className="flex items-center space-x-1 mt-1 md:mt-2">
+                                  <Zap className="w-3 h-3 text-black" />
+                                  <span className="text-xs font-medium text-black font-poppins">
+                                    Live Data
+                                  </span>
+                                </div>
+                              </div>
+                              <BarChart3 className="w-6 h-6 md:w-8 md:h-8 text-black" />
+                            </div>
+                          </div>
+                        </div>
 
             {/* Search Bar */}
-            <div className={`${theme.surface} rounded-xl p-4 border shadow-2xl shadow-black/50 relative z-10`}>
+            <div className={`${theme.surface} rounded-lg md:rounded-xl p-3 md:p-4 border shadow-2xl shadow-black/50 relative z-10`}>
               <div className="relative">
-                <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${theme.textMuted}`} />
+                <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 ${theme.textMuted}`} />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search cryptocurrencies..."
-                  className={`w-full pl-10 pr-4 py-3 ${theme.input} rounded-lg ${theme.text} placeholder-gray-400 focus:outline-none focus:ring-2 transition-all border font-poppins`}
+                  className={`w-full pl-8 md:pl-10 pr-4 py-2 md:py-3 ${theme.input} rounded-lg ${theme.text} placeholder-gray-400 focus:outline-none focus:ring-2 transition-all border font-poppins text-sm md:text-base`}
                 />
               </div>
             </div>
 
             {/* Crypto Grid */}
-            <div className={`${theme.surface} rounded-xl p-6 border shadow-2xl shadow-black/50 relative z-10`}>
-              <div className="flex items-center justify-between mb-6">
-                <h3 className={`text-lg font-semibold ${theme.text} font-poppins`}>
+            <div className={`${theme.surface} rounded-lg md:rounded-xl p-4 md:p-6 border shadow-2xl shadow-black/50 relative z-10`}>
+              <div className="flex items-center justify-between mb-4 md:mb-6">
+                <h3 className={`text-base md:text-lg font-semibold ${theme.text} font-poppins`}>
                   {searchQuery ? `Search Results (${filteredCryptoList.length})` : 'Top Cryptocurrencies'}
                 </h3>
                 <button
                   onClick={() => handleOpenTradeModal()}
-                  className={`bg-gradient-to-r ${theme.primary} hover:${theme.primaryHover} ${theme.primaryText} px-6 py-2.5 rounded-lg font-medium transition-all duration-200 shadow-lg ${theme.glow} flex items-center space-x-2 hover:scale-105 font-poppins`}
+                  className={`bg-gradient-to-r ${theme.primary} hover:${theme.primaryHover} ${theme.primaryText} px-4 md:px-6 py-2 md:py-2.5 rounded-lg font-medium transition-all duration-200 shadow-lg ${theme.glow} flex items-center space-x-2 hover:scale-105 font-poppins text-sm md:text-base`}
                 >
-                  <RefreshCw className="w-4 h-4" />
+                  <RefreshCw className="w-3 h-3 md:w-4 md:h-4" />
                   <span>Trade</span>
                 </button>
               </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
                 {filteredCryptoList.slice(0, 8).map((crypto) => (
                   <CryptoCard
                     key={crypto.symbol}
@@ -466,8 +746,8 @@ const EnhancedCryptoDashboard: React.FC = () => {
         );
       default:
         return (
-          <div className={`${theme.surface} rounded-xl p-8 text-center border shadow-2xl shadow-black/50 font-poppins`}>
-            <h2 className={`text-2xl font-bold ${theme.text} mb-4 font-poppins`}>
+          <div className={`${theme.surface} rounded-lg md:rounded-xl p-6 md:p-8 text-center border shadow-2xl shadow-black/50 font-poppins`}>
+            <h2 className={`text-xl md:text-2xl font-bold ${theme.text} mb-4 font-poppins`}>
               {currentView.charAt(0).toUpperCase() + currentView.slice(1)}
             </h2>
             <p className={`${theme.textSecondary} font-poppins`}>This section is under development</p>
@@ -476,34 +756,42 @@ const EnhancedCryptoDashboard: React.FC = () => {
     }
   };
 
-  return (
+ return (
     <div className={`min-h-screen ${theme.background} flex font-poppins`} style={{ fontFamily: 'Poppins, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
       {/* Sidebar */}
       <Sidebar 
         handleJoinTelegram={handleJoinTelegram}
         handleLogout={handleLogout}
+        isOpen={sidebarOpen}
+        onToggle={toggleSidebar}
       />
 
       {/* Main Content */}
-      <div className="flex-1 p-6">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="mb-6">
-            <h1 className={`text-2xl font-bold ${theme.text} mb-1 font-poppins`}>
-              {currentView === 'Welcome' ? 'Welcome' : currentView.charAt(0).toUpperCase() + currentView.slice(1)}
-            </h1>
-            <p className={`${theme.textSecondary} text-sm font-poppins`}>
-              {currentView === 'Welcome' ? 'Trade and Exchange your cryptocurrencies' : `Manage your ${currentView} preferences`}
-            </p>
-          </div>
+      <div className="flex-1 flex flex-col">
+        {/* Mobile Header */}
+        <MobileHeader onToggleSidebar={toggleSidebar} currentView={currentView} />
 
-          {/* Main Content Area */}
-          {renderContent()}
+        {/* Main Content Area */}
+        <div className="flex-1 p-3 md:p-6">
+          <div className="max-w-7xl mx-auto">
+            {/* Header - Hidden on mobile since we have mobile header */}
+            <div className="mb-4 md:mb-6 hidden md:block">
+              <h1 className={`text-xl md:text-2xl font-bold ${theme.text} mb-1 font-poppins`}>
+                {currentView === 'Welcome' ? 'Welcome' : currentView.charAt(0).toUpperCase() + currentView.slice(1)}
+              </h1>
+              <p className={`${theme.textSecondary} text-sm font-poppins`}>
+                {currentView === 'Welcome' ? 'Trade and Exchange your cryptocurrencies' : `Manage your ${currentView} preferences`}
+              </p>
+            </div>
+
+            {/* Main Content Area */}
+            {renderContent()}
+          </div>
         </div>
       </div>
-
+      
       {/* Enhanced Trade Modal */}
-      {showTradeModal && (
+      {showTradeModal && ( 
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 font-poppins">
           <div className={`bg-black/95 backdrop-blur-xl border-[#FEFD0C]/20 rounded-xl p-6 w-full max-w-md shadow-2xl border`}>
             <div className="flex items-center justify-between mb-6">
@@ -617,40 +905,38 @@ const EnhancedCryptoDashboard: React.FC = () => {
                                Minimum: $250
                              </p>
                            </div>
-              
-                           {/* Trade Summary */}
-                           {tradeAmount && parseFloat(tradeAmount) >= 250 && (
-                             <div className={`bg-[#FEFD0C]/5 rounded-lg p-4 border border-[#FEFD0C]/20`}>
-                               <h4 className={`text-sm font-medium ${theme.text} mb-2 font-poppins`}>Trade Summary</h4>
-                               <div className="space-y-1">
-                                 <div className="flex justify-between text-sm">
-                                   <span className={`${theme.textMuted} font-poppins`}>
-                                     {tradeType === 'buy' ? 'You pay:' : 'You receive:'}
-                                   </span>
-                                   <span className={`${theme.text} font-medium font-poppins`}>
-                                     {tradeType === 'buy' ? `$${parseFloat(tradeAmount).toLocaleString()}` : `$${parseFloat(tradeAmount).toLocaleString()}`}
-                                   </span>
-                                 </div>
-                                 <div className="flex justify-between text-sm">
-                                   <span className={`${theme.textMuted} font-poppins`}>
-                                     {tradeType === 'buy' ? 'You receive:' : 'You pay:'}
-                                   </span>
-                                   <span className={`${theme.text} font-medium font-poppins`}>
-                                     {tradeType === 'buy' 
-                                       ? `≈${(parseFloat(tradeAmount) / cryptoPrices[tradeCrypto]).toFixed(8)} ${tradeCrypto}`
-                                       : `≈${(parseFloat(tradeAmount) * cryptoPrices[tradeCrypto]).toFixed(2)} USD`
-                                     }
-                                   </span>
-                                 </div>
-                                 <div className="flex justify-between text-sm pt-2 border-t border-[#FEFD0C]/10">
-                                   <span className={`${theme.textMuted} font-poppins`}>Rate:</span>
-                                   <span className={`${theme.text} font-medium font-poppins`}>
-                                     1 {tradeCrypto} = ${cryptoPrices[tradeCrypto].toLocaleString()}
-                                   </span>
-                                 </div>
-                               </div>
-                             </div>
-                           )}
+  {tradeAmount && parseFloat(tradeAmount) >= 250 && selectedCryptoData && (
+  <div className={`bg-[#FEFD0C]/5 rounded-lg p-4 border border-[#FEFD0C]/20`}>
+    <h4 className={`text-sm font-medium ${theme.text} mb-2 font-poppins`}>Trade Summary</h4>
+    <div className="space-y-1">
+      <div className="flex justify-between text-sm">
+        <span className={`${theme.textMuted} font-poppins`}>
+          {tradeType === 'buy' ? 'You pay:' : 'You receive:'}
+        </span>
+        <span className={`${theme.text} font-medium font-poppins`}>
+          {tradeType === 'buy' ? `$${parseFloat(tradeAmount).toLocaleString()}` : `$${parseFloat(tradeAmount).toLocaleString()}`}
+        </span>
+      </div>
+      <div className="flex justify-between text-sm">
+        <span className={`${theme.textMuted} font-poppins`}>
+          {tradeType === 'buy' ? 'You receive:' : 'You pay:'}
+        </span>
+        <span className={`${theme.text} font-medium font-poppins`}>
+          {tradeType === 'buy' 
+            ? `≈${(parseFloat(tradeAmount) / selectedCryptoData.price).toFixed(8)} ${tradeCrypto}`
+            : `≈${(parseFloat(tradeAmount) * selectedCryptoData.price).toFixed(2)} USD`
+          }
+        </span>
+      </div>
+      <div className="flex justify-between text-sm pt-2 border-t border-[#FEFD0C]/10">
+        <span className={`${theme.textMuted} font-poppins`}>Rate:</span>
+        <span className={`${theme.text} font-medium font-poppins`}>
+          1 {tradeCrypto} = ${selectedCryptoData.price.toLocaleString()}
+        </span>
+      </div>
+    </div>
+  </div>
+)}
               
                            {/* Action Buttons */}
                            <div className="flex space-x-3 pt-2">
