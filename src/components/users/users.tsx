@@ -1,5 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from "react-router-dom";
+import dollar from "../../assets/img/dollar-analysis.svg";
+import world from "../../assets/img/world.svg";
+import network from "../../assets/img/mainNetwork.svg";
+import dominance from "../../assets/img/mainBitcoin.svg"
+
 import {
   TrendingUp,
   TrendingDown,
@@ -8,7 +13,7 @@ import {
   Settings,
   RefreshCw,
   LogOut,
-  BookOpen,
+  BookOpen, 
   MessageCircle,
   BarChart3,
   Activity,
@@ -21,10 +26,6 @@ import {
   Send,
   User,
   Menu,
-  ChevronLeft,
-  ChevronRight,
-  Loader2,
-  AlertCircle,
 } from 'lucide-react';
 
 // Import Poppins font
@@ -618,7 +619,7 @@ const EnhancedCryptoDashboard: React.FC = () => {
             </div>
 
             {/* Market Overview */}
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 relative z-10">
+             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 relative z-10">
                           <div className="bg-[#FEFD0C] text-black rounded-lg md:rounded-xl p-4 md:p-6 border border-black shadow-2xl shadow-black/40">
                             <div className="flex items-center justify-between">
                               <div>
@@ -628,16 +629,17 @@ const EnhancedCryptoDashboard: React.FC = () => {
                                 </p>
                                 <div className="flex items-center space-x-1 mt-1 md:mt-2">
                                   {marketStats.totalMarketCapChange >= 0 ? (
-                                    <TrendingUp className="w-3 h-3 text-black" />
+                                    <TrendingUp className="w-4 h-4 text-green-600" />
                                   ) : (
-                                    <TrendingDown className="w-3 h-3 text-black" />
+                                    <TrendingDown className="w-4 h-4 text-red-600" />
                                   )}
                                   <span className="text-xs font-medium text-black font-poppins">
                                     {marketStats.totalMarketCapChange >= 0 ? '+' : ''}{marketStats.totalMarketCapChange.toFixed(2)}%
                                   </span>
                                 </div>
                               </div>
-                              <Globe className="w-6 h-6 md:w-8 md:h-8 text-black" />
+                               <img src={world} alt="MarketCap" className="w-6 h-6 md:w-8 md:h-8 text-black"/>
+
                             </div>
                           </div>
             
@@ -649,16 +651,17 @@ const EnhancedCryptoDashboard: React.FC = () => {
                                 </p>
                                 <div className="flex items-center space-x-1 mt-1 md:mt-2">
                                   {marketStats.tradingVolumeChange >= 0 ? (
-                                    <TrendingUp className="w-3 h-3 text-black" />
+                                    <TrendingUp className="w-4 h-4 text-green-600" />
                                   ) : (
-                                    <TrendingDown className="w-3 h-3 text-black" />
+                                    <TrendingDown className="w-4 h-4 text-red-600" />
                                   )}
                                   <span className="text-xs font-medium text-black font-poppins">
                                     {marketStats.tradingVolumeChange >= 0 ? '+' : ''}{marketStats.tradingVolumeChange.toFixed(2)}%
                                   </span>
                                 </div>
                               </div>
-                              <Activity className="w-6 h-6 md:w-8 md:h-8 text-black" />
+                              <img src={dollar} alt="24h volume" className="w-6 h-6 md:w-8 md:h-8 text-black"/>
+
                             </div>
                           </div>
             
@@ -671,16 +674,16 @@ const EnhancedCryptoDashboard: React.FC = () => {
                                 </p>
                                 <div className="flex items-center space-x-1 mt-1 md:mt-2">
                                   {marketStats.btcDominanceChange >= 0 ? (
-                                    <TrendingUp className="w-3 h-3 text-black" />
+                                    <TrendingUp className="w-4 h-4 text-green-600" />
                                   ) : (
-                                    <TrendingDown className="w-3 h-3 text-black" />
+                                    <TrendingDown className="w-4 h-4 text-red-600" />
                                   )}
                                   <span className="text-xs font-medium text-black font-poppins">
                                     {marketStats.btcDominanceChange >= 0 ? '+' : ''}{marketStats.btcDominanceChange.toFixed(2)}%
                                   </span>
                                 </div>
                               </div>
-                              <Star className="w-6 h-6 md:w-8 md:h-8 text-black" />
+                               <img src={dominance} alt="Btc Dominance" className="w-6 h-6 md:w-8 md:h-8 text-black"/>
                             </div>
                           </div>
             
@@ -698,7 +701,8 @@ const EnhancedCryptoDashboard: React.FC = () => {
                                   </span>
                                 </div>
                               </div>
-                              <BarChart3 className="w-6 h-6 md:w-8 md:h-8 text-black" />
+                             <img src={network} alt="Active Cryptos" className="w-6 h-6 md:w-8 md:h-8 text-black"/>
+                           
                             </div>
                           </div>
                         </div>
