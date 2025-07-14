@@ -66,7 +66,7 @@ const Login = () => {
 
       // Redirect after a short delay using router navigation
       setTimeout(() => {
-        navigate("/dashboard"); // or wherever you want to redirect after login
+        navigate("/users");
       }, 1500);
 
     } catch (error: unknown) {
