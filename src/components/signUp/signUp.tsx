@@ -212,7 +212,7 @@ const SignUp = () => {
         confirmPassword: formData.confirmPassword
       };
 
-      const response = await fetch("https://www.sellfastpayfast.com/api/auth/sign-up-one", {
+      const response = await fetch("https://sellfastpayfast-backend.onrender.com/api/auth/sign-up-one", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

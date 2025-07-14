@@ -42,11 +42,7 @@ const Login = () => {
     }
 
     try {
-      // Simulate API call for demo
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // In a real app, you'd make an actual API call here
-      const res = await fetch("https://loquacious-crisp-65c64c.netlify.app/api/auth/login", {
+      const res = await fetch("https://sellfastpayfast-backend.onrender.com/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
