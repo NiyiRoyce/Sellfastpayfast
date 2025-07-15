@@ -231,7 +231,7 @@ const getSymbolIcon = (symbol: string): string => {
 const CustomHeader: React.FC = () => {
   // Mock user data - replace with real data 
   const userData = {
-    name: "Alex Johnson", // Set to null or empty string for "Hello, User"
+    name: " ", // Set to null or empty string for "Hello, User"
     username: "@alexj",
   };
 
@@ -250,7 +250,7 @@ const CustomHeader: React.FC = () => {
           </div>
           <div>
             <h1 className={`text-lg md:text-xl font-bold ${theme.text} font-poppins`}>
-              Hello, {userData.name ? userData.name.split(' ')[0] : 'User'}!
+              Sellfastpayfast {userData.name ? userData.name.split(' ')[0] : 'sellfastpayfast'}
             </h1>
           </div>
         </div>
