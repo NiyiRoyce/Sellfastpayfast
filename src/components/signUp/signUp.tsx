@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Eye, EyeOff, Lock, Mail, Shield, User, Phone, X, Info, CheckCircle, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, Shield, User, Phone, X, Info, CheckCircle, AlertCircle, Calendar, AtSign } from "lucide-react";
 
 interface FormData {
-  firstName: string;
-  lastName: string;
+  firstname: string;
+  lastname: string;
   email: string;
+  username: string;
   phone: string;
+  dateOfBirth: string;
   password: string;
   confirmPassword: string;
+  role: string;
 }
 
 interface FormErrors {
@@ -29,12 +32,15 @@ interface PasswordStrength {
 
 const SignUp = () => {
   const [formData, setFormData] = useState<FormData>({
-    firstName: "",
-    lastName: "",
+    firstname: "",
+    lastname: "",
     email: "",
+    username: "",
     phone: "",
+    dateOfBirth: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
+    role: "user"
   });
   
   const [showPassword, setShowPassword] = useState(false);
@@ -56,6 +62,25 @@ const SignUp = () => {
     const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
     const phoneRegex = /^[\+]?[1-9][\d]{7,15}$/;
     return phoneRegex.test(cleanPhone);
+  };
+
+  const validateUsername = (username: string): boolean => {
+    // Username should be 3-20 characters, alphanumeric and underscores only
+    const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+    return usernameRegex.test(username);
+  };
+
+  const validateDateOfBirth = (dateOfBirth: string): boolean => {
+    if (!dateOfBirth) return false;
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    const age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      return age - 1 >= 13; // Must be at least 13 years old
+    }
+    return age >= 13;
   };
 
   const validatePassword = (password: string): PasswordStrength => {
@@ -96,16 +121,16 @@ const SignUp = () => {
     const newErrors: FormErrors = {};
 
     // Name validation
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = "First name is required";
-    } else if (formData.firstName.trim().length < 2) {
-      newErrors.firstName = "First name must be at least 2 characters";
+    if (!formData.firstname.trim()) {
+      newErrors.firstname = "First name is required";
+    } else if (formData.firstname.trim().length < 2) {
+      newErrors.firstname = "First name must be at least 2 characters";
     }
 
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = "Last name is required";
-    } else if (formData.lastName.trim().length < 2) {
-      newErrors.lastName = "Last name must be at least 2 characters";
+    if (!formData.lastname.trim()) {
+      newErrors.lastname = "Last name is required";
+    } else if (formData.lastname.trim().length < 2) {
+      newErrors.lastname = "Last name must be at least 2 characters";
     }
 
     // Email validation
@@ -115,11 +140,25 @@ const SignUp = () => {
       newErrors.email = "Please enter a valid email address";
     }
 
+    // Username validation
+    if (!formData.username.trim()) {
+      newErrors.username = "Username is required";
+    } else if (!validateUsername(formData.username)) {
+      newErrors.username = "Username must be 3-20 characters, letters, numbers, and underscores only";
+    }
+
     // Phone validation
     if (!formData.phone.trim()) {
       newErrors.phone = "Phone number is required";
     } else if (!validatePhone(formData.phone)) {
       newErrors.phone = "Please enter a valid phone number";
+    }
+
+    // Date of birth validation
+    if (!formData.dateOfBirth.trim()) {
+      newErrors.dateOfBirth = "Date of birth is required";
+    } else if (!validateDateOfBirth(formData.dateOfBirth)) {
+      newErrors.dateOfBirth = "You must be at least 13 years old";
     }
 
     // Password validation
@@ -203,13 +242,16 @@ const SignUp = () => {
     }
 
     try {
+      // Prepare data to match backend schema exactly
       const sanitizedData = {
-        firstName: formData.firstName.trim(),
-        lastName: formData.lastName.trim(),
+        firstname: formData.firstname.trim(),
+        lastname: formData.lastname.trim(),
         email: formData.email.trim().toLowerCase(),
+        username: formData.username.trim(),
         phone: formData.phone.replace(/[\s\-\(\)]/g, ''),
+        dateOfBirth: formData.dateOfBirth,
         password: formData.password,
-        confirmPassword: formData.confirmPassword
+        role: formData.role
       };
 
       const response = await fetch("https://sellfastpayfast-backend.onrender.com/api/auth/sign-up-one", {
@@ -249,7 +291,7 @@ const SignUp = () => {
   const isFormValid = validateForm().isValid;
 
   // Form progress calculation
-  const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'password', 'confirmPassword'];
+  const requiredFields = ['firstname', 'lastname', 'email', 'username', 'phone', 'dateOfBirth', 'password', 'confirmPassword'];
   const filledFields = requiredFields.filter(field => formData[field as keyof FormData].trim() !== '');
   const formProgress = Math.round((filledFields.length / requiredFields.length) * 100);
 
@@ -266,7 +308,7 @@ const SignUp = () => {
       <div className="absolute top-20 left-20 w-32 h-32 bg-[#FEFD0C]/5 rounded-full blur-xl animate-pulse"></div>
       <div className="absolute bottom-20 right-20 w-48 h-48 bg-[#FEFD0C]/3 rounded-full blur-2xl animate-pulse"></div>
 
-      <div className="relative z-10 w-full max-w-md">
+      <div className="relative z-10 w-full max-w-lg">
         {/* Security Badge */}
         <div className="flex justify-center mb-6">
           <div className="bg-black/90 backdrop-blur-sm border border-[#FEFD0C]/30 rounded-full px-4 py-2 flex items-center space-x-2">
@@ -332,19 +374,19 @@ const SignUp = () => {
             {/* Name Fields */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label htmlFor="firstName" className="block text-sm font-medium text-white">
+                <label htmlFor="firstname" className="block text-sm font-medium text-white">
                   First Name <span className="text-red-400">*</span>
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
-                    id="firstName"
+                    id="firstname"
                     type="text"
-                    value={formData.firstName}
-                    onChange={(e) => handleInputChange('firstName', e.target.value)}
-                    onBlur={() => handleBlur('firstName')}
+                    value={formData.firstname}
+                    onChange={(e) => handleInputChange('firstname', e.target.value)}
+                    onBlur={() => handleBlur('firstname')}
                     className={`w-full bg-black/40 border text-white rounded-lg py-3 pl-10 pr-4 text-sm placeholder-gray-500 transition-all duration-200 focus:outline-none focus:bg-black/60 focus:ring-1 ${
-                      errors.firstName
+                      errors.firstname
                         ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
                         : 'border-gray-800 focus:border-[#FEFD0C]/50 focus:ring-[#FEFD0C]/20'
                     }`}
@@ -353,28 +395,28 @@ const SignUp = () => {
                     required
                   />
                 </div>
-                {errors.firstName && (
+                {errors.firstname && (
                   <p className="text-red-400 text-xs flex items-center space-x-1">
                     <AlertCircle className="w-3 h-3" />
-                    <span>{errors.firstName}</span>
+                    <span>{errors.firstname}</span>
                   </p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="lastName" className="block text-sm font-medium text-white">
+                <label htmlFor="lastname" className="block text-sm font-medium text-white">
                   Last Name <span className="text-red-400">*</span>
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
-                    id="lastName"
+                    id="lastname"
                     type="text"
-                    value={formData.lastName}
-                    onChange={(e) => handleInputChange('lastName', e.target.value)}
-                    onBlur={() => handleBlur('lastName')}
+                    value={formData.lastname}
+                    onChange={(e) => handleInputChange('lastname', e.target.value)}
+                    onBlur={() => handleBlur('lastname')}
                     className={`w-full bg-black/40 border text-white rounded-lg py-3 pl-10 pr-4 text-sm placeholder-gray-500 transition-all duration-200 focus:outline-none focus:bg-black/60 focus:ring-1 ${
-                      errors.lastName
+                      errors.lastname
                         ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
                         : 'border-gray-800 focus:border-[#FEFD0C]/50 focus:ring-[#FEFD0C]/20'
                     }`}
@@ -383,75 +425,138 @@ const SignUp = () => {
                     required
                   />
                 </div>
-                {errors.lastName && (
+                {errors.lastname && (
                   <p className="text-red-400 text-xs flex items-center space-x-1">
                     <AlertCircle className="w-3 h-3" />
-                    <span>{errors.lastName}</span>
+                    <span>{errors.lastname}</span>
                   </p>
                 )}
               </div>
             </div>
 
-            {/* Email Field */}
-            <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-medium text-white">
-                Email Address <span className="text-red-400">*</span>
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  onBlur={() => handleBlur('email')}
-                  className={`w-full bg-black/40 border text-white rounded-lg py-3 pl-10 pr-4 text-sm placeholder-gray-500 transition-all duration-200 focus:outline-none focus:bg-black/60 focus:ring-1 ${
-                    errors.email
-                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                      : 'border-gray-800 focus:border-[#FEFD0C]/50 focus:ring-[#FEFD0C]/20'
-                  }`}
-                  placeholder="john.doe@example.com"
-                  autoComplete="email"
-                  required
-                />
+            {/* Email and Username Fields */}
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-2">
+                <label htmlFor="email" className="block text-sm font-medium text-white">
+                  Email Address <span className="text-red-400">*</span>
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    onBlur={() => handleBlur('email')}
+                    className={`w-full bg-black/40 border text-white rounded-lg py-3 pl-10 pr-4 text-sm placeholder-gray-500 transition-all duration-200 focus:outline-none focus:bg-black/60 focus:ring-1 ${
+                      errors.email
+                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                        : 'border-gray-800 focus:border-[#FEFD0C]/50 focus:ring-[#FEFD0C]/20'
+                    }`}
+                    placeholder="john.doe@example.com"
+                    autoComplete="email"
+                    required
+                  />
+                </div>
+                {errors.email && (
+                  <p className="text-red-400 text-xs flex items-center space-x-1">
+                    <AlertCircle className="w-3 h-3" />
+                    <span>{errors.email}</span>
+                  </p>
+                )}
               </div>
-              {errors.email && (
-                <p className="text-red-400 text-xs flex items-center space-x-1">
-                  <AlertCircle className="w-3 h-3" />
-                  <span>{errors.email}</span>
-                </p>
-              )}
+
+              <div className="space-y-2">
+                <label htmlFor="username" className="block text-sm font-medium text-white">
+                  Username <span className="text-red-400">*</span>
+                </label>
+                <div className="relative">
+                  <AtSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input
+                    id="username"
+                    type="text"
+                    value={formData.username}
+                    onChange={(e) => handleInputChange('username', e.target.value)}
+                    onBlur={() => handleBlur('username')}
+                    className={`w-full bg-black/40 border text-white rounded-lg py-3 pl-10 pr-4 text-sm placeholder-gray-500 transition-all duration-200 focus:outline-none focus:bg-black/60 focus:ring-1 ${
+                      errors.username
+                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                        : 'border-gray-800 focus:border-[#FEFD0C]/50 focus:ring-[#FEFD0C]/20'
+                    }`}
+                    placeholder="johndoe123"
+                    autoComplete="username"
+                    required
+                  />
+                </div>
+                {errors.username && (
+                  <p className="text-red-400 text-xs flex items-center space-x-1">
+                    <AlertCircle className="w-3 h-3" />
+                    <span>{errors.username}</span>
+                  </p>
+                )}
+              </div>
             </div>
 
-            {/* Phone Field */}
-            <div className="space-y-2">
-              <label htmlFor="phone" className="block text-sm font-medium text-white">
-                Phone Number <span className="text-red-400">*</span>
-              </label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input
-                  id="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                  onBlur={() => handleBlur('phone')}
-                  className={`w-full bg-black/40 border text-white rounded-lg py-3 pl-10 pr-4 text-sm placeholder-gray-500 transition-all duration-200 focus:outline-none focus:bg-black/60 focus:ring-1 ${
-                    errors.phone
-                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                      : 'border-gray-800 focus:border-[#FEFD0C]/50 focus:ring-[#FEFD0C]/20'
-                  }`}
-                  placeholder="+1 (555) 123-4567"
-                  autoComplete="tel"
-                  required
-                />
+            {/* Phone and Date of Birth Fields */}
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-2">
+                <label htmlFor="phone" className="block text-sm font-medium text-white">
+                  Phone Number <span className="text-red-400">*</span>
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input
+                    id="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    onBlur={() => handleBlur('phone')}
+                    className={`w-full bg-black/40 border text-white rounded-lg py-3 pl-10 pr-4 text-sm placeholder-gray-500 transition-all duration-200 focus:outline-none focus:bg-black/60 focus:ring-1 ${
+                      errors.phone
+                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                        : 'border-gray-800 focus:border-[#FEFD0C]/50 focus:ring-[#FEFD0C]/20'
+                    }`}
+                    placeholder="+1 (555) 123-4567"
+                    autoComplete="tel"
+                    required
+                  />
+                </div>
+                {errors.phone && (
+                  <p className="text-red-400 text-xs flex items-center space-x-1">
+                    <AlertCircle className="w-3 h-3" />
+                    <span>{errors.phone}</span>
+                  </p>
+                )}
               </div>
-              {errors.phone && (
-                <p className="text-red-400 text-xs flex items-center space-x-1">
-                  <AlertCircle className="w-3 h-3" />
-                  <span>{errors.phone}</span>
-                </p>
-              )}
+
+              <div className="space-y-2">
+                <label htmlFor="dateOfBirth" className="block text-sm font-medium text-white">
+                  Date of Birth <span className="text-red-400">*</span>
+                </label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input
+                    id="dateOfBirth"
+                    type="date"
+                    value={formData.dateOfBirth}
+                    onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+                    onBlur={() => handleBlur('dateOfBirth')}
+                    max={new Date(new Date().setFullYear(new Date().getFullYear() - 13)).toISOString().split('T')[0]}
+                    className={`w-full bg-black/40 border text-white rounded-lg py-3 pl-10 pr-4 text-sm placeholder-gray-500 transition-all duration-200 focus:outline-none focus:bg-black/60 focus:ring-1 ${
+                      errors.dateOfBirth
+                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                        : 'border-gray-800 focus:border-[#FEFD0C]/50 focus:ring-[#FEFD0C]/20'
+                    }`}
+                    required
+                  />
+                </div>
+                {errors.dateOfBirth && (
+                  <p className="text-red-400 text-xs flex items-center space-x-1">
+                    <AlertCircle className="w-3 h-3" />
+                    <span>{errors.dateOfBirth}</span>
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Password Field */}
@@ -533,174 +638,174 @@ const SignUp = () => {
                 </div>
               )}
               
-              {/* Password Strength Indicator */}
-              {formData.password && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-500">Password strength:</span>
-                    <span className={`font-medium ${passwordStrength.color}`}>
-                      {passwordStrength.strength}
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-700 rounded-full h-1">
-                    <div 
-                      className={`h-1 rounded-full transition-all duration-300 ${
-                        passwordStrength.score <= 2 ? 'bg-red-500' :
-                        passwordStrength.score <= 3 ? 'bg-yellow-500' :
-                        passwordStrength.score <= 4 ? 'bg-green-500' : 'bg-emerald-500'
-                      }`}
-                      style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Confirm Password Field */}
-            <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-white">
-                Confirm Password <span className="text-red-400">*</span>
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={formData.confirmPassword}
-                  onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                  onBlur={() => handleBlur('confirmPassword')}
-                  className={`w-full bg-black/40 border text-white rounded-lg py-3 pl-10 pr-10 text-sm placeholder-gray-500 transition-all duration-200 focus:outline-none focus:bg-black/60 focus:ring-1 ${
-                    errors.confirmPassword
-                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                      : formData.confirmPassword && formData.password === formData.confirmPassword
-                      ? 'border-green-500 focus:border-green-500 focus:ring-green-500/20'
-                      : 'border-gray-800 focus:border-[#FEFD0C]/50 focus:ring-[#FEFD0C]/20'
-                  }`}
-                  placeholder="Confirm your password"
-                  autoComplete="new-password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#FEFD0C] transition-colors duration-200"
-                >
-                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
+               {/* Password Strength Indicator */}
+                            {formData.password && (
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between text-xs">
+                                  <span className="text-gray-500">Password strength:</span>
+                                  <span className={`font-medium ${passwordStrength.color}`}>
+                                    {passwordStrength.strength}
+                                  </span>
+                                </div>
+                                <div className="w-full bg-gray-700 rounded-full h-1">
+                                  <div 
+                                    className={`h-1 rounded-full transition-all duration-300 ${
+                                      passwordStrength.score <= 2 ? 'bg-red-500' :
+                                      passwordStrength.score <= 3 ? 'bg-yellow-500' :
+                                      passwordStrength.score <= 4 ? 'bg-green-500' : 'bg-emerald-500'
+                                    }`}
+                                    style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
               
-              {errors.confirmPassword && (
-                <p className="text-red-400 text-xs flex items-center space-x-1">
-                  <AlertCircle className="w-3 h-3" />
-                  <span>{errors.confirmPassword}</span>
-                </p>
-              )}
+                          {/* Confirm Password Field */}
+                          <div className="space-y-2">
+                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-white">
+                              Confirm Password <span className="text-red-400">*</span>
+                            </label>
+                            <div className="relative">
+                              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                              <input
+                                id="confirmPassword"
+                                type={showConfirmPassword ? "text" : "password"}
+                                value={formData.confirmPassword}
+                                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                                onBlur={() => handleBlur('confirmPassword')}
+                                className={`w-full bg-black/40 border text-white rounded-lg py-3 pl-10 pr-10 text-sm placeholder-gray-500 transition-all duration-200 focus:outline-none focus:bg-black/60 focus:ring-1 ${
+                                  errors.confirmPassword
+                                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                                    : formData.confirmPassword && formData.password === formData.confirmPassword
+                                    ? 'border-green-500 focus:border-green-500 focus:ring-green-500/20'
+                                    : 'border-gray-800 focus:border-[#FEFD0C]/50 focus:ring-[#FEFD0C]/20'
+                                }`}
+                                placeholder="Confirm your password"
+                                autoComplete="new-password"
+                                required
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#FEFD0C] transition-colors duration-200"
+                              >
+                                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                              </button>
+                            </div>
+                            
+                            {errors.confirmPassword && (
+                              <p className="text-red-400 text-xs flex items-center space-x-1">
+                                <AlertCircle className="w-3 h-3" />
+                                <span>{errors.confirmPassword}</span>
+                              </p>
+                            )}
+                            
+                            {/* Password Match Indicator */}
+                            {formData.confirmPassword && formData.password && (
+                              <div className="text-xs flex items-center space-x-1">
+                                {formData.password === formData.confirmPassword ? (
+                                  <>
+                                    <CheckCircle className="w-3 h-3 text-green-400" />
+                                    <span className="text-green-400">Passwords match</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <AlertCircle className="w-3 h-3 text-red-400" />
+                                    <span className="text-red-400">Passwords don't match</span>
+                                  </>
+                                )}
+                              </div>
+                            )}
+                          </div>
               
-              {/* Password Match Indicator */}
-              {formData.confirmPassword && formData.password && (
-                <div className="text-xs flex items-center space-x-1">
-                  {formData.password === formData.confirmPassword ? (
-                    <>
-                      <CheckCircle className="w-3 h-3 text-green-400" />
-                      <span className="text-green-400">Passwords match</span>
-                    </>
-                  ) : (
-                    <>
-                      <AlertCircle className="w-3 h-3 text-red-400" />
-                      <span className="text-red-400">Passwords don't match</span>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Terms and Conditions */}
-            <div className="space-y-2">
-              <div className="flex items-start space-x-3">
-                <div className="flex items-center h-5">
-                  <input
-                    id="terms"
-                    type="checkbox"
-                    checked={acceptTerms}
-                    onChange={(e) => setAcceptTerms(e.target.checked)}
-                    className="w-4 h-4 text-[#FEFD0C] bg-black/40 border-gray-800 rounded focus:ring-[#FEFD0C]/20 focus:ring-2 focus:ring-offset-0"
-                    required
-                  />
-                </div>
-                <label htmlFor="terms" className="text-sm text-gray-300 leading-5">
-                  I agree to the{' '}
-                  <a href="#" className="text-[#FEFD0C] hover:text-[#FEFD0C]/80 underline">
-                    Terms of Service
-                  </a>{' '}
-                  and{' '}
-                  <a href="#" className="text-[#FEFD0C] hover:text-[#FEFD0C]/80 underline">
-                    Privacy Policy
-                  </a>
-                </label>
-              </div>
-              {errors.terms && (
-                <p className="text-red-400 text-xs flex items-center space-x-1">
-                  <AlertCircle className="w-3 h-3" />
-                  <span>{errors.terms}</span>
-                </p>
-              )}
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading || !isFormValid}
-              className={`w-full py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center space-x-2 ${
-                isLoading || !isFormValid
-                  ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                  : 'bg-[#FEFD0C] hover:bg-[#FEFD0C]/90 text-black hover:transform hover:scale-[1.02] active:scale-[0.98]'
-              }`}
-            >
-              {isLoading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-600 border-t-gray-400"></div>
-                  <span>Creating Account...</span>
-                </>
-              ) : (
-                <>
-                  <User className="w-4 h-4" />
-                  <span>Create Account</span>
-                </>
-              )}
-            </button>
-          </form>
-
-          {/* Footer */}
-          <div className="mt-8 text-center">
-            <p className="text-sm text-gray-400">
-              Already have an account?{' '}
-              <button
-                type="button"
-                onClick={handleLoginClick}
-                className="text-[#FEFD0C] hover:text-[#FEFD0C]/80 underline font-medium"
-              >
-                Sign in
-              </button>
-            </p>
-          </div>
-        </div>
-
-        {/* Security Features */}
-        <div className="mt-6 text-center">
-          <div className="flex items-center justify-center space-x-4 text-xs text-gray-500">
-            <div className="flex items-center space-x-1">
-              <Shield className="w-3 h-3" />
-              <span>SSL Protected</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <Lock className="w-3 h-3" />
-              <span>Data Encrypted</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default SignUp;
+                          {/* Terms and Conditions */}
+                          <div className="space-y-2">
+                            <div className="flex items-start space-x-3">
+                              <div className="flex items-center h-5">
+                                <input
+                                  id="terms"
+                                  type="checkbox"
+                                  checked={acceptTerms}
+                                  onChange={(e) => setAcceptTerms(e.target.checked)}
+                                  className="w-4 h-4 text-[#FEFD0C] bg-black/40 border-gray-800 rounded focus:ring-[#FEFD0C]/20 focus:ring-2 focus:ring-offset-0"
+                                  required
+                                />
+                              </div>
+                              <label htmlFor="terms" className="text-sm text-gray-300 leading-5">
+                                I agree to the{' '}
+                                <a href="#" className="text-[#FEFD0C] hover:text-[#FEFD0C]/80 underline">
+                                  Terms of Service
+                                </a>{' '}
+                                and{' '}
+                                <a href="#" className="text-[#FEFD0C] hover:text-[#FEFD0C]/80 underline">
+                                  Privacy Policy
+                                </a>
+                              </label>
+                            </div>
+                            {errors.terms && (
+                              <p className="text-red-400 text-xs flex items-center space-x-1">
+                                <AlertCircle className="w-3 h-3" />
+                                <span>{errors.terms}</span>
+                              </p>
+                            )}
+                          </div>
+              
+                          {/* Submit Button */}
+                          <button
+                            type="submit"
+                            disabled={isLoading || !isFormValid}
+                            className={`w-full py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center space-x-2 ${
+                              isLoading || !isFormValid
+                                ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                                : 'bg-[#FEFD0C] hover:bg-[#FEFD0C]/90 text-black hover:transform hover:scale-[1.02] active:scale-[0.98]'
+                            }`}
+                          >
+                            {isLoading ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-600 border-t-gray-400"></div>
+                                <span>Creating Account...</span>
+                              </>
+                            ) : (
+                              <>
+                                <User className="w-4 h-4" />
+                                <span>Create Account</span>
+                              </>
+                            )}
+                          </button>
+                        </form>
+              
+                        {/* Footer */}
+                        <div className="mt-8 text-center">
+                          <p className="text-sm text-gray-400">
+                            Already have an account?{' '}
+                            <button
+                              type="button"
+                              onClick={handleLoginClick}
+                              className="text-[#FEFD0C] hover:text-[#FEFD0C]/80 underline font-medium"
+                            >
+                              Sign in
+                            </button>
+                          </p>
+                        </div>
+                      </div>
+              
+                      {/* Security Features */}
+                      <div className="mt-6 text-center">
+                        <div className="flex items-center justify-center space-x-4 text-xs text-gray-500">
+                          <div className="flex items-center space-x-1">
+                            <Shield className="w-3 h-3" />
+                            <span>SSL Protected</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <Lock className="w-3 h-3" />
+                            <span>Data Encrypted</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              };
+              
+              export default SignUp;
