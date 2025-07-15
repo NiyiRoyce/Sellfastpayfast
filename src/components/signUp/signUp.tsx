@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useReducer } from "react";
 import { Eye, EyeOff, Lock, Mail, Shield, User, Phone, X, Info, CheckCircle, AlertCircle, Calendar, AtSign } from "lucide-react";
 
+// Types
 interface FormData {
   firstname: string;
   lastname: string;
@@ -30,7 +31,313 @@ interface PasswordStrength {
   };
 }
 
-const SignUp = () => {
+interface InputFieldProps {
+  id: keyof FormData;
+  label: string;
+  type: string;
+  icon: React.ComponentType<{ className?: string }>;
+  value: string;
+  onChange: (value: string) => void;
+  onBlur: () => void;
+  error?: string;
+  placeholder: string;
+  autoComplete?: string;
+  required?: boolean;
+  showToggle?: boolean;
+  showPassword?: boolean;
+  onTogglePassword?: () => void;
+  max?: string;
+  className?: string;
+}
+
+interface ValidationRule {
+  (value: string, ...args: any[]): string;
+}
+
+interface ApiResponse {
+  message?: string;
+}
+
+// Constants
+const REQUIRED_FIELDS: Array<keyof FormData> = [
+  'firstname', 'lastname', 'email', 'username', 'phone', 'dateOfBirth', 'password', 'confirmPassword'
+];
+
+const PASSWORD_REQUIREMENTS = {
+  length: "At least 8 characters",
+  lowercase: "One lowercase letter",
+  uppercase: "One uppercase letter",
+  number: "One number",
+  special: "One special character"
+} as const;
+
+const STRENGTH_CONFIG = {
+  0: { strength: "", color: "" },
+  1: { strength: "Weak", color: "text-red-400" },
+  2: { strength: "Weak", color: "text-red-400" },
+  3: { strength: "Medium", color: "text-yellow-400" },
+  4: { strength: "Strong", color: "text-green-400" },
+  5: { strength: "Very Strong", color: "text-emerald-400" }
+} as const;
+
+const API_ENDPOINT = "https://sellfastpayfast-backend.onrender.com/api/auth/sign-up-one";
+
+// Validation rules
+const validationRules: Record<string, ValidationRule> = {
+  firstname: (value: string): string => {
+    if (!value.trim()) return "First name is required";
+    if (value.trim().length < 2) return "First name must be at least 2 characters";
+    return "";
+  },
+  lastname: (value: string): string => {
+    if (!value.trim()) return "Last name is required";
+    if (value.trim().length < 2) return "Last name must be at least 2 characters";
+    return "";
+  },
+  email: (value: string): string => {
+    if (!value.trim()) return "Email is required";
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(value)) return "Please enter a valid email address";
+    return "";
+  },
+  username: (value: string): string => {
+    if (!value.trim()) return "Username is required";
+    const usernameRegex = /^[a-zA-Z0-9_.-]{3,20}$/;
+    if (!usernameRegex.test(value)) return "Username must be 3-20 characters (letters, numbers, dots, hyphens, underscores)";
+    return "";
+  },
+  phone: (value: string): string => {
+    if (!value.trim()) return "Phone number is required";
+    const cleanPhone = value.replace(/[\s\-\(\)]/g, '');
+    const phoneRegex = /^[\+]?[1-9][\d]{7,15}$/;
+    if (!phoneRegex.test(cleanPhone)) return "Please enter a valid phone number";
+    return "";
+  },
+  dateOfBirth: (value: string): string => {
+    if (!value.trim()) return "Date of birth is required";
+    const today = new Date();
+    const birthDate = new Date(value);
+    const age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    const actualAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) ? age - 1 : age;
+    if (actualAge < 13) return "You must be at least 13 years old";
+    return "";
+  },
+  password: (value: string, requirements: PasswordStrength['requirements']): string => {
+    if (!value) return "Password is required";
+    const score = Object.values(requirements).filter(Boolean).length;
+    if (score < 4) return "Password must meet at least 4 requirements";
+    return "";
+  },
+  confirmPassword: (value: string, password: string): string => {
+    if (!value) return "Please confirm your password";
+    if (value !== password) return "Passwords do not match";
+    return "";
+  }
+};
+
+// Error reducer
+type ErrorAction = 
+  | { type: 'SET_ERROR'; field: string; error: string }
+  | { type: 'CLEAR_ERROR'; field: string }
+  | { type: 'CLEAR_ALL' }
+  | { type: 'SET_ERRORS'; errors: FormErrors };
+
+const errorReducer = (state: FormErrors, action: ErrorAction): FormErrors => {
+  switch (action.type) {
+    case 'SET_ERROR':
+      return { ...state, [action.field]: action.error };
+    case 'CLEAR_ERROR':
+      const { [action.field]: _, ...rest } = state;
+      return rest;
+    case 'CLEAR_ALL':
+      return {};
+    case 'SET_ERRORS':
+      return { ...action.errors };
+    default:
+      return state;
+  }
+};
+
+// Utility functions
+const sanitizePhone = (phone: string): string => phone.replace(/[\s\-\(\)]/g, '');
+
+const getMaxDate = (): string => {
+  const today = new Date();
+  const maxDate = new Date(today.getFullYear() - 13, today.getMonth(), today.getDate());
+  return maxDate.toISOString().split('T')[0];
+};
+
+const calculatePasswordStrength = (password: string): PasswordStrength => {
+  const requirements = {
+    length: password.length >= 8,
+    lowercase: /[a-z]/.test(password),
+    uppercase: /[A-Z]/.test(password),
+    number: /[0-9]/.test(password),
+    special: /[^A-Za-z0-9]/.test(password)
+  };
+
+  const score = Object.values(requirements).filter(Boolean).length;
+  const config = STRENGTH_CONFIG[score as keyof typeof STRENGTH_CONFIG] || STRENGTH_CONFIG[0];
+  
+  return {
+    strength: password.length === 0 ? "" : config.strength,
+    color: password.length === 0 ? "" : config.color,
+    score,
+    requirements
+  };
+};
+
+// Reusable Input Component
+const FormInput: React.FC<InputFieldProps> = ({
+  id,
+  label,
+  type,
+  icon: Icon,
+  value,
+  onChange,
+  onBlur,
+  error,
+  placeholder,
+  autoComplete,
+  required = false,
+  showToggle = false,
+  showPassword = false,
+  onTogglePassword,
+  max,
+  className = ""
+}) => {
+  const baseInputClasses = "w-full bg-black/40 border text-white rounded-lg py-3 pl-10 text-sm placeholder-gray-500 transition-all duration-200 focus:outline-none focus:bg-black/60 focus:ring-1";
+  const errorClasses = error 
+    ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+    : 'border-gray-800 focus:border-[#FEFD0C]/50 focus:ring-[#FEFD0C]/20';
+  const paddingClasses = showToggle ? 'pr-10' : 'pr-4';
+
+  return (
+    <div className={`space-y-2 ${className}`}>
+      <label htmlFor={id} className="block text-sm font-medium text-white">
+        {label} {required && <span className="text-red-400">*</span>}
+      </label>
+      <div className="relative">
+        <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+        <input
+          id={id}
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onBlur={onBlur}
+          max={max}
+          className={`${baseInputClasses} ${errorClasses} ${paddingClasses}`}
+          placeholder={placeholder}
+          autoComplete={autoComplete}
+          required={required}
+          aria-describedby={error ? `${id}-error` : undefined}
+          aria-invalid={!!error}
+        />
+        {showToggle && onTogglePassword && (
+          <button
+            type="button"
+            onClick={onTogglePassword}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#FEFD0C] transition-colors duration-200"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+        )}
+      </div>
+      {error && (
+        <p id={`${id}-error`} className="text-red-400 text-xs flex items-center space-x-1" role="alert">
+          <AlertCircle className="w-3 h-3" />
+          <span>{error}</span>
+        </p>
+      )}
+    </div>
+  );
+};
+
+// Alert Component
+const Alert: React.FC<{ 
+  type: 'success' | 'error'; 
+  message: string; 
+  onDismiss?: () => void;
+}> = ({ type, message, onDismiss }) => {
+  const isSuccess = type === 'success';
+  const bgColor = isSuccess ? 'bg-green-500/10' : 'bg-red-500/10';
+  const borderColor = isSuccess ? 'border-green-500/30' : 'border-red-500/30';
+  const textColor = isSuccess ? 'text-green-400' : 'text-red-400';
+  const Icon = isSuccess ? CheckCircle : AlertCircle;
+
+  return (
+    <div className={`${bgColor} border ${borderColor} ${textColor} px-4 py-3 rounded-lg flex items-center space-x-3`} role="alert">
+      <Icon className="h-4 w-4 flex-shrink-0" />
+      <span className="text-sm flex-1">{message}</span>
+      {onDismiss && (
+        <button
+          type="button"
+          onClick={onDismiss}
+          className={`${textColor} hover:opacity-70`}
+          aria-label="Dismiss error"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      )}
+    </div>
+  );
+};
+
+// Password Requirements Component
+const PasswordRequirements: React.FC<{ requirements: PasswordStrength['requirements'] }> = ({ requirements }) => (
+  <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-xs">
+    <p className="text-gray-300 mb-2">Password must include:</p>
+    <div className="space-y-1">
+      {Object.entries(PASSWORD_REQUIREMENTS).map(([key, description]) => {
+        const isValid = requirements[key as keyof typeof requirements];
+        return (
+          <div key={key} className="flex items-center space-x-2">
+            {isValid ? (
+              <CheckCircle className="w-3 h-3 text-green-400" />
+            ) : (
+              <AlertCircle className="w-3 h-3 text-gray-400" />
+            )}
+            <span className={isValid ? "text-green-400" : "text-gray-400"}>
+              {description}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+);
+
+// Password Strength Indicator
+const PasswordStrengthIndicator: React.FC<{ strength: PasswordStrength }> = ({ strength }) => {
+  const getProgressColor = (score: number): string => {
+    if (score <= 2) return 'bg-red-500';
+    if (score <= 3) return 'bg-yellow-500';
+    if (score <= 4) return 'bg-green-500';
+    return 'bg-emerald-500';
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-gray-500">Password strength:</span>
+        <span className={`font-medium ${strength.color}`}>
+          {strength.strength}
+        </span>
+      </div>
+      <div className="w-full bg-gray-700 rounded-full h-1">
+        <div 
+          className={`h-1 rounded-full transition-all duration-300 ${getProgressColor(strength.score)}`}
+          style={{ width: `${(strength.score / 5) * 100}%` }}
+        />
+      </div>
+    </div>
+  );
+};
+
+// Main Component
+const SignUp: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     firstname: "",
     lastname: "",
@@ -43,142 +350,41 @@ const SignUp = () => {
     role: "user"
   });
   
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [acceptTerms, setAcceptTerms] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+  const [acceptTerms, setAcceptTerms] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [errors, dispatchError] = useReducer(errorReducer, {});
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
-  const [successMessage, setSuccessMessage] = useState("");
-  const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string>("");
+  const [showPasswordRequirements, setShowPasswordRequirements] = useState<boolean>(false);
 
-  // Validation functions
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const validatePhone = (phone: string): boolean => {
-    const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
-    const phoneRegex = /^[\+]?[1-9][\d]{7,15}$/;
-    return phoneRegex.test(cleanPhone);
-  };
-
-  const validateUsername = (username: string): boolean => {
-    // Username should be 3-20 characters, alphanumeric and underscores only
-    const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
-    return usernameRegex.test(username);
-  };
-
-  const validateDateOfBirth = (dateOfBirth: string): boolean => {
-    if (!dateOfBirth) return false;
-    const today = new Date();
-    const birthDate = new Date(dateOfBirth);
-    const age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
+  const validateField = useCallback((field: keyof FormData, value: string): string => {
+    const validator = validationRules[field];
+    if (!validator) return "";
     
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      return age - 1 >= 13; // Must be at least 13 years old
+    if (field === 'password') {
+      const passwordStrength = calculatePasswordStrength(value);
+      return validator(value, passwordStrength.requirements);
     }
-    return age >= 13;
-  };
-
-  const validatePassword = (password: string): PasswordStrength => {
-    const requirements = {
-      length: password.length >= 8,
-      lowercase: /[a-z]/.test(password),
-      uppercase: /[A-Z]/.test(password),
-      number: /[0-9]/.test(password),
-      special: /[^A-Za-z0-9]/.test(password)
-    };
-
-    const score = Object.values(requirements).filter(Boolean).length;
     
-    let strength = "";
-    let color = "";
-    
-    if (password.length === 0) {
-      strength = "";
-      color = "";
-    } else if (score <= 2) {
-      strength = "Weak";
-      color = "text-red-400";
-    } else if (score <= 3) {
-      strength = "Medium";
-      color = "text-yellow-400";
-    } else if (score <= 4) {
-      strength = "Strong";
-      color = "text-green-400";
-    } else {
-      strength = "Very Strong";
-      color = "text-emerald-400";
+    if (field === 'confirmPassword') {
+      return validator(value, formData.password);
     }
-
-    return { strength, color, score, requirements };
-  };
+    
+    return validator(value);
+  }, [formData.password]);
 
   const validateForm = useCallback((): { isValid: boolean; errors: FormErrors } => {
     const newErrors: FormErrors = {};
-
-    // Name validation
-    if (!formData.firstname.trim()) {
-      newErrors.firstname = "First name is required";
-    } else if (formData.firstname.trim().length < 2) {
-      newErrors.firstname = "First name must be at least 2 characters";
-    }
-
-    if (!formData.lastname.trim()) {
-      newErrors.lastname = "Last name is required";
-    } else if (formData.lastname.trim().length < 2) {
-      newErrors.lastname = "Last name must be at least 2 characters";
-    }
-
-    // Email validation
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!validateEmail(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
-    }
-
-    // Username validation
-    if (!formData.username.trim()) {
-      newErrors.username = "Username is required";
-    } else if (!validateUsername(formData.username)) {
-      newErrors.username = "Username must be 3-20 characters, letters, numbers, and underscores only";
-    }
-
-    // Phone validation
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Phone number is required";
-    } else if (!validatePhone(formData.phone)) {
-      newErrors.phone = "Please enter a valid phone number";
-    }
-
-    // Date of birth validation
-    if (!formData.dateOfBirth.trim()) {
-      newErrors.dateOfBirth = "Date of birth is required";
-    } else if (!validateDateOfBirth(formData.dateOfBirth)) {
-      newErrors.dateOfBirth = "You must be at least 13 years old";
-    }
-
-    // Password validation
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else {
-      const passwordStrength = validatePassword(formData.password);
-      if (passwordStrength.score < 3) {
-        newErrors.password = "Password must be stronger (minimum 3 requirements)";
+    
+    REQUIRED_FIELDS.forEach(field => {
+      const error = validateField(field, formData[field]);
+      if (error) {
+        newErrors[field] = error;
       }
-    }
+    });
 
-    // Confirm password validation
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password";
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
-    }
-
-    // Terms validation
     if (!acceptTerms) {
       newErrors.terms = "You must accept the terms and conditions";
     }
@@ -187,53 +393,54 @@ const SignUp = () => {
       isValid: Object.keys(newErrors).length === 0,
       errors: newErrors
     };
-  }, [formData, acceptTerms]);
+  }, [formData, acceptTerms, validateField]);
 
-  // Real-time validation with debouncing
+  // Debounced validation
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (touchedFields.size > 0) {
-        const validation = validateForm();
         const touchedErrors: FormErrors = {};
         Array.from(touchedFields).forEach(field => {
-          if (validation.errors[field]) {
-            touchedErrors[field] = validation.errors[field];
+          if (field !== 'terms') {
+            const error = validateField(field as keyof FormData, formData[field as keyof FormData]);
+            if (error) {
+              touchedErrors[field] = error;
+            }
           }
         });
-        setErrors(touchedErrors);
+        dispatchError({ type: 'SET_ERRORS', errors: touchedErrors });
       }
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [formData, acceptTerms, touchedFields, validateForm]);
+  }, [formData, touchedFields, validateField]);
 
-  const handleInputChange = (field: keyof FormData, value: string) => {
+  const handleInputChange = useCallback((field: keyof FormData, value: string): void => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setTouchedFields(prev => new Set(prev).add(field));
     
     if (errors[field]) {
-      setErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
+      dispatchError({ type: 'CLEAR_ERROR', field });
     }
-  };
+  }, [errors]);
 
-  const handleBlur = (field: string) => {
+  const handleBlur = useCallback((field: string): void => {
     setTouchedFields(prev => new Set(prev).add(field));
-  };
+  }, []);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
+    
+    if (isSubmitting) return;
+    
     setSuccessMessage("");
-    setIsLoading(true);
+    setIsSubmitting(true);
 
     const validation = validateForm();
     
     if (!validation.isValid) {
-      setErrors(validation.errors);
-      setIsLoading(false);
+      dispatchError({ type: 'SET_ERRORS', errors: validation.errors });
+      setIsSubmitting(false);
       
       const firstErrorField = Object.keys(validation.errors)[0];
       const errorElement = document.getElementById(firstErrorField);
@@ -242,19 +449,18 @@ const SignUp = () => {
     }
 
     try {
-      // Prepare data to match backend schema exactly
       const sanitizedData = {
         firstname: formData.firstname.trim(),
         lastname: formData.lastname.trim(),
         email: formData.email.trim().toLowerCase(),
         username: formData.username.trim(),
-        phone: formData.phone.replace(/[\s\-\(\)]/g, ''),
+        phone: sanitizePhone(formData.phone),
         dateOfBirth: formData.dateOfBirth,
         password: formData.password,
         role: formData.role
       };
 
-      const response = await fetch("https://sellfastpayfast-backend.onrender.com/api/auth/sign-up-one", {
+      const response = await fetch(API_ENDPOINT, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -262,7 +468,7 @@ const SignUp = () => {
         body: JSON.stringify(sanitizedData),
       });
 
-      const data = await response.json();
+      const data: ApiResponse = await response.json();
 
       if (!response.ok) {
         throw new Error(data.message || `Registration failed (${response.status})`);
@@ -275,59 +481,31 @@ const SignUp = () => {
       }, 2000);
 
     } catch (error) {
-      setErrors({ 
-        general: error instanceof Error ? error.message : "An unexpected error occurred. Please try again." 
+      dispatchError({ 
+        type: 'SET_ERROR', 
+        field: 'general', 
+        error: error instanceof Error ? error.message : "An unexpected error occurred. Please try again." 
       });
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  const handleLoginClick = () => {
+  const handleLoginClick = useCallback((): void => {
     window.location.href = "/login";
-  };
+  }, []);
 
-  const passwordStrength = validatePassword(formData.password);
+  const passwordStrength = calculatePasswordStrength(formData.password);
   const isFormValid = validateForm().isValid;
-
-  // Form progress calculation
-  const requiredFields = ['firstname', 'lastname', 'email', 'username', 'phone', 'dateOfBirth', 'password', 'confirmPassword'];
-  const filledFields = requiredFields.filter(field => formData[field as keyof FormData].trim() !== '');
-  const formProgress = Math.round((filledFields.length / requiredFields.length) * 100);
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-black py-8 px-4">
-      {/* Background Effects */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute inset-0 animate-pulse" style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(254, 253, 12, 0.3) 1px, transparent 0)`,
-          backgroundSize: '50px 50px'
-        }}></div>
-      </div>
-
-      <div className="absolute top-20 left-20 w-32 h-32 bg-[#FEFD0C]/5 rounded-full blur-xl animate-pulse"></div>
-      <div className="absolute bottom-20 right-20 w-48 h-48 bg-[#FEFD0C]/3 rounded-full blur-2xl animate-pulse"></div>
-
       <div className="relative z-10 w-full max-w-lg">
         {/* Security Badge */}
         <div className="flex justify-center mb-6">
           <div className="bg-black/90 backdrop-blur-sm border border-[#FEFD0C]/30 rounded-full px-4 py-2 flex items-center space-x-2">
-            <Shield className="w-4 h-4 text-[#FEFD0C] animate-pulse" />
+            <Shield className="w-4 h-4 text-[#FEFD0C]" />
             <span className="text-xs font-medium text-[#FEFD0C] tracking-wide">SECURE REGISTRATION</span>
-          </div>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="mb-6">
-          <div className="flex justify-between text-xs text-gray-400 mb-2">
-            <span>Form Progress</span>
-            <span>{formProgress}%</span>
-          </div>
-          <div className="w-full bg-gray-700 rounded-full h-1">
-            <div 
-              className="bg-[#FEFD0C] h-1 rounded-full transition-all duration-500"
-              style={{ width: `${formProgress}%` }}
-            />
           </div>
         </div>
 
@@ -347,217 +525,105 @@ const SignUp = () => {
           <form onSubmit={handleSubmit} className="space-y-5" noValidate>
             {/* Success Message */}
             {successMessage && (
-              <div className="bg-green-500/10 border border-green-500/30 text-green-400 px-4 py-3 rounded-lg flex items-center space-x-3">
-                <CheckCircle className="h-4 w-4 flex-shrink-0" />
-                <span className="text-sm">{successMessage}</span>
-              </div>
+              <Alert type="success" message={successMessage} />
             )}
 
             {/* General Error Message */}
             {errors.general && (
-              <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg flex items-center space-x-3">
-                <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                <span className="text-sm flex-1">{errors.general}</span>
-                <button
-                  type="button"
-                  onClick={() => setErrors(prev => {
-                    const { general, ...rest } = prev;
-                    return rest;
-                  })}
-                  className="text-red-400 hover:text-red-300"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
+              <Alert 
+                type="error" 
+                message={errors.general} 
+                onDismiss={() => dispatchError({ type: 'CLEAR_ERROR', field: 'general' })}
+              />
             )}
 
             {/* Name Fields */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label htmlFor="firstname" className="block text-sm font-medium text-white">
-                  First Name <span className="text-red-400">*</span>
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input
-                    id="firstname"
-                    type="text"
-                    value={formData.firstname}
-                    onChange={(e) => handleInputChange('firstname', e.target.value)}
-                    onBlur={() => handleBlur('firstname')}
-                    className={`w-full bg-black/40 border text-white rounded-lg py-3 pl-10 pr-4 text-sm placeholder-gray-500 transition-all duration-200 focus:outline-none focus:bg-black/60 focus:ring-1 ${
-                      errors.firstname
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                        : 'border-gray-800 focus:border-[#FEFD0C]/50 focus:ring-[#FEFD0C]/20'
-                    }`}
-                    placeholder="John"
-                    autoComplete="given-name"
-                    required
-                  />
-                </div>
-                {errors.firstname && (
-                  <p className="text-red-400 text-xs flex items-center space-x-1">
-                    <AlertCircle className="w-3 h-3" />
-                    <span>{errors.firstname}</span>
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="lastname" className="block text-sm font-medium text-white">
-                  Last Name <span className="text-red-400">*</span>
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input
-                    id="lastname"
-                    type="text"
-                    value={formData.lastname}
-                    onChange={(e) => handleInputChange('lastname', e.target.value)}
-                    onBlur={() => handleBlur('lastname')}
-                    className={`w-full bg-black/40 border text-white rounded-lg py-3 pl-10 pr-4 text-sm placeholder-gray-500 transition-all duration-200 focus:outline-none focus:bg-black/60 focus:ring-1 ${
-                      errors.lastname
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                        : 'border-gray-800 focus:border-[#FEFD0C]/50 focus:ring-[#FEFD0C]/20'
-                    }`}
-                    placeholder="Doe"
-                    autoComplete="family-name"
-                    required
-                  />
-                </div>
-                {errors.lastname && (
-                  <p className="text-red-400 text-xs flex items-center space-x-1">
-                    <AlertCircle className="w-3 h-3" />
-                    <span>{errors.lastname}</span>
-                  </p>
-                )}
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormInput
+                id="firstname"
+                label="First Name"
+                type="text"
+                icon={User}
+                value={formData.firstname}
+                onChange={(value) => handleInputChange('firstname', value)}
+                onBlur={() => handleBlur('firstname')}
+                error={errors.firstname}
+                placeholder="John"
+                autoComplete="given-name"
+                required
+              />
+              <FormInput
+                id="lastname"
+                label="Last Name"
+                type="text"
+                icon={User}
+                value={formData.lastname}
+                onChange={(value) => handleInputChange('lastname', value)}
+                onBlur={() => handleBlur('lastname')}
+                error={errors.lastname}
+                placeholder="Doe"
+                autoComplete="family-name"
+                required
+              />
             </div>
 
-            {/* Email and Username Fields */}
-            <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-2">
-                <label htmlFor="email" className="block text-sm font-medium text-white">
-                  Email Address <span className="text-red-400">*</span>
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    onBlur={() => handleBlur('email')}
-                    className={`w-full bg-black/40 border text-white rounded-lg py-3 pl-10 pr-4 text-sm placeholder-gray-500 transition-all duration-200 focus:outline-none focus:bg-black/60 focus:ring-1 ${
-                      errors.email
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                        : 'border-gray-800 focus:border-[#FEFD0C]/50 focus:ring-[#FEFD0C]/20'
-                    }`}
-                    placeholder="john.doe@example.com"
-                    autoComplete="email"
-                    required
-                  />
-                </div>
-                {errors.email && (
-                  <p className="text-red-400 text-xs flex items-center space-x-1">
-                    <AlertCircle className="w-3 h-3" />
-                    <span>{errors.email}</span>
-                  </p>
-                )}
-              </div>
+            {/* Email and Username */}
+            <FormInput
+              id="email"
+              label="Email Address"
+              type="email"
+              icon={Mail}
+              value={formData.email}
+              onChange={(value) => handleInputChange('email', value)}
+              onBlur={() => handleBlur('email')}
+              error={errors.email}
+              placeholder="john.doe@example.com"
+              autoComplete="email"
+              required
+            />
 
-              <div className="space-y-2">
-                <label htmlFor="username" className="block text-sm font-medium text-white">
-                  Username <span className="text-red-400">*</span>
-                </label>
-                <div className="relative">
-                  <AtSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input
-                    id="username"
-                    type="text"
-                    value={formData.username}
-                    onChange={(e) => handleInputChange('username', e.target.value)}
-                    onBlur={() => handleBlur('username')}
-                    className={`w-full bg-black/40 border text-white rounded-lg py-3 pl-10 pr-4 text-sm placeholder-gray-500 transition-all duration-200 focus:outline-none focus:bg-black/60 focus:ring-1 ${
-                      errors.username
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                        : 'border-gray-800 focus:border-[#FEFD0C]/50 focus:ring-[#FEFD0C]/20'
-                    }`}
-                    placeholder="johndoe123"
-                    autoComplete="username"
-                    required
-                  />
-                </div>
-                {errors.username && (
-                  <p className="text-red-400 text-xs flex items-center space-x-1">
-                    <AlertCircle className="w-3 h-3" />
-                    <span>{errors.username}</span>
-                  </p>
-                )}
-              </div>
-            </div>
+            <FormInput
+              id="username"
+              label="Username"
+              type="text"
+              icon={AtSign}
+              value={formData.username}
+              onChange={(value) => handleInputChange('username', value)}
+              onBlur={() => handleBlur('username')}
+              error={errors.username}
+              placeholder="johndoe123"
+              autoComplete="username"
+              required
+            />
 
-            {/* Phone and Date of Birth Fields */}
-            <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-2">
-                <label htmlFor="phone" className="block text-sm font-medium text-white">
-                  Phone Number <span className="text-red-400">*</span>
-                </label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input
-                    id="phone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    onBlur={() => handleBlur('phone')}
-                    className={`w-full bg-black/40 border text-white rounded-lg py-3 pl-10 pr-4 text-sm placeholder-gray-500 transition-all duration-200 focus:outline-none focus:bg-black/60 focus:ring-1 ${
-                      errors.phone
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                        : 'border-gray-800 focus:border-[#FEFD0C]/50 focus:ring-[#FEFD0C]/20'
-                    }`}
-                    placeholder="+1 (555) 123-4567"
-                    autoComplete="tel"
-                    required
-                  />
-                </div>
-                {errors.phone && (
-                  <p className="text-red-400 text-xs flex items-center space-x-1">
-                    <AlertCircle className="w-3 h-3" />
-                    <span>{errors.phone}</span>
-                  </p>
-                )}
-              </div>
+            {/* Phone and Date of Birth */}
+            <FormInput
+              id="phone"
+              label="Phone Number"
+              type="tel"
+              icon={Phone}
+              value={formData.phone}
+              onChange={(value) => handleInputChange('phone', value)}
+              onBlur={() => handleBlur('phone')}
+              error={errors.phone}
+              placeholder="+1 (555) 123-4567"
+              autoComplete="tel"
+              required
+            />
 
-              <div className="space-y-2">
-                <label htmlFor="dateOfBirth" className="block text-sm font-medium text-white">
-                  Date of Birth <span className="text-red-400">*</span>
-                </label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input
-                    id="dateOfBirth"
-                    type="date"
-                    value={formData.dateOfBirth}
-                    onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
-                    onBlur={() => handleBlur('dateOfBirth')}
-                    max={new Date(new Date().setFullYear(new Date().getFullYear() - 13)).toISOString().split('T')[0]}
-                    className={`w-full bg-black/40 border text-white rounded-lg py-3 pl-10 pr-4 text-sm placeholder-gray-500 transition-all duration-200 focus:outline-none focus:bg-black/60 focus:ring-1 ${
-                      errors.dateOfBirth
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                        : 'border-gray-800 focus:border-[#FEFD0C]/50 focus:ring-[#FEFD0C]/20'
-                    }`}
-                    required
-                  />
-                </div>
-                {errors.dateOfBirth && (
-                  <p className="text-red-400 text-xs flex items-center space-x-1">
-                    <AlertCircle className="w-3 h-3" />
-                    <span>{errors.dateOfBirth}</span>
-                  </p>
-                )}
-              </div>
-            </div>
+            <FormInput
+              id="dateOfBirth"
+              label="Date of Birth"
+              type="date"
+              icon={Calendar}
+              value={formData.dateOfBirth}
+              onChange={(value) => handleInputChange('dateOfBirth', value)}
+              onBlur={() => handleBlur('dateOfBirth')}
+              error={errors.dateOfBirth}
+              placeholder=""
+              max={getMaxDate()}
+              required
+            />
 
             {/* Password Field */}
             <div className="space-y-2">
@@ -569,6 +635,7 @@ const SignUp = () => {
                   type="button"
                   onClick={() => setShowPasswordRequirements(!showPasswordRequirements)}
                   className="text-gray-400 hover:text-[#FEFD0C] text-xs flex items-center space-x-1"
+                  aria-expanded={showPasswordRequirements}
                 >
                   <Info className="w-3 h-3" />
                   <span>Requirements</span>
@@ -590,18 +657,21 @@ const SignUp = () => {
                   placeholder="Create a strong password"
                   autoComplete="new-password"
                   required
+                  aria-describedby={errors.password ? 'password-error' : 'password-requirements'}
+                  aria-invalid={!!errors.password}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#FEFD0C] transition-colors duration-200"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
               
               {errors.password && (
-                <p className="text-red-400 text-xs flex items-center space-x-1">
+                <p id="password-error" className="text-red-400 text-xs flex items-center space-x-1" role="alert">
                   <AlertCircle className="w-3 h-3" />
                   <span>{errors.password}</span>
                 </p>
@@ -609,203 +679,131 @@ const SignUp = () => {
 
               {/* Password Requirements */}
               {showPasswordRequirements && (
-                <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-xs">
-                  <p className="text-gray-300 mb-2">Password must include:</p>
-                  <div className="space-y-1">
-                    {Object.entries({
-                      length: "At least 8 characters",
-                      lowercase: "One lowercase letter",
-                      uppercase: "One uppercase letter",
-                      number: "One number",
-                      special: "One special character"
-                    }).map(([key, description]) => (
-                      <div key={key} className="flex items-center space-x-2">
-                        {passwordStrength.requirements[key as keyof typeof passwordStrength.requirements] ? (
-                          <CheckCircle className="w-3 h-3 text-green-400" />
-                        ) : (
-                          <AlertCircle className="w-3 h-3 text-gray-400" />
-                        )}
-                        <span className={
-                          passwordStrength.requirements[key as keyof typeof passwordStrength.requirements] 
-                            ? "text-green-400" 
-                            : "text-gray-400"
-                        }>
-                          {description}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <PasswordRequirements requirements={passwordStrength.requirements} />
               )}
               
-               {/* Password Strength Indicator */}
-                            {formData.password && (
-                              <div className="space-y-2">
-                                <div className="flex items-center justify-between text-xs">
-                                  <span className="text-gray-500">Password strength:</span>
-                                  <span className={`font-medium ${passwordStrength.color}`}>
-                                    {passwordStrength.strength}
-                                  </span>
-                                </div>
-                                <div className="w-full bg-gray-700 rounded-full h-1">
-                                  <div 
-                                    className={`h-1 rounded-full transition-all duration-300 ${
-                                      passwordStrength.score <= 2 ? 'bg-red-500' :
-                                      passwordStrength.score <= 3 ? 'bg-yellow-500' :
-                                      passwordStrength.score <= 4 ? 'bg-green-500' : 'bg-emerald-500'
-                                    }`}
-                                    style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
-                                  />
-                                </div>
-                              </div>
-                            )}
-                          </div>
-              
-                          {/* Confirm Password Field */}
-                          <div className="space-y-2">
-                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-white">
-                              Confirm Password <span className="text-red-400">*</span>
-                            </label>
-                            <div className="relative">
-                              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                              <input
-                                id="confirmPassword"
-                                type={showConfirmPassword ? "text" : "password"}
-                                value={formData.confirmPassword}
-                                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                                onBlur={() => handleBlur('confirmPassword')}
-                                className={`w-full bg-black/40 border text-white rounded-lg py-3 pl-10 pr-10 text-sm placeholder-gray-500 transition-all duration-200 focus:outline-none focus:bg-black/60 focus:ring-1 ${
-                                  errors.confirmPassword
-                                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                                    : formData.confirmPassword && formData.password === formData.confirmPassword
-                                    ? 'border-green-500 focus:border-green-500 focus:ring-green-500/20'
-                                    : 'border-gray-800 focus:border-[#FEFD0C]/50 focus:ring-[#FEFD0C]/20'
-                                }`}
-                                placeholder="Confirm your password"
-                                autoComplete="new-password"
-                                required
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#FEFD0C] transition-colors duration-200"
-                              >
-                                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                              </button>
-                            </div>
-                            
-                            {errors.confirmPassword && (
-                              <p className="text-red-400 text-xs flex items-center space-x-1">
-                                <AlertCircle className="w-3 h-3" />
-                                <span>{errors.confirmPassword}</span>
-                              </p>
-                            )}
-                            
-                            {/* Password Match Indicator */}
-                            {formData.confirmPassword && formData.password && (
-                              <div className="text-xs flex items-center space-x-1">
-                                {formData.password === formData.confirmPassword ? (
-                                  <>
-                                    <CheckCircle className="w-3 h-3 text-green-400" />
-                                    <span className="text-green-400">Passwords match</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <AlertCircle className="w-3 h-3 text-red-400" />
-                                    <span className="text-red-400">Passwords don't match</span>
-                                  </>
-                                )}
-                              </div>
-                            )}
-                          </div>
-              
-                          {/* Terms and Conditions */}
-                          <div className="space-y-2">
-                            <div className="flex items-start space-x-3">
-                              <div className="flex items-center h-5">
-                                <input
-                                  id="terms"
-                                  type="checkbox"
-                                  checked={acceptTerms}
-                                  onChange={(e) => setAcceptTerms(e.target.checked)}
-                                  className="w-4 h-4 text-[#FEFD0C] bg-black/40 border-gray-800 rounded focus:ring-[#FEFD0C]/20 focus:ring-2 focus:ring-offset-0"
-                                  required
-                                />
-                              </div>
-                              <label htmlFor="terms" className="text-sm text-gray-300 leading-5">
-                                I agree to the{' '}
-                                <a href="#" className="text-[#FEFD0C] hover:text-[#FEFD0C]/80 underline">
-                                  Terms of Service
-                                </a>{' '}
-                                and{' '}
-                                <a href="#" className="text-[#FEFD0C] hover:text-[#FEFD0C]/80 underline">
-                                  Privacy Policy
-                                </a>
-                              </label>
-                            </div>
-                            {errors.terms && (
-                              <p className="text-red-400 text-xs flex items-center space-x-1">
-                                <AlertCircle className="w-3 h-3" />
-                                <span>{errors.terms}</span>
-                              </p>
-                            )}
-                          </div>
-              
-                          {/* Submit Button */}
-                          <button
-                            type="submit"
-                            disabled={isLoading || !isFormValid}
-                            className={`w-full py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center space-x-2 ${
-                              isLoading || !isFormValid
-                                ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                                : 'bg-[#FEFD0C] hover:bg-[#FEFD0C]/90 text-black hover:transform hover:scale-[1.02] active:scale-[0.98]'
-                            }`}
-                          >
-                            {isLoading ? (
-                              <>
-                                <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-600 border-t-gray-400"></div>
-                                <span>Creating Account...</span>
-                              </>
-                            ) : (
-                              <>
-                                <User className="w-4 h-4" />
-                                <span>Create Account</span>
-                              </>
-                            )}
-                          </button>
-                        </form>
-              
-                        {/* Footer */}
-                        <div className="mt-8 text-center">
-                          <p className="text-sm text-gray-400">
-                            Already have an account?{' '}
-                            <button
-                              type="button"
-                              onClick={handleLoginClick}
-                              className="text-[#FEFD0C] hover:text-[#FEFD0C]/80 underline font-medium"
-                            >
-                              Sign in
-                            </button>
-                          </p>
-                        </div>
-                      </div>
-              
-                      {/* Security Features */}
-                      <div className="mt-6 text-center">
-                        <div className="flex items-center justify-center space-x-4 text-xs text-gray-500">
-                          <div className="flex items-center space-x-1">
-                            <Shield className="w-3 h-3" />
-                            <span>SSL Protected</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <Lock className="w-3 h-3" />
-                            <span>Data Encrypted</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              };
-              
-              export default SignUp;
+              {/* Password Strength Indicator */}
+              {formData.password && (
+                <PasswordStrengthIndicator strength={passwordStrength} />
+              )}
+            </div>
+
+            {/* Confirm Password */}
+            <FormInput
+              id="confirmPassword"
+              label="Confirm Password"
+              type={showConfirmPassword ? "text" : "password"}
+              icon={Lock}
+              value={formData.confirmPassword}
+              onChange={(value) => handleInputChange('confirmPassword', value)}
+              onBlur={() => handleBlur('confirmPassword')}
+              error={errors.confirmPassword}
+              placeholder="Confirm your password"
+              autoComplete="new-password"
+              required
+              showToggle
+              showPassword={showConfirmPassword}
+              onTogglePassword={() => setShowConfirmPassword(!showConfirmPassword)}
+            />
+
+            {/* Password Match Indicator */}
+            {formData.confirmPassword && formData.password && (
+              <div className="text-xs flex items-center space-x-1">
+                {formData.password === formData.confirmPassword ? (
+                  <>
+                    <CheckCircle className="w-3 h-3 text-green-400" />
+                    <span className="text-green-400">Passwords match</span>
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle className="w-3 h-3 text-red-400" />
+                    <span className="text-red-400">Passwords don't match</span>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Terms and Conditions */}
+            <div className="space-y-2">
+              <div className="flex items-start space-x-3">
+                <div className="flex items-center h-5">
+                  <input
+                    id="terms"
+                    type="checkbox"
+                    checked={acceptTerms}
+                    onChange={(e) => setAcceptTerms(e.target.checked)}
+                    className="w-4 h-4 text-[#FEFD0C] bg-black/40 border-gray-800 rounded focus:ring-[#FEFD0C]/20 focus:ring-2 focus:ring-offset-0"
+                    required
+                    aria-describedby={errors.terms ? 'terms-error' : undefined}
+                  />
+                </div>
+                <label htmlFor="terms" className="text-sm text-gray-300 leading-5">
+                  I agree to the{' '}
+                  <a href="#" className="text-[#FEFD0C] hover:text-[#FEFD0C]/80 underline">
+                    Terms of Service
+                  </a>{' '}
+                  and{' '}
+                  <a href="#" className="text-[#FEFD0C] hover:text-[#FEFD0C]/80 underline">
+                    Privacy Policy
+                  </a>
+                </label>
+              </div>
+              {errors.terms && (
+                <p id="terms-error" className="text-red-400 text-xs flex items-center space-x-1" role="alert">
+                  <AlertCircle className="w-3 h-3" />
+                  <span>{errors.terms}</span>
+                </p>
+              )}
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isSubmitting || !isFormValid}
+              className={`w-full py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center space-x-2 ${
+                isSubmitting || !isFormValid
+                  ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                  : 'bg-[#FEFD0C] hover:bg-[#FEFD0C]/90 text-black hover:shadow-lg hover:shadow-[#FEFD0C]/20'
+              }`}
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-400 border-t-transparent"></div>
+                  <span>Creating Account...</span>
+                </>
+              ) : (
+                <>
+                  <User className="w-4 h-4" />
+                  <span>Create Account</span>
+                </>
+              )}
+            </button>
+
+            {/* Login Link */}
+            <div className="text-center pt-4 border-t border-gray-800">
+              <p className="text-gray-400 text-sm">
+                Already have an account?{' '}
+                <button
+                  type="button"
+                  onClick={handleLoginClick}
+                  className="text-[#FEFD0C] hover:text-[#FEFD0C]/80 font-medium underline"
+                >
+                  Sign In
+                </button>
+              </p>
+            </div>
+          </form>
+        </div>
+
+        {/* Footer */}
+        <div className="text-center mt-6">
+          <p className="text-gray-500 text-xs">
+            Protected by industry-standard encryption
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SignUp;
