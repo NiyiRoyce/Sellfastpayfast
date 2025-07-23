@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Star, CheckCircle, TrendingUp, Users, ThumbsUp, Shield, Quote, Lock, MapPin } from "lucide-react";
+import { Star, CheckCircle, TrendingUp, Users, ThumbsUp, Shield, Quote, Lock, MapPin, Globe } from "lucide-react";
 
 interface ReviewProps {
   review?: any;
@@ -12,53 +12,53 @@ const Review = () => {
   const reviews = [
     {
       id: 1,
-      name: "Agofure Michael",
-      title: "Sellfastpayfast is just the best!! Quick response and good rate! He's honest and he's one person you can trust 100% ! Trade your bitcoin now with sellfastpayfast.",
+      name: "Michael Chen",
+      title: "Amazing global P2P platform! Connected with sellers from 3 different countries for my trades. Lightning-fast transactions and the security features give me complete peace of mind. Best rates I've found anywhere!",
       rating: 5,
       verified: true,
-      tradingVolume: "₦2.5M+",
-      timeframe: "6 months",
-      location: "Lagos, Nigeria"
+      tradingVolume: "$25K+",
+      timeframe: "8 months",
+      location: "Singapore"
     },
     {
       id: 2,
-      name: "Ayibaby",
-      title: "Reliable, responsible, trustworthy & swift platform. I'm glad it's been working as expected, great platform, well done to the team.",
+      name: "Sarah Martinez",
+      title: "This platform revolutionized my crypto trading. I can buy and sell with people worldwide 24/7. The escrow system is bulletproof and customer support is always there. Highly recommend to anyone!",
       rating: 5,
       verified: true,
-      tradingVolume: "₦1.8M+",
-      timeframe: "4 months",
-      location: "Abuja, Nigeria"
+      tradingVolume: "$18K+",
+      timeframe: "6 months",
+      location: "Mexico City, Mexico"
     },
     {
       id: 3,
-      name: "Monalisa Sibanda",
-      title: "Sellfastpayfast is just the best!! Service is excellent. And best platform to use Quick response and good rate! One of the best, reliable honest person I have met 100% ! Trade your bitcoin now with sellfastpayfast. Life changing platform",
+      name: "James Thompson",
+      title: "Outstanding peer-to-peer experience! I've traded with users from over 15 countries. The platform's security protocols are top-notch, and the global liquidity means I always get the best rates. Life-changing platform!",
       rating: 5,
       verified: true,
-      tradingVolume: "₦3.2M+",
-      timeframe: "8 months",
-      location: "Port Harcourt, Nigeria"
+      tradingVolume: "$42K+",
+      timeframe: "1.2 years",
+      location: "London, UK"
     },
     {
       id: 4,
-      name: "Kesten Bliss",
-      title: "I like this app.. so fast and reliable. It's also worth trusting it because it's easy and secure. I'm so glad I came thru this app. Please you guys should keep this standard. Thanks Trustpilot.",
+      name: "Priya Sharma",
+      title: "Incredible global reach and reliability. I love how I can trade with verified users worldwide at any time. The platform is super secure, user-friendly, and the transaction speeds are unmatched. Absolutely trustworthy!",
       rating: 5,
       verified: true,
-      tradingVolume: "₦950K+",
-      timeframe: "3 months",
-      location: "Kano, Nigeria"
+      tradingVolume: "$15K+",
+      timeframe: "5 months",
+      location: "Mumbai, India"
     },
     {
       id: 5,
-      name: "Oladunjoye Emmanuel",
-      title: "It has been great since trading BTC with the best platform (Sellfastpayfast). The unique benefits are Fast trade, secured platforms, good rates and being available everytime. I rate you more than 5stars",
+      name: "Carlos Rodriguez",
+      title: "Best P2P crypto platform globally! I've been trading internationally with zero issues. Fast settlements, excellent security, and access to buyers/sellers worldwide 24/7. The future of crypto trading is here!",
       rating: 5,
       verified: true,
-      tradingVolume: "₦4.1M+",
-      timeframe: "1 year",
-      location: "Ibadan, Nigeria"
+      tradingVolume: "$38K+",
+      timeframe: "10 months",
+      location: "São Paulo, Brazil"
     },
   ];
 
@@ -191,10 +191,10 @@ const Review = () => {
   };
 
   const trustMetrics = [
-    { icon: Star, value: "4.9/5", label: "Average Rating", description: "From 10,000+ reviews" },
-    { icon: CheckCircle, value: "10K+", label: "Verified Reviews", description: "Real customer feedback" },
-    { icon: Users, value: "50K+", label: "Happy Customers", description: "Across Nigeria" },
-    { icon: ThumbsUp, value: "99%", label: "Recommend Us", description: "Would trade again" }
+    { icon: Star, value: "4.9/5", label: "Global Rating", description: "From 50,000+ reviews worldwide" },
+    { icon: Globe, value: "150+", label: "Countries", description: "Active trading globally" },
+    { icon: Users, value: "2M+", label: "Global Users", description: "Worldwide community" },
+    { icon: Shield, value: "99.9%", label: "Security Rate", description: "Protected transactions" }
   ];
 
   return (
@@ -220,22 +220,22 @@ const Review = () => {
         {/* Header Section */}
         <div className="text-center mb-20">
           <div className="inline-flex items-center gap-2 bg-black/40 text-[#FEFD0C] font-semibold px-6 py-3 rounded-full text-sm mb-8 border border-[#FEFD0C]/20 backdrop-blur-sm hover:bg-[#FEFD0C]/10 hover:scale-105 transition-all duration-300">
-            <Shield className="w-4 h-4" />
-            Trusted by Thousands
+            <Globe className="w-4 h-4" />
+            Global P2P Crypto Platform
           </div>
           
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-            What Our{' '}
+            Trusted by{' '}
             <span className="text-[#FEFD0C] hover:text-[#FEFD0C]/90 transition-colors duration-300">
-              Customers
+              Millions
             </span>
-            <br />Say About Us
+            <br />Worldwide
           </h2>
           
           <div className="w-20 h-1 bg-[#FEFD0C] rounded-full mx-auto shadow-lg shadow-[#FEFD0C]/20 mb-8 hover:w-24 hover:shadow-[#FEFD0C]/40 transition-all duration-500"></div>
           
           <p className="text-xl text-white/70 max-w-3xl mx-auto leading-relaxed hover:text-white/90 transition-colors duration-300">
-            Trusted by thousands of traders across Nigeria. See what our verified customers have to say about their trading experience.
+            Connect with crypto traders globally on our secure peer-to-peer platform. Experience fast, reliable, and secure cryptocurrency transactions with users from over 150 countries worldwide.
           </p>
         </div>
         

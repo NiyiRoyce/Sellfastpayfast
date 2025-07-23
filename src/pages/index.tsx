@@ -9,9 +9,9 @@ const Home = () => {
   return (
     <PageLayout>
       <Hero />
-      <Review />
       <Steps />
-       <Cta />
+      <Cta />
+      <Review />
     </PageLayout>
   );
 };

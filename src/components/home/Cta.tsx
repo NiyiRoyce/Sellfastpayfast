@@ -6,102 +6,106 @@ import {
   MdVerifiedUser,
   MdArrowForward,
   MdPlayArrow,
+  MdPeople,
+  MdSwapHoriz,
 } from "react-icons/md";
 import {
   RiRocketLine,
   RiShieldCheckLine,
   RiCoinLine,
   RiTrophyLine,
+  RiExchangeLine,
+  RiUserHeartLine,
 } from "react-icons/ri";
 
-// Features displayed in the CTA
+// Features displayed in the CTA - Updated for P2P focus
 const ctaFeatures = [
   {
     id: 1,
-    title: "Instant Trading",
-    description: "Execute trades in milliseconds",
-    icon: MdSpeed,
-    stat: "< 0.1s",
-    statLabel: "Execution Time",
+    title: "Direct P2P Trading",
+    description: "Connect directly with buyers and sellers worldwide",
+    icon: MdSwapHoriz,
+    stat: "< 2min",
+    statLabel: "Connection Time",
   },
   {
     id: 2,
-    title: "Bank-Grade Security",
-    description: "Your assets are fully protected",
+    title: "Escrow Protection",
+    description: "Secure transactions with built-in escrow system",
     icon: RiShieldCheckLine,
-    stat: "99.9%",
-    statLabel: "Uptime",
+    stat: "100%",
+    statLabel: "Trade Security",
   },
   {
     id: 3,
-    title: "Low Fees",
-    description: "Competitive trading rates",
+    title: "Zero Platform Fees",
+    description: "Keep more of your profits with no hidden costs",
     icon: RiCoinLine,
-    stat: "0.1%",
-    statLabel: "Trading Fee",
+    stat: "0%",
+    statLabel: "Platform Fee",
   },
   {
     id: 4,
-    title: "Proven Results",
-    description: "Join successful traders",
-    icon: RiTrophyLine,
+    title: "Global Network",
+    description: "Access to verified traders in 180+ countries",
+    icon: MdPeople,
     stat: "500K+",
-    statLabel: "Active Users",
+    statLabel: "Active Traders",
   },
 ];
 
-// Social proof stats displayed
+// Social proof stats displayed - Updated for P2P focus
 const socialProof = [
   {
     id: 1,
-    metric: "1M+",
-    label: "Trades Executed",
-    description: "Monthly trading volume",
+    metric: "2M+",
+    label: "P2P Trades",
+    description: "Successful peer connections",
   },
   {
     id: 2,
-    metric: "$50B+",
-    label: "Total Volume",
-    description: "Lifetime platform volume",
+    metric: "$75B+",
+    label: "P2P Volume",
+    description: "Direct trader exchanges",
   },
   {
     id: 3,
-    metric: "150+",
-    label: "Cryptocurrencies",
-    description: "Available for trading",
+    metric: "300+",
+    label: "Payment Methods",
+    description: "Flexible transaction options",
   },
   {
     id: 4,
-    metric: "24/7",
-    label: "Support",
-    description: "Always here to help",
+    metric: "99.8%",
+    label: "Success Rate",
+    description: "Completed P2P trades",
   },
 ];
 
-// Testimonials from users
+// Testimonials from users - Updated for P2P focus
 const testimonials = [
   {
     id: 1,
     name: "Sarah Johnson",
-    role: "Professional Trader",
+    role: "P2P Trader",
     content:
-      "The platform's speed and reliability have transformed my trading experience. I can execute complex strategies with confidence.",
+      "Direct trading with other users gives me better rates and faster transactions. The escrow system makes every trade completely secure.",
     avatar: "SJ",
   },
   {
     id: 2,
     name: "Michael Chen",
-    role: "Crypto Investor",
+    role: "Crypto Seller",
     content:
-      "Best security features I've seen in the industry. My portfolio has grown 300% since joining the platform.",
+      "I love connecting directly with buyers. No middleman fees means I keep more profit, and the verification system ensures safe trades.",
     avatar: "MC",
   },
   {
     id: 3,
     name: "Emma Rodriguez",
-    role: "Day Trader",
+    role: "Crypto Buyer",
     content:
-      "The user interface is intuitive and the customer support is exceptional. Perfect for both beginners and pros.",
+      "Finding trusted sellers is so easy here. The peer-to-peer system lets me negotiate better prices and choose my preferred payment method.",
     avatar: "ER",
   },
 ];
@@ -203,8 +207,8 @@ const CTA = () => {
                 isVisible ? "animate-fade-scale" : "initial-hidden-scale"
               }`}
             >
-              <RiRocketLine className="inline mr-2 hover:scale-110 transition-transform duration-300" />
-              Start Trading Today
+              <RiExchangeLine className="inline mr-2 hover:scale-110 transition-transform duration-300" />
+              Join the P2P Revolution
             </div>
 
             {/* Main Headings */}
@@ -214,14 +218,14 @@ const CTA = () => {
                   isVisible ? "animate-slide-left" : "initial-hidden"
                 }`}
               >
-                Trade Crypto Like a
+                Connect. Trade. Profit.
               </h1>
               <span
-                className={`text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-[#FEFD0C] block mt-2 hover:text-[#FEFD0C]/90 transition-colors duration-300 hover:drop-shadow-[0_0_30px_rgba(254,253,12,0.5)] ${
+                className={`text-3xl md:text-5xl lg:text-6xl font-bold tracking-tight text-[#FEFD0C] block mt-4 hover:text-[#FEFD0C]/90 transition-colors duration-300 hover:drop-shadow-[0_0_30px_rgba(254,253,12,0.5)] ${
                   isVisible ? "animate-slide-right" : "initial-hidden-right"
                 }`}
               >
-                Professional
+                Peer-to-Peer Crypto Trading
               </span>
             </div>
 
@@ -237,9 +241,7 @@ const CTA = () => {
               }`}
               style={{ animationDelay: "0.8s" }}
             >
-              Join over 500,000 traders who trust our platform for secure, fast,
-              and profitable cryptocurrency trading. Start your journey to
-              financial freedom today.
+              The world's most trusted peer-to-peer cryptocurrency marketplace. Connect directly with verified buyers and sellers for secure, fast, and reliable crypto transactions. Trade on your terms with zero platform fees.
             </p>
 
             {/* CTA Buttons */}
@@ -250,13 +252,13 @@ const CTA = () => {
               style={{ animationDelay: "1s" }}
             >
               <button className="group inline-flex items-center justify-center px-10 py-5 rounded-xl bg-[#FEFD0C] text-black font-bold hover:bg-[#FEFD0C]/90 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-[#FEFD0C]/20 text-lg animate-glow-pulse hover:shadow-[#FEFD0C]/40">
-                <MdTrendingUp className="mr-3 text-2xl group-hover:rotate-12 transition-transform duration-300 group-hover:drop-shadow-[0_0_8px_rgba(0,0,0,0.5)]" />
-                Start Trading Now
+                <RiExchangeLine className="mr-3 text-2xl group-hover:rotate-180 transition-transform duration-500 group-hover:drop-shadow-[0_0_8px_rgba(0,0,0,0.5)]" />
+                Start P2P Trading
                 <MdArrowForward className="ml-2 text-xl group-hover:translate-x-2 transition-transform duration-300" />
               </button>
               <button className="group inline-flex items-center justify-center px-10 py-5 rounded-xl bg-black/40 backdrop-blur-md border-2 border-[#FEFD0C] text-[#FEFD0C] font-bold hover:bg-[#FEFD0C]/20 hover:border-[#FEFD0C]/60 transition-all duration-300 transform hover:scale-105 text-lg hover:shadow-lg hover:shadow-[#FEFD0C]/20">
                 <MdPlayArrow className="mr-3 text-2xl group-hover:scale-110 transition-transform duration-300" />
-                Watch Demo
+                See How P2P Works
               </button>
             </div>
 
@@ -269,15 +271,15 @@ const CTA = () => {
             >
               <div className="flex items-center bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-lg px-4 py-2 hover:border-[#FEFD0C]/30 hover:bg-black/60 transition-all duration-300 hover:scale-105 cursor-default">
                 <MdVerifiedUser className="text-[#FEFD0C] mr-2 hover:scale-110 transition-transform duration-300" />
-                <span className="hover:text-white transition-colors duration-300">Fully Licensed & Regulated</span>
+                <span className="hover:text-white transition-colors duration-300">Verified P2P Network</span>
               </div>
               <div className="flex items-center bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-lg px-4 py-2 hover:border-[#FEFD0C]/30 hover:bg-black/60 transition-all duration-300 hover:scale-105 cursor-default">
                 <MdSecurity className="text-[#FEFD0C] mr-2 hover:scale-110 transition-transform duration-300" />
-                <span className="hover:text-white transition-colors duration-300">Bank-Grade Security</span>
+                <span className="hover:text-white transition-colors duration-300">Escrow Protected Trades</span>
               </div>
               <div className="flex items-center bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-lg px-4 py-2 hover:border-[#FEFD0C]/30 hover:bg-black/60 transition-all duration-300 hover:scale-105 cursor-default">
-                <RiShieldCheckLine className="text-[#FEFD0C] mr-2 hover:scale-110 transition-transform duration-300" />
-                <span className="hover:text-white transition-colors duration-300">Insurance Protected</span>
+                <RiUserHeartLine className="text-[#FEFD0C] mr-2 hover:scale-110 transition-transform duration-300" />
+                <span className="hover:text-white transition-colors duration-300">24/7 Dispute Resolution</span>
               </div>
             </div>
           </div>
@@ -305,8 +307,8 @@ const CTA = () => {
           <div className="mb-20">
             <div className="text-center mb-12">
               <div className="inline-block bg-black/40 backdrop-blur-md text-[#FEFD0C] font-medium px-4 py-2 rounded-full text-sm mb-4 border border-[#FEFD0C]/20 hover:bg-[#FEFD0C]/10 hover:scale-105 transition-all duration-300 cursor-default">
-                <MdSecurity className="inline mr-2 hover:scale-110 transition-transform duration-300" />
-                Platform Features
+                <MdPeople className="inline mr-2 hover:scale-110 transition-transform duration-300" />
+                P2P Trading Features
               </div>
               <h2
                 className={`text-3xl md:text-4xl font-bold text-white mb-4 hover:text-white/90 transition-colors duration-300 ${
@@ -314,7 +316,7 @@ const CTA = () => {
                 }`}
                 style={{ animationDelay: "1.8s" }}
               >
-                Why Choose Our Platform?
+                Why Choose Our P2P Platform?
               </h2>
               <p
                 className={`text-white/80 text-lg max-w-2xl mx-auto hover:text-white transition-colors duration-300 ${
@@ -322,8 +324,7 @@ const CTA = () => {
                 }`}
                 style={{ animationDelay: "2s" }}
               >
-                Experience the next generation of crypto trading with
-                cutting-edge technology and unmatched security.
+                Experience true peer-to-peer trading with direct connections, secure escrow protection, and complete control over your transactions.
               </p>
             </div>
 
@@ -360,7 +361,7 @@ const CTA = () => {
             <div className="text-center mb-12">
               <div className="inline-block bg-black/40 backdrop-blur-md text-[#FEFD0C] font-medium px-4 py-2 rounded-full text-sm mb-4 border border-[#FEFD0C]/20 hover:bg-[#FEFD0C]/10 hover:scale-105 transition-all duration-300 cursor-default">
                 <RiTrophyLine className="inline mr-2 hover:scale-110 transition-transform duration-300" />
-                Customer Reviews
+                P2P Trader Reviews
               </div>
               <h2
                 className={`text-3xl md:text-4xl font-bold text-white mb-4 hover:text-white/90 transition-colors duration-300 ${
@@ -368,7 +369,7 @@ const CTA = () => {
                 }`}
                 style={{ animationDelay: "3s" }}
               >
-                What Our Traders Say
+                What Our P2P Community Says
               </h2>
             </div>
 

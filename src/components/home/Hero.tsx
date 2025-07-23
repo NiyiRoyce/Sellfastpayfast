@@ -223,9 +223,8 @@ const Hero: React.FC = () => {
                 </h1>
 
                 <p className="text-white/70 max-w-xl leading-relaxed text-lg font-light">
-                  Experience the best platform for lightning-fast, secure cryptocurrency
-                  trading. Join thousands who trust us for seamless transactions and
-                  professional support.
+               Peer-to-peer cryptocurrency trading platform—where buyers and sellers connect directly for lightning-fast, secure transactions.
+                Join thousands who trust us for seamless crypto trading and reliable, professional support.
                 </p>
               </div>
 

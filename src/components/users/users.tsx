@@ -15,11 +15,8 @@ import {
   BookOpen, 
   MessageCircle,
   BarChart3,
-  Activity,
   ChevronDown,
   ArrowUpRight,
-  Globe,
-  Grid,
   Zap,
   Star,
   Send,
@@ -627,9 +624,10 @@ const EnhancedCryptoDashboard: React.FC = () => {
     window.open('https://t.me/tradewithbnaira01', '_blank');
   };
 
-  const handleLogout = () => {
-    alert('Logged out successfully!');
-  };
+ const handleLogout = () => {
+  window.location.href = '/';
+};
+
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
