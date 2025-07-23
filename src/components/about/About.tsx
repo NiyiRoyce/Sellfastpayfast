@@ -94,7 +94,7 @@ const About = () => {
                 </h2>
                 <div className="w-20 h-1 bg-[#FEFD0C] rounded-full shadow-lg shadow-[#FEFD0C]/20"></div>
                 <p className="text-base md:text-lg text-gray-300 leading-relaxed">
-                  With over 15 years of experience in fintech and blockchain technologies, our CEO has guided our exchange to become one of the most respected platforms in the cryptocurrency space.
+                  With over 15 years of experience in fintech and blockchain technologies, our CEO has guided our platform to become one of the most respected platforms in the cryptocurrency space.
                 </p>
                 <p className="text-base md:text-lg text-gray-300 leading-relaxed">
                   Prior to founding our exchange, she led digital transformation initiatives at major financial institutions and contributed to pioneering blockchain research. Her vision combines cutting-edge technology with unwavering ethics to create a platform that truly serves its users.

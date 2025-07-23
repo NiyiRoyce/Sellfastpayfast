@@ -1,18 +1,14 @@
+// Updated Imports
 import React, { Suspense } from "react";
 import { Link } from "react-router-dom";
-import { FaGooglePlay, FaApple, FaWhatsapp, FaTelegram } from "react-icons/fa";
+import { FaWhatsapp } from "react-icons/fa";
 import { RiInstagramLine, RiTwitterLine } from "react-icons/ri";
-import { HiOutlineLocationMarker } from "react-icons/hi";
-import { FiPhoneCall } from "react-icons/fi";
-import { MdOutlineAlternateEmail, MdAccessTime, MdSecurity, MdTrendingUp } from "react-icons/md";
+import { MdSecurity, MdTrendingUp, MdAccessTime } from "react-icons/md";
 import { RiCustomerService2Line } from "react-icons/ri";
 import logo from "../../assets/img/logo-white.png";
 
-// Lazy-loaded components
+// Lazy-loaded QR code
 const Qrcode = React.lazy(() => import("./Qrcode"));
-const AppButton = React.lazy(() =>
-  import("./Buttons").then(mod => ({ default: mod.AppButton }))
-);
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -33,12 +29,6 @@ const Footer = () => {
       label: "Twitter/X",
       handle: "@sfpfglobal01"
     },
-    {
-      icon: FaTelegram,
-      url: "https://t.me/tradewithbnaira01",
-      label: "Telegram",
-      handle: "@tradewithbnaira01"
-    },
   ];
 
   const trustMetrics = [
@@ -50,44 +40,32 @@ const Footer = () => {
 
   return (
     <>
-      <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-        rel="stylesheet"
-      />
-      
-      <footer
-        className="w-full bg-black relative overflow-hidden"
-        style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif' }}
-        role="contentinfo"
-        aria-label="Site Footer"
-      >
-
+      <footer className="w-full bg-black relative overflow-hidden" role="contentinfo" aria-label="Site Footer">
         <div className="flex flex-col items-center w-full justify-between xl:px-[96px] px-[16px] mx-auto xl:pt-[120px] pb-[40px] pt-[100px] relative z-10">
           
-          {/* Trust Metrics Section */}
+          {/* Trust Metrics */}
           <div className="w-full mb-16">
             <div className="text-center mb-12">
-              <div className="inline-block bg-black/40 text-[#FEFD0C] font-medium px-4 py-2 rounded-full text-sm mb-4 border border-[#FEFD0C]/20 backdrop-blur-sm hover:bg-[#FEFD0C]/10 hover:scale-105 transition-all duration-300 cursor-default">
+              <div className="inline-block bg-black/40 text-[#FEFD0C] font-medium px-4 py-2 rounded-full text-sm mb-4 border border-[#FEFD0C]/20 backdrop-blur-sm hover:bg-[#FEFD0C]/10 transition-all duration-300">
                 <MdSecurity className="inline mr-2" />
                 Trusted Platform
               </div>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white leading-tight mb-4">
                 Join the Future of 
-                <span className="text-[#FEFD0C] block mt-2 hover:text-[#FEFD0C]/90 transition-colors duration-300">Crypto Trading</span>
+                <span className="text-[#FEFD0C] block mt-2">Crypto Trading</span>
               </h2>
-              <div className="w-20 h-1 bg-[#FEFD0C] rounded-full mx-auto shadow-lg shadow-[#FEFD0C]/20 mb-8 hover:w-24 hover:shadow-[#FEFD0C]/40 transition-all duration-500"></div>
+              <div className="w-20 h-1 bg-[#FEFD0C] rounded-full mx-auto shadow-lg mb-8"></div>
             </div>
-            
-            {/* Trust Metrics Grid */}
+
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto mb-16">
               {trustMetrics.map((metric, index) => {
                 const Icon = metric.icon;
                 return (
-                  <div key={index} className="bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-6 hover:border-[#FEFD0C]/30 transition-all duration-500 group hover:scale-105 hover:shadow-lg hover:shadow-[#FEFD0C]/10 cursor-default hover:bg-black/60 hover:backdrop-blur-lg">
+                  <div key={index} className="bg-black/40 border border-[#FEFD0C]/10 rounded-xl p-6 hover:scale-105 transition-all duration-500">
                     <div className="flex flex-col items-center text-center">
-                      <Icon className="text-[#FEFD0C] text-2xl mb-3 group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(254,253,12,0.5)] transition-all duration-300" />
-                      <p className="text-2xl font-bold text-white group-hover:text-[#FEFD0C] transition-colors duration-300">{metric.value}</p>
-                      <p className="text-sm text-white/70 group-hover:text-white transition-colors duration-300">{metric.label}</p>
+                      <Icon className="text-[#FEFD0C] text-2xl mb-3" />
+                      <p className="text-2xl font-bold text-white">{metric.value}</p>
+                      <p className="text-sm text-white/70">{metric.label}</p>
                     </div>
                   </div>
                 );
@@ -95,90 +73,35 @@ const Footer = () => {
             </div>
           </div>
 
-          <div className="flex flex-col xl:flex-row w-full h-full relative gap-12">
+          <div className="flex flex-col xl:flex-row w-full gap-12">
             {/* Left Column */}
             <div className="xl:w-[35%] w-full">
-              <Link to="/" aria-label="SellFastPayFast Home" className="inline-block group">
-                <div className="bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-6 hover:border-[#FEFD0C]/30 transition-all duration-500 hover:scale-105 hover:shadow-lg hover:shadow-[#FEFD0C]/10 hover:bg-black/60 hover:backdrop-blur-lg">
-                  <img
-                    src={logo}
-                    alt="SellFastPayFast Logo"
-                    className="h-[60px] w-[200px] object-contain group-hover:scale-105 group-hover:drop-shadow-[0_0_15px_rgba(254,253,12,0.3)] transition-all duration-300"
-                    loading="lazy"
-                    width="200"
-                    height="60"
-                  />
+              <Link to="/" aria-label="SellFastPayFast Home" className="inline-block">
+                <div className="bg-black/40 border border-[#FEFD0C]/10 rounded-xl p-6">
+                  <img src={logo} alt="SellFastPayFast Logo" className="h-[60px] w-[200px] object-contain" loading="lazy" />
                 </div>
               </Link>
-              
-              <div className="mt-8 bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-6 hover:border-[#FEFD0C]/30 transition-all duration-500 hover:bg-black/60 hover:backdrop-blur-lg hover:shadow-lg hover:shadow-[#FEFD0C]/5 cursor-default">
-                <p className="font-normal xl:text-[18px] tracking-wide text-[14px] leading-[30px] text-[#FEFD0C] font-inter mb-6 hover:text-[#FEFD0C]/90 transition-colors duration-300">
+
+              <div className="mt-8 bg-black/40 border border-[#FEFD0C]/10 rounded-xl p-6">
+                <p className="text-[14px] xl:text-[18px] text-[#FEFD0C] mb-6">
                   The most trustworthy cryptocurrency exchange platform available.
-                  Where you can have quick access to your money whenever you desire.
+                  Quick access to your money, whenever you desire.
                 </p>
-                
-                <div className="inline-block bg-black/40 text-[#FEFD0C] font-medium px-3 py-1 rounded-full text-xs mb-4 border border-[#FEFD0C]/20 hover:bg-[#FEFD0C]/10 hover:scale-105 transition-all duration-300 cursor-default">
+                <div className="inline-block bg-black/40 text-[#FEFD0C] font-medium px-3 py-1 rounded-full text-xs border border-[#FEFD0C]/20">
                   Verified & Secure
                 </div>
               </div>
 
-              {/* Contact Information */}
-              <div className="mt-6 bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-6 hover:border-[#FEFD0C]/30 transition-all duration-500 hover:bg-black/60 hover:backdrop-blur-lg hover:shadow-lg hover:shadow-[#FEFD0C]/5">
-                <h3 className="text-[#FEFD0C] font-semibold text-lg mb-4 flex items-center hover:text-[#FEFD0C]/90 transition-colors duration-300">
-                  <RiCustomerService2Line className="mr-2 hover:scale-110 transition-transform duration-300" />
-                  Contact Us
-                </h3>
-                <address className="not-italic text-white font-inter text-[14px] xl:text-[16px] space-y-4">
-                  <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-black/60 transition-all duration-300 group hover:scale-[1.02] hover:shadow-md hover:shadow-[#FEFD0C]/10">
-                    <div className="w-10 h-10 bg-black/40 rounded-lg flex items-center justify-center group-hover:bg-[#FEFD0C]/20 transition-all duration-300 group-hover:scale-110">
-                      <FiPhoneCall className="text-[#FEFD0C] text-lg group-hover:drop-shadow-[0_0_8px_rgba(254,253,12,0.5)] transition-all duration-300" aria-hidden="true" />
-                    </div>
-                    <a
-                      href="tel:+447510755472"
-                      className={`${linkStyle} after:content-[''] after:absolute after:w-0 after:h-0.5 after:bg-[#FEFD0C] after:left-0 after:bottom-0 after:transition-all after:duration-300 hover:after:w-full`}
-                      aria-label="Call us at +447721863850"
-                    >
-                      +447721863850
-                    </a>
-                  </div>
-                  <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-black/60 transition-all duration-300 group hover:scale-[1.02] hover:shadow-md hover:shadow-[#FEFD0C]/10">
-                    <div className="w-10 h-10 bg-black/40 rounded-lg flex items-center justify-center group-hover:bg-[#FEFD0C]/20 transition-all duration-300 group-hover:scale-110">
-                      <MdOutlineAlternateEmail className="text-[#FEFD0C] text-lg group-hover:drop-shadow-[0_0_8px_rgba(254,253,12,0.5)] transition-all duration-300" aria-hidden="true" />
-                    </div>
-                    <a
-                      href="mailto:tradewithbnaira01@gmail.com"
-                      className={`${linkStyle} after:content-[''] after:absolute after:w-0 after:h-0.5 after:bg-[#FEFD0C] after:left-0 after:bottom-0 after:transition-all after:duration-300 hover:after:w-full`}
-                      aria-label="Email us"
-                    >
-                      tradewithbnaira01@gmail.com
-                    </a>
-                  </div>
-                  <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-black/60 transition-all duration-300 group hover:scale-[1.02] hover:shadow-md hover:shadow-[#FEFD0C]/10 cursor-default">
-                    <div className="w-10 h-10 bg-black/40 rounded-lg flex items-center justify-center group-hover:bg-[#FEFD0C]/20 transition-all duration-300 group-hover:scale-110">
-                      <HiOutlineLocationMarker className="text-[#FEFD0C] text-lg group-hover:drop-shadow-[0_0_8px_rgba(254,253,12,0.5)] transition-all duration-300" aria-hidden="true" />
-                    </div>
-                    <span className="xl:text-[16px] text-[14px] font-inter text-white font-normal group-hover:text-[#FEFD0C] transition-colors duration-300">London, United Kingdom</span>
-                  </div>
-                </address>
-              </div>
-
               {/* Social Media Links */}
-              <div className="mt-6 bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-6 hover:border-[#FEFD0C]/30 transition-all duration-500 hover:bg-black/60 hover:backdrop-blur-lg hover:shadow-lg hover:shadow-[#FEFD0C]/5">
-                <h3 className="text-[#FEFD0C] font-semibold text-lg mb-4 hover:text-[#FEFD0C]/90 transition-colors duration-300">Connect With Us</h3>
+              <div className="mt-6 bg-black/40 border border-[#FEFD0C]/10 rounded-xl p-6">
+                <h3 className="text-[#FEFD0C] font-semibold text-lg mb-4">Connect With Us</h3>
                 <div className="flex flex-wrap gap-3">
                   {socialLinks.map((social, index) => {
                     const Icon = social.icon;
                     return (
-                      <a
-                        key={index}
-                        href={social.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 bg-black/40 hover:bg-[#FEFD0C]/20 border border-[#FEFD0C]/20 hover:border-[#FEFD0C]/40 rounded-lg px-3 py-2 transition-all duration-300 group hover:scale-105 hover:shadow-lg hover:shadow-[#FEFD0C]/20 hover:backdrop-blur-md"
-                        aria-label={`Follow us on ${social.label}`}
-                      >
-                        <Icon className="text-[#FEFD0C] text-lg group-hover:scale-110 group-hover:drop-shadow-[0_0_8px_rgba(254,253,12,0.5)] transition-all duration-300" />
-                        <span className="text-xs text-[#FEFD0C] font-medium group-hover:text-[#FEFD0C]/90 transition-colors duration-300">{social.handle}</span>
+                      <a key={index} href={social.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-black/40 border border-[#FEFD0C]/20 rounded-lg px-3 py-2">
+                        <Icon className="text-[#FEFD0C] text-lg" />
+                        <span className="text-xs text-[#FEFD0C] font-medium">{social.handle}</span>
                       </a>
                     );
                   })}
@@ -187,93 +110,33 @@ const Footer = () => {
             </div>
 
             {/* Right Column */}
-            <div className="xl:w-[65%] w-full xl:grid xl:grid-cols-2 flex flex-col gap-8 z-10">
-              {/* QR Code Section */}
+            <div className="xl:w-[65%] w-full xl:grid xl:grid-cols-2 flex flex-col gap-8">
+              {/* QR Code Section Only (App Download removed) */}
               <div className="w-full">
-                <div className="bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-8 hover:border-[#FEFD0C]/30 transition-all duration-500 hover:scale-105 hover:shadow-lg hover:shadow-[#FEFD0C]/10 text-center hover:bg-black/60 hover:backdrop-blur-lg cursor-default">
-                  <div className="inline-block bg-black/40 text-[#FEFD0C] font-medium px-4 py-2 rounded-full text-sm mb-6 border border-[#FEFD0C]/20 hover:bg-[#FEFD0C]/10 hover:scale-105 transition-all duration-300">
+                <div className="bg-black/40 border border-[#FEFD0C]/10 rounded-xl p-8 text-center">
+                  <div className="inline-block bg-black/40 text-[#FEFD0C] font-medium px-4 py-2 rounded-full text-sm mb-6 border border-[#FEFD0C]/20">
                     Quick Access
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-4">
-                    Scan & 
-                    <span className="text-[#FEFD0C] block hover:text-[#FEFD0C]/90 transition-colors duration-300">Get Started</span>
+                    Scan & <span className="text-[#FEFD0C] block">Get Started</span>
                   </h3>
-                  <div className="hidden xl:block">
-                    <Suspense fallback={
-                      <div className="bg-black/40 rounded-lg p-8 animate-pulse">
-                        <div className="text-[#FEFD0C]">Loading QR Code...</div>
-                      </div>
-                    }>
-                      <div className="bg-black/40 backdrop-blur-sm rounded-lg p-4 inline-block hover:bg-black/60 hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-[#FEFD0C]/10">
-                        <Qrcode variant="secondary" aria-label="Scan QR code to download our app" />
-                      </div>
-                    </Suspense>
-                  </div>
-                  <p className="text-white/70 text-sm mt-4 hover:text-white transition-colors duration-300">Instant access to trading</p>
-                </div>
-              </div>
-
-              {/* App Download Section */}
-              <div className="w-full">
-                <div className="bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-8 hover:border-[#FEFD0C]/30 transition-all duration-500 hover:scale-105 hover:bg-black/60 hover:backdrop-blur-lg hover:shadow-lg hover:shadow-[#FEFD0C]/5">
-                  <div className="text-center mb-6">
-                    <div className="inline-block bg-black/40 text-[#FEFD0C] font-medium px-4 py-2 rounded-full text-sm mb-4 border border-[#FEFD0C]/20 hover:bg-[#FEFD0C]/10 hover:scale-105 transition-all duration-300 cursor-default">
-                      Mobile Apps
+                  <Suspense fallback={<div className="text-[#FEFD0C]">Loading QR Code...</div>}>
+                    <div className="bg-black/40 rounded-lg p-4 inline-block">
+                      <Qrcode variant="secondary" aria-label="Scan QR code to download our app" />
                     </div>
-                    <h3 className="text-2xl font-bold text-white mb-2">
-                      Download Our 
-                      <span className="text-[#FEFD0C] block hover:text-[#FEFD0C]/90 transition-colors duration-300">Trading App</span>
-                    </h3>
-                    <p className="text-white/70 text-sm hover:text-white transition-colors duration-300">Trade crypto on the go</p>
-                  </div>
-                  
-                  <div className="flex flex-col items-center gap-4">
-                    <Suspense fallback={
-                      <div className="space-y-4 w-full">
-                        <div className="bg-black/40 rounded-lg p-4 animate-pulse">Loading App Buttons...</div>
-                        <div className="bg-black/40 rounded-lg p-4 animate-pulse">Loading App Buttons...</div>
-                      </div>
-                    }>
-                      <div className="transform hover:scale-110 transition-all duration-300 w-full hover:shadow-lg hover:shadow-[#FEFD0C]/10">
-                        <AppButton
-                          icon={FaGooglePlay}
-                          label="Get it on"
-                          placeholder="Google Play"
-                          href="https://play.google.com/store/apps/details?id=com.brandboxafrica.sellfast&hl=en&gl=US&pli=1"
-                          aria-label="Download our app on Google Play"
-                        />
-                      </div>
-                      <div className="transform hover:scale-110 transition-all duration-300 w-full hover:shadow-lg hover:shadow-[#FEFD0C]/10">
-                        <AppButton
-                          icon={FaApple}
-                          label="Download on the"
-                          placeholder="App Store"
-                          href="https://apps.apple.com/us/app/sellfastpayfast/id1525149238"
-                          aria-label="Download our app on the App Store"
-                        />
-                      </div>
-                    </Suspense>
-                  </div>
-                  
-                  <div className="mt-6 pt-4 border-t border-[#FEFD0C]/10 text-center">
-                    <div className="flex items-center justify-center gap-2 text-xs text-white/70 hover:text-white transition-colors duration-300">
-                      <div className="w-2 h-2 bg-[#FEFD0C] rounded-full animate-pulse"></div>
-                      Available on both platforms
-                    </div>
-                  </div>
+                  </Suspense>
+                  <p className="text-white/70 text-sm mt-4">Instant access to trading</p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Copyright Section */}
+          {/* Copyright */}
           <div className="flex items-center xl:mt-[80px] mt-[60px] w-full">
-            <div className="w-full bg-black/40 backdrop-blur-md border border-[#FEFD0C]/10 rounded-xl p-6 hover:border-[#FEFD0C]/30 transition-all duration-500 hover:bg-black/60 hover:backdrop-blur-lg hover:shadow-lg hover:shadow-[#FEFD0C]/5 cursor-default">
+            <div className="w-full bg-black/40 border border-[#FEFD0C]/10 rounded-xl p-6">
               <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                <h3 className="xl:text-base text-[14px] text-white opacity-70 font-inter hover:opacity-90 transition-opacity duration-300">
-                  © {currentYear} Sellfastpayfast. All rights reserved.
-                </h3>
-                <div className="flex items-center gap-4 text-sm text-white/70 hover:text-white/90 transition-colors duration-300">
+                <h3 className="xl:text-base text-[14px] text-white opacity-70">© {currentYear} Sellfastpayfast. All rights reserved.</h3>
+                <div className="flex items-center gap-4 text-sm text-white/70">
                   <span className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-[#FEFD0C] rounded-full animate-pulse"></div>
                     Secure & Trusted
@@ -286,7 +149,7 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* WhatsApp Floating Button - Enhanced with better hover effects */}
+        {/* WhatsApp Floating Button */}
         <a
           href="https://wa.me/+447721863850"
           className="fixed bottom-6 right-6 z-50 group"
@@ -296,11 +159,11 @@ const Footer = () => {
         >
           <div className="relative">
             <div className="absolute inset-0 bg-green-500 rounded-full blur-xl opacity-50 group-hover:opacity-100 group-hover:blur-2xl transition-all duration-500 animate-pulse group-hover:scale-125"></div>
-            <div className="relative bg-gradient-to-br from-green-500 to-green-600 p-4 rounded-full hover:from-green-400 hover:to-green-500 transition-all duration-300 transform group-hover:scale-125 shadow-2xl border-2 border-green-400/30 group-hover:border-green-300/50 group-hover:shadow-green-500/30 group-hover:shadow-2xl">
-              <FaWhatsapp className="text-[28px] text-white group-hover:scale-110 transition-transform duration-300 group-hover:drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]" aria-hidden="true" />
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-ping group-hover:bg-red-400"></div>
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center group-hover:bg-red-400 group-hover:scale-110 transition-all duration-300">
-                <div className="w-2 h-2 bg-white rounded-full group-hover:animate-pulse"></div>
+            <div className="relative bg-gradient-to-br from-green-500 to-green-600 p-4 rounded-full">
+              <FaWhatsapp className="text-[28px] text-white" />
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-ping"></div>
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                <div className="w-2 h-2 bg-white rounded-full"></div>
               </div>
             </div>
           </div>
