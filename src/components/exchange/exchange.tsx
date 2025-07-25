@@ -3,7 +3,7 @@ import {
   ArrowLeft,
   TrendingUp,
   TrendingDown,
-  RefreshCw, 
+  RefreshCw,
   DollarSign,
   ChevronDown,
   ArrowUpDown,
@@ -24,7 +24,7 @@ interface CryptoCurrency {
   icon: string;
 }
 
-// Theme configuration - matching header color scheme
+// Theme configuration
 const theme = {
   primary: 'from-[#FEFD0C] to-[#FEFD0C]/90',
   primaryHover: 'from-[#FEFD0C]/90 to-[#FEFD0C]',
@@ -45,67 +45,30 @@ const theme = {
   input: 'bg-black/40 border-[#FEFD0C]/20 focus:border-[#FEFD0C] focus:ring-[#FEFD0C]/20'
 } as const;
 
-// Mock cryptocurrency data
 const availableCryptos: CryptoCurrency[] = [
-  {
-    id: 'bitcoin',
-    symbol: 'BTC',
-    name: 'Bitcoin',
-    price: 42850.32,
-    change24h: 3.24,
-    icon: '₿'
-  },
-  {
-    id: 'ethereum',
-    symbol: 'ETH',
-    name: 'Ethereum',
-    price: 2834.67,
-    change24h: 1.87,
-    icon: 'Ξ'
-  },
-  {
-    id: 'solana',
-    symbol: 'SOL',
-    name: 'Solana',
-    price: 96.84,
-    change24h: 5.67,
-    icon: '◎'
-  },
-  {
-    id: 'cardano',
-    symbol: 'ADA',
-    name: 'Cardano',
-    price: 0.45,
-    change24h: 2.34,
-    icon: '₳'
-  },
-  {
-    id: 'binancecoin',
-    symbol: 'BNB',
-    name: 'BNB',
-    price: 315.42,
-    change24h: -1.23,
-    icon: 'B'
-  },
-  {
-    id: 'ripple',
-    symbol: 'XRP',
-    name: 'XRP',
-    price: 0.52,
-    change24h: 4.56,
-    icon: 'X'
-  }
+  { id: 'bitcoin', symbol: 'BTC', name: 'Bitcoin', price: 118000, change24h: -0.5, icon: '₿' },
+  { id: 'ethereum', symbol: 'ETH', name: 'Ethereum', price: 3698, change24h: -0.2, icon: 'Ξ' },
+  { id: 'bnb', symbol: 'BNB', name: 'Binance Coin', price: 700, change24h: -1.2, icon: 'Ⓑ' },
+  { id: 'xrp', symbol: 'XRP', name: 'XRP', price: 3.08, change24h: -6.3, icon: 'X' },
+  { id: 'solana', symbol: 'SOL', name: 'Solana', price: 160.58, change24h: -4.6, icon: '◎' },
+  { id: 'cardano', symbol: 'ADA', name: 'Cardano', price: 0.746, change24h: -0.2, icon: '₳' },
+  { id: 'dogecoin', symbol: 'DOGE', name: 'Dogecoin', price: 0.322, change24h: -7.4, icon: 'Ð' },
+  { id: 'tron', symbol: 'TRX', name: 'TRON', price: 0.223, change24h: 0.9, icon: '⚡' },
+  { id: 'usdt', symbol: 'USDT', name: 'Tether', price: 1.0, change24h: 0.0, icon: '₮' },
+  { id: 'usdc', symbol: 'USDC', name: 'USD Coin', price: 1.0, change24h: 0.0, icon: '$' },
+  { id: 'avalanche', symbol: 'AVAX', name: 'Avalanche', price: 25.0, change24h: -1.2, icon: '🔺' }
 ];
 
 // Utility functions
 const formatPrice = (price: number): string => {
-  if (price >= 1) return `$${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  return `$${price.toFixed(6)}`;
+  return price >= 1
+    ? `$${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    : `$${price.toFixed(6)}`;
 };
 
-// Main Exchange Component
 const ExchangeComponent: React.FC = () => {
-  const [selectedCrypto, setSelectedCrypto] = useState<CryptoCurrency>(availableCryptos[0]);
+  const [cryptos, setCryptos] = useState<CryptoCurrency[]>(availableCryptos);
+  const [selectedCryptoId, setSelectedCryptoId] = useState<string>(availableCryptos[0].id);
   const [tradeType, setTradeType] = useState<'buy' | 'sell'>('buy');
   const [amount, setAmount] = useState<string>('');
   const [usdValue, setUsdValue] = useState<string>('');
@@ -114,107 +77,113 @@ const ExchangeComponent: React.FC = () => {
   const [showCryptoDropdown, setShowCryptoDropdown] = useState(false);
 
   const MINIMUM_TRADE = 250;
-  const WHATSAPP_NUMBER = '+2348118482904';
+  const WHATSAPP_NUMBER = '+447721863850';
 
-  // Handle navigation back with proper history handling
-  const handleBack = () => {
-    try {
-      // Check if we can go back in history
-      if (window.history.length > 1) {
-        window.history.back();
-      } else {
-        // Fallback navigation
-        window.location.href = '/';
-      }
-    } catch (error) {
-      // Fallback if history API fails
-      window.location.href = '/';
-    }
+  // Get the currently selected crypto from the cryptos array (always in sync)
+  const selectedCrypto = cryptos.find(c => c.id === selectedCryptoId) || cryptos[0];
+
+  // Fetch live prices
+  useEffect(() => {
+    const ids = availableCryptos.map(c => c.id).join(',');
+    fetch(
+      `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}&price_change_percentage=24h`
+    )
+      .then(res => res.json())
+      .then((data: any[]) => {
+        const updated: CryptoCurrency[] = availableCryptos.map(c => {
+          const match = data.find(d => d.id === c.id);
+          if (match) {
+            return {
+              ...c,
+              price: match.current_price,
+              change24h: match.price_change_percentage_24h ?? 0
+            };
+          }
+          return c;
+        });
+        setCryptos(updated);
+        // No need to update selectedCrypto separately - it's derived from cryptos
+      })
+      .catch(console.error);
+  }, []);
+
+  const sanitizeCryptoInput = (v: string) => {
+    const num = parseFloat(v);
+    if (!isFinite(num) || num < 0) return '';
+    return num.toFixed(8);
   };
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (showCryptoDropdown) {
-        const target = event.target as HTMLElement;
-        if (!target.closest('.crypto-dropdown')) {
-          setShowCryptoDropdown(false);
-        }
-      }
-    };
+  const sanitizeUsdInput = (v: string) => {
+    const num = parseFloat(v);
+    if (!isFinite(num) || num < 0) return '';
+    return num.toFixed(2);
+  };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showCryptoDropdown]);
-
-  // Handle amount input change
   const handleAmountChange = (value: string) => {
-    setAmount(value);
-    if (value && !isNaN(Number(value))) {
-      const usdAmount = Number(value) * selectedCrypto.price;
-      setUsdValue(usdAmount.toFixed(2));
+    const clean = sanitizeCryptoInput(value);
+    setAmount(clean);
+
+    const num = parseFloat(clean);
+    if (!isNaN(num)) {
+      const usd = num * selectedCrypto.price;
+      setUsdValue(sanitizeUsdInput(usd.toString()));
     } else {
       setUsdValue('');
     }
   };
 
-  // Handle USD value input change
   const handleUsdValueChange = (value: string) => {
-    setUsdValue(value);
-    if (value && !isNaN(Number(value))) {
-      const cryptoAmount = Number(value) / selectedCrypto.price;
-      setAmount(cryptoAmount.toFixed(8));
+    const clean = sanitizeUsdInput(value);
+    setUsdValue(clean);
+
+    const num = parseFloat(clean);
+    if (!isNaN(num)) {
+      const crypto = num / selectedCrypto.price;
+      setAmount(sanitizeCryptoInput(crypto.toString()));
     } else {
       setAmount('');
     }
   };
 
-  // Generate WhatsApp message
   const generateWhatsAppMessage = () => {
-    const tradeAction = tradeType === 'buy' ? 'Buy' : 'Sell';
-    const cryptoAmount = parseFloat(amount).toFixed(8);
-    const usdAmount = parseFloat(usdValue).toFixed(2);
-    const rate = formatPrice(selectedCrypto.price);
-    
+    const action = tradeType === 'buy' ? 'Buy' : 'Sell';
     return `🚀 *Crypto Exchange Order Request*
 
 📋 *Order Details:*
-• Action: ${tradeAction} ${selectedCrypto.name} (${selectedCrypto.symbol})
-• Amount: ${cryptoAmount} ${selectedCrypto.symbol}
-• Value: $${usdAmount}
-• Rate: ${rate}
+• Action: ${action} ${selectedCrypto.name} (${selectedCrypto.symbol})
+• Amount: ${parseFloat(amount).toFixed(8)} ${selectedCrypto.symbol}
+• Value: $${parseFloat(usdValue).toFixed(2)}
+• Rate: ${formatPrice(selectedCrypto.price)}
 
 💼 *Trade Type:* ${tradeType.toUpperCase()}
 
 Please confirm this order and provide payment instructions. Thank you!`;
   };
 
-  // Handle trade execution via WhatsApp
-  const handleTrade = async () => {
+  const handleTrade = () => {
     if (!amount || !usdValue || parseFloat(usdValue) < MINIMUM_TRADE) return;
 
     setIsLoading(true);
     setOrderStatus('idle');
 
-    // Simulate brief processing
     setTimeout(() => {
-      const message = generateWhatsAppMessage();
-      const encodedMessage = encodeURIComponent(message);
-      const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER.replace('+', '')}?text=${encodedMessage}`;
-      
-      // Open WhatsApp
-      window.open(whatsappUrl, '_blank');
-      
+      const msg = generateWhatsAppMessage();
+      const url = `https://wa.me/${WHATSAPP_NUMBER.slice(1)}?text=${encodeURIComponent(msg)}`;
+      window.open(url, '_blank');
       setOrderStatus('success');
       setIsLoading(false);
-      
-      // Reset form after showing success message
+
       setTimeout(() => {
         setAmount('');
         setUsdValue('');
         setOrderStatus('idle');
       }, 5000);
     }, 1500);
+  };
+
+  const handleBack = () => {
+    if (window.history.length > 1) window.history.back();
+    else window.location.href = '/';
   };
 
   return (
@@ -310,17 +279,17 @@ Please confirm this order and provide payment instructions. Thank you!`;
               
               {showCryptoDropdown && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-black/95 backdrop-blur-xl rounded-xl border border-[#FEFD0C]/20 shadow-2xl shadow-black/50 z-20 max-h-80 overflow-y-auto">
-                  {availableCryptos.map((crypto) => (
+                  {cryptos.map((crypto) => (
                     <button
                       key={crypto.id}
                       onClick={() => {
-                        setSelectedCrypto(crypto);
+                        setSelectedCryptoId(crypto.id);
                         setShowCryptoDropdown(false);
                         setAmount('');
                         setUsdValue('');
                       }}
                       className={`w-full flex items-center justify-between p-4 hover:bg-[#FEFD0C]/10 transition-all duration-300 text-left first:rounded-t-xl last:rounded-b-xl ${
-                        selectedCrypto.id === crypto.id ? 'bg-[#FEFD0C]/10 border-l-2 border-[#FEFD0C]' : ''
+                        selectedCryptoId === crypto.id ? 'bg-[#FEFD0C]/10 border-l-2 border-[#FEFD0C]' : ''
                       }`}
                     >
                       <div className="flex items-center space-x-3">

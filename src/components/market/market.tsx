@@ -7,6 +7,8 @@ import {
   Star,
   ArrowLeft,
   Activity,
+  AlertCircle,
+  Loader2,
 } from 'lucide-react';
 
 // TypeScript interfaces
@@ -22,6 +24,14 @@ interface CryptoCurrency {
   icon: string;
   sparklineData: number[];
   isWatchlisted: boolean;
+  high24h: number;
+  low24h: number;
+  circulatingSupply: number;
+  totalSupply: number;
+  ath: number;
+  athChangePercentage: number;
+  atl: number;
+  atlChangePercentage: number;
 }
 
 interface MarketStats {
@@ -29,13 +39,15 @@ interface MarketStats {
   totalVolume24h: number;
   btcDominance: number;
   marketCapChange24h: number;
+  ethDominance: number;
+  activeCryptocurrencies: number;
 }
 
 // Theme configuration
 const theme = {
   primary: 'from-[#FEFD0C] to-[#F5F500]',
   primaryAccent: '#FEFD0C',
-  background: 'bg-black',              // Changed from 'bg-black/40' to solid black
+  background: 'bg-black',
   surface: 'bg-black/70 backdrop-blur-2xl border-white/5',
   surfaceHover: 'bg-black/80 backdrop-blur-2xl border-[#FEFD0C]/20',
   surfaceLight: 'bg-white/5 backdrop-blur-xl border-white/10',
@@ -50,276 +62,6 @@ const theme = {
   glow: 'shadow-[0_0_20px_rgba(254,253,12,0.3)]',
   glowSubtle: 'shadow-[0_0_10px_rgba(254,253,12,0.15)]'
 } as const;
-
-// Mock data
-const mockMarketStats: MarketStats = {
-  totalMarketCap: 2840000000000,
-  totalVolume24h: 89400000000,
-  btcDominance: 52.3,
-  marketCapChange24h: 2.8
-};
-const mockCryptoData: CryptoCurrency[] = [
-  {
-    id: 'bitcoin',
-    symbol: 'BTC',
-    name: 'Bitcoin',
-    price: 68420.32,
-    change24h: 4.23,
-    volume24h: 23400000000,
-    marketCap: 1350000000000,
-    rank: 1,
-    icon: '₿',
-    sparklineData: [65000, 66200, 64800, 67100, 68400, 67900, 68420],
-    isWatchlisted: true
-  },
-  {
-    id: 'ethereum',
-    symbol: 'ETH',
-    name: 'Ethereum',
-    price: 3834.67,
-    change24h: 6.87,
-    volume24h: 18200000000,
-    marketCap: 461000000000,
-    rank: 2,
-    icon: 'Ξ',
-    sparklineData: [3600, 3700, 3650, 3750, 3800, 3820, 3834],
-    isWatchlisted: false
-  },
-  {
-    id: 'tether',
-    symbol: 'USDT',
-    name: 'Tether',
-    price: 1.00,
-    change24h: 0.02,
-    volume24h: 45600000000,
-    marketCap: 124000000000,
-    rank: 3,
-    icon: '₮',
-    sparklineData: [0.999, 1.001, 0.998, 1.002, 1.000, 0.999, 1.000],
-    isWatchlisted: false
-  },
-  {
-    id: 'solana',
-    symbol: 'SOL',
-    name: 'Solana',
-    price: 196.84,
-    change24h: 12.67,
-    volume24h: 3200000000,
-    marketCap: 93000000000,
-    rank: 4,
-    icon: '◎',
-    sparklineData: [180, 185, 175, 190, 195, 192, 197],
-    isWatchlisted: false
-  },
-  {
-    id: 'bnb',
-    symbol: 'BNB',
-    name: 'BNB',
-    price: 712.45,
-    change24h: 3.78,
-    volume24h: 1900000000,
-    marketCap: 103000000000,
-    rank: 5,
-    icon: 'Ⓑ',
-    sparklineData: [685, 695, 680, 705, 715, 708, 712],
-    isWatchlisted: false
-  },
-  {
-    id: 'ripple',
-    symbol: 'XRP',
-    name: 'XRP',
-    price: 2.52,
-    change24h: 15.56,
-    volume24h: 8900000000,
-    marketCap: 144000000000,
-    rank: 6,
-    icon: 'X',
-    sparklineData: [2.1, 2.2, 2.15, 2.35, 2.48, 2.51, 2.52],
-    isWatchlisted: true
-  },
-  {
-    id: 'usdc',
-    symbol: 'USDC',
-    name: 'USD Coin',
-    price: 1.00,
-    change24h: -0.01,
-    volume24h: 6800000000,
-    marketCap: 38000000000,
-    rank: 7,
-    icon: '$',
-    sparklineData: [1.001, 0.999, 1.002, 0.998, 1.000, 1.001, 1.000],
-    isWatchlisted: false
-  },
-  {
-    id: 'cardano',
-    symbol: 'ADA',
-    name: 'Cardano',
-    price: 1.45,
-    change24h: 8.34,
-    volume24h: 1800000000,
-    marketCap: 51000000000,
-    rank: 8,
-    icon: '₳',
-    sparklineData: [1.32, 1.38, 1.35, 1.42, 1.44, 1.43, 1.45],
-    isWatchlisted: false
-  },
-  {
-    id: 'dogecoin',
-    symbol: 'DOGE',
-    name: 'Dogecoin',
-    price: 0.42,
-    change24h: 18.92,
-    volume24h: 5600000000,
-    marketCap: 62000000000,
-    rank: 9,
-    icon: 'Ð',
-    sparklineData: [0.35, 0.37, 0.34, 0.39, 0.41, 0.40, 0.42],
-    isWatchlisted: false
-  },
-  {
-    id: 'tron',
-    symbol: 'TRX',
-    name: 'TRON',
-    price: 0.28,
-    change24h: 5.67,
-    volume24h: 1200000000,
-    marketCap: 24000000000,
-    rank: 10,
-    icon: '⚡',
-    sparklineData: [0.265, 0.270, 0.268, 0.275, 0.282, 0.279, 0.280],
-    isWatchlisted: false
-  },
-  {
-    id: 'avalanche',
-    symbol: 'AVAX',
-    name: 'Avalanche',
-    price: 45.23,
-    change24h: 9.45,
-    volume24h: 890000000,
-    marketCap: 18500000000,
-    rank: 11,
-    icon: '🔺',
-    sparklineData: [41, 42, 40, 44, 46, 44, 45],
-    isWatchlisted: false
-  },
-  {
-    id: 'shiba-inu',
-    symbol: 'SHIB',
-    name: 'Shiba Inu',
-    price: 0.00003124,
-    change24h: 22.34,
-    volume24h: 2300000000,
-    marketCap: 18400000000,
-    rank: 12,
-    icon: '🐕',
-    sparklineData: [0.000025, 0.000027, 0.000024, 0.000029, 0.000031, 0.000030, 0.00003124],
-    isWatchlisted: false
-  },
-  {
-    id: 'polkadot',
-    symbol: 'DOT',
-    name: 'Polkadot',
-    price: 8.94,
-    change24h: 7.12,
-    volume24h: 450000000,
-    marketCap: 12800000000,
-    rank: 13,
-    icon: '●',
-    sparklineData: [8.2, 8.4, 8.1, 8.6, 8.9, 8.7, 8.94],
-    isWatchlisted: false
-  },
-  {
-    id: 'chainlink',
-    symbol: 'LINK',
-    name: 'Chainlink',
-    price: 24.67,
-    change24h: 11.78,
-    volume24h: 780000000,
-    marketCap: 15200000000,
-    rank: 14,
-    icon: '🔗',
-    sparklineData: [22, 23, 21.5, 24, 25, 24.2, 24.67],
-    isWatchlisted: false
-  },
-  {
-    id: 'polygon',
-    symbol: 'MATIC',
-    name: 'Polygon',
-    price: 0.87,
-    change24h: 13.56,
-    volume24h: 520000000,
-    marketCap: 8700000000,
-    rank: 15,
-    icon: '⬡',
-    sparklineData: [0.76, 0.78, 0.74, 0.82, 0.86, 0.84, 0.87],
-    isWatchlisted: false
-  },
-  {
-    id: 'litecoin',
-    symbol: 'LTC',
-    name: 'Litecoin',
-    price: 106.34,
-    change24h: 6.23,
-    volume24h: 890000000,
-    marketCap: 7900000000,
-    rank: 16,
-    icon: 'Ł',
-    sparklineData: [100, 102, 98, 104, 107, 105, 106],
-    isWatchlisted: false
-  },
-  {
-    id: 'near',
-    symbol: 'NEAR',
-    name: 'NEAR Protocol',
-    price: 7.45,
-    change24h: 16.78,
-    volume24h: 340000000,
-    marketCap: 8200000000,
-    rank: 17,
-    icon: 'Ⓝ',
-    sparklineData: [6.2, 6.5, 6.0, 7.0, 7.4, 7.2, 7.45],
-    isWatchlisted: false
-  },
-  {
-    id: 'uniswap',
-    symbol: 'UNI',
-    name: 'Uniswap',
-    price: 15.89,
-    change24h: 14.23,
-    volume24h: 290000000,
-    marketCap: 9500000000,
-    rank: 18,
-    icon: '🦄',
-    sparklineData: [13.5, 14.2, 13.1, 15.1, 16.0, 15.4, 15.89],
-    isWatchlisted: false
-  },
-  {
-    id: 'aptos',
-    symbol: 'APT',
-    name: 'Aptos',
-    price: 12.56,
-    change24h: 19.45,
-    volume24h: 380000000,
-    marketCap: 6800000000,
-    rank: 19,
-    icon: '🅰',
-    sparklineData: [10.2, 10.8, 9.9, 11.8, 12.4, 12.1, 12.56],
-    isWatchlisted: false
-  },
-  {
-    id: 'sui',
-    symbol: 'SUI',
-    name: 'Sui',
-    price: 4.67,
-    change24h: 25.34,
-    volume24h: 420000000,
-    marketCap: 13600000000,
-    rank: 20,
-    icon: '🌊',
-    sparklineData: [3.6, 3.8, 3.5, 4.2, 4.6, 4.4, 4.67],
-    isWatchlisted: false
-  }
-];
 
 // Utility functions
 const formatPrice = (price: number): string => {
@@ -343,11 +85,102 @@ const formatVolume = (value: number): string => {
   return `$${value.toLocaleString()}`;
 };
 
+const getCoinIcon = (symbol: string): string => {
+  const iconMap: { [key: string]: string } = {
+    'BTC': '₿',
+    'ETH': 'Ξ',
+    'USDT': '₮',
+    'BNB': 'Ⓑ',
+    'SOL': '◎',
+    'XRP': 'Ⓧ',
+    'USDC': '$',
+    'DOGE': 'Ð',
+    'ADA': '₳',
+    'TRX': '⚡',
+    'LINK': '🔗',
+    'AVAX': '🔺',
+    'LTC': 'Ł',
+    'SUI': '🌊',
+    'DOT': '●',
+    'MATIC': '🔷',
+    'UNI': '🦄',
+    'ATOM': '⚛️',
+    'ALGO': '🔷',
+    'VET': '💎',
+    'ICP': '∞',
+    'FIL': '📁',
+    'APT': '🅰️',
+    'NEAR': '🔴',
+    'AAVE': '👻',
+    'GRT': '📊',
+    'SAND': '🏝️',
+    'MANA': '🏛️',
+    'CRO': '🔺',
+    'LDO': '🔷'
+  };
+  return iconMap[symbol.toUpperCase()] || '🪙';
+};
+
+// API Functions
+const COINGECKO_API_BASE = 'https://api.coingecko.com/api/v3';
+
+const fetchMarketData = async (): Promise<{ coins: CryptoCurrency[], marketStats: MarketStats }> => {
+  try {
+    // Fetch global market data
+    const globalResponse = await fetch(`${COINGECKO_API_BASE}/global`);
+    const globalData = await globalResponse.json();
+    
+    // Fetch top 50 cryptocurrencies with sparkline data
+    const coinsResponse = await fetch(
+      `${COINGECKO_API_BASE}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1&sparkline=true&price_change_percentage=24h`
+    );
+    const coinsData = await coinsResponse.json();
+
+    const marketStats: MarketStats = {
+      totalMarketCap: globalData.data.total_market_cap.usd,
+      totalVolume24h: globalData.data.total_volume.usd,
+      btcDominance: globalData.data.market_cap_percentage.btc,
+      ethDominance: globalData.data.market_cap_percentage.eth || 0,
+      marketCapChange24h: globalData.data.market_cap_change_percentage_24h_usd,
+      activeCryptocurrencies: globalData.data.active_cryptocurrencies
+    };
+
+    const coins: CryptoCurrency[] = coinsData.map((coin: any, index: number) => ({
+      id: coin.id,
+      symbol: coin.symbol,
+      name: coin.name,
+      price: coin.current_price,
+      change24h: coin.price_change_percentage_24h || 0,
+      volume24h: coin.total_volume,
+      marketCap: coin.market_cap,
+      rank: coin.market_cap_rank,
+      icon: getCoinIcon(coin.symbol),
+      sparklineData: coin.sparkline_in_7d?.price?.slice(-7) || [coin.current_price],
+      isWatchlisted: false,
+      high24h: coin.high_24h,
+      low24h: coin.low_24h,
+      circulatingSupply: coin.circulating_supply,
+      totalSupply: coin.total_supply,
+      ath: coin.ath,
+      athChangePercentage: coin.ath_change_percentage,
+      atl: coin.atl,
+      atlChangePercentage: coin.atl_change_percentage
+    }));
+
+    return { coins, marketStats };
+  } catch (error) {
+    console.error('Error fetching market data:', error);
+    throw error;
+  }
+};
+
 // Mini Sparkline Component
 const MiniSparkline: React.FC<{ data: number[]; isPositive: boolean }> = ({ data, isPositive }) => {
+  if (!data || data.length === 0) return null;
+  
   const max = Math.max(...data);
   const min = Math.min(...data);
-  const range = max - min || 1;  // Avoid division by zero
+  const range = max - min || 1;
 
   const points = data.map((value, index) => {
     const x = (index / (data.length - 1)) * 60;
@@ -386,7 +219,7 @@ const MarketStatsCard: React.FC<{ stats: MarketStats }> = ({ stats }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className={`p-4 rounded-lg ${theme.surfaceLight} border ${theme.border}`}>
             <p className={`text-sm font-medium ${theme.textSecondary} mb-1`}>Total Market Cap</p>
             <p className={`text-xl font-bold ${theme.text}`}>{formatMarketCap(stats.totalMarketCap)}</p>
@@ -404,7 +237,7 @@ const MarketStatsCard: React.FC<{ stats: MarketStats }> = ({ stats }) => {
 
           <div className={`p-4 rounded-lg ${theme.surfaceLight} border ${theme.border}`}>
             <p className={`text-sm font-medium ${theme.textSecondary} mb-1`}>BTC Dominance</p>
-            <p className={`text-xl font-bold ${theme.text}`}>{stats.btcDominance}%</p>
+            <p className={`text-xl font-bold ${theme.text}`}>{stats.btcDominance.toFixed(1)}%</p>
             <div className="w-full bg-black/40 rounded-full h-2 mt-2 border border-[#FEFD0C]/20">
               <div 
                 className={`bg-gradient-to-r ${theme.primary} h-2 rounded-full transition-all duration-500 ${theme.glow}`}
@@ -412,30 +245,76 @@ const MarketStatsCard: React.FC<{ stats: MarketStats }> = ({ stats }) => {
               />
             </div>
           </div>
+
+          <div className={`p-4 rounded-lg ${theme.surfaceLight} border ${theme.border}`}>
+            <p className={`text-sm font-medium ${theme.textSecondary} mb-1`}>Active Coins</p>
+            <p className={`text-xl font-bold ${theme.text}`}>{stats.activeCryptocurrencies?.toLocaleString() || 'N/A'}</p>
+            <p className={`text-sm ${theme.textSecondary} mt-1`}>ETH: {stats.ethDominance.toFixed(1)}%</p>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
+// Error Component
+const ErrorCard: React.FC<{ message: string; onRetry: () => void }> = ({ message, onRetry }) => (
+  <div className={`${theme.surface} rounded-xl p-6 border text-center`}>
+    <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+    <h3 className={`text-lg font-semibold ${theme.text} mb-2`}>Failed to Load Data</h3>
+    <p className={`${theme.textSecondary} mb-4`}>{message}</p>
+    <button
+      onClick={onRetry}
+      className={`px-4 py-2 bg-gradient-to-r ${theme.primary} text-black font-semibold rounded-lg hover:opacity-90 transition-opacity`}
+    >
+      Try Again
+    </button>
+  </div>
+);
+
+// Loading Component
+const LoadingCard: React.FC = () => (
+  <div className={`${theme.surface} rounded-xl p-6 border text-center`}>
+    <Loader2 className="w-12 h-12 text-[#FEFD0C] mx-auto mb-4 animate-spin" />
+    <h3 className={`text-lg font-semibold ${theme.text} mb-2`}>Loading Market Data</h3>
+    <p className={`${theme.textSecondary}`}>Fetching latest cryptocurrency prices...</p>
+  </div>
+);
+
 const CryptoMarketComponent: React.FC = () => {
-  const [cryptoData, setCryptoData] = useState<CryptoCurrency[]>(mockCryptoData);
+  const [cryptoData, setCryptoData] = useState<CryptoCurrency[]>([]);
+  const [marketStats, setMarketStats] = useState<MarketStats | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [watchlist, setWatchlist] = useState<Set<string>>(new Set(['bitcoin', 'solana', 'ripple']));
+  const [error, setError] = useState<string | null>(null);
+  const [watchlist, setWatchlist] = useState<Set<string>>(new Set());
+  const [sortBy, setSortBy] = useState<'rank' | 'price' | 'change' | 'volume' | 'marketCap'>('rank');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  const loadData = async () => {
+    try {
+      setError(null);
+      const { coins, marketStats: stats } = await fetchMarketData();
+      setCryptoData(coins);
+      setMarketStats(stats);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch market data');
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      refreshData();
-    }, 60000);
+    loadData();
+    const interval = setInterval(loadData, 60000); // Refresh every minute
     return () => clearInterval(interval);
   }, []);
 
-  const refreshData = () => {
+  const refreshData = async () => {
     setIsRefreshing(true);
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 1000);
+    await loadData();
   };
 
   const toggleWatchlist = (id: string) => {
@@ -447,7 +326,49 @@ const CryptoMarketComponent: React.FC = () => {
     });
   };
 
-  const filteredCryptos = cryptoData.filter(
+  const handleSort = (field: typeof sortBy) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('asc');
+    }
+  };
+
+  const sortedCryptos = [...cryptoData].sort((a, b) => {
+    let aValue: number;
+    let bValue: number;
+
+    switch (sortBy) {
+      case 'price':
+        aValue = a.price;
+        bValue = b.price;
+        break;
+      case 'change':
+        aValue = a.change24h;
+        bValue = b.change24h;
+        break;
+      case 'volume':
+        aValue = a.volume24h;
+        bValue = b.volume24h;
+        break;
+      case 'marketCap':
+        aValue = a.marketCap;
+        bValue = b.marketCap;
+        break;
+      default:
+        aValue = a.rank;
+        bValue = b.rank;
+    }
+
+    if (sortOrder === 'asc') {
+      return aValue - bValue;
+    } else {
+      return bValue - aValue;
+    }
+  });
+
+  const filteredCryptos = sortedCryptos.filter(
     c =>
       c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.symbol.toLowerCase().includes(searchTerm.toLowerCase())
@@ -456,6 +377,26 @@ const CryptoMarketComponent: React.FC = () => {
   const goBack = () => {
     window.history.back();
   };
+
+  if (isLoading) {
+    return (
+      <div className={`min-h-screen ${theme.background} relative p-8 text-white font-sans`}>
+        <div className="max-w-7xl mx-auto">
+          <LoadingCard />
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !marketStats) {
+    return (
+      <div className={`min-h-screen ${theme.background} relative p-8 text-white font-sans`}>
+        <div className="max-w-7xl mx-auto">
+          <ErrorCard message={error} onRetry={loadData} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen ${theme.background} relative p-8 text-white font-sans`}>
@@ -474,6 +415,7 @@ const CryptoMarketComponent: React.FC = () => {
           </h1>
           <button
             onClick={refreshData}
+            disabled={isRefreshing}
             className={`p-2 rounded-full border border-white/20 hover:${theme.borderHover} transition duration-300 flex items-center justify-center ${isRefreshing ? 'animate-spin' : ''}`}
             aria-label="Refresh data"
           >
@@ -482,9 +424,9 @@ const CryptoMarketComponent: React.FC = () => {
         </header>
 
         {/* Market Stats */}
-        <MarketStatsCard stats={mockMarketStats} />
+        {marketStats && <MarketStatsCard stats={marketStats} />}
 
-        {/* Search and Clear */}
+        {/* Search and Filters */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 space-y-4 md:space-y-0">
           <div className="relative w-full md:w-1/3">
             <input
@@ -498,6 +440,17 @@ const CryptoMarketComponent: React.FC = () => {
           </div>
 
           <div className="flex space-x-4">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+              className={`${theme.surface} px-4 py-2 rounded-lg border ${theme.border} focus:outline-none focus:ring-2 focus:ring-yellow-400`}
+            >
+              <option value="rank">Sort by Rank</option>
+              <option value="price">Sort by Price</option>
+              <option value="change">Sort by 24h Change</option>
+              <option value="volume">Sort by Volume</option>
+              <option value="marketCap">Sort by Market Cap</option>
+            </select>
             <button
               className={`${theme.surface} px-4 py-2 rounded-lg border ${theme.border} hover:${theme.borderHover} transition duration-300`}
               onClick={() => setSearchTerm('')}
@@ -512,15 +465,15 @@ const CryptoMarketComponent: React.FC = () => {
           <table className="w-full table-auto border-collapse text-sm">
             <thead>
               <tr className="border-b border-white/20">
-                <th className="text-left py-2 px-3 w-12">#</th>
+                <th className="text-left py-2 px-3 w-12 cursor-pointer" onClick={() => handleSort('rank')}>#</th>
                 <th className="text-left py-2 px-3 w-12"></th>
                 <th className="text-left py-2 px-3">Name</th>
-                <th className="text-right py-2 px-3">Price</th>
-                <th className="text-right py-2 px-3">24h %</th>
-                <th className="text-right py-2 px-3">Volume 24h</th>
-                <th className="text-right py-2 px-3">Market Cap</th>
-                <th className="text-center py-2 px-3 w-24">Sparkline</th>
-                <th className="text-center py-2 px-3 w-16">Watchlist</th>
+                <th className="text-right py-2 px-3 cursor-pointer" onClick={() => handleSort('price')}>Price</th>
+                <th className="text-right py-2 px-3 cursor-pointer" onClick={() => handleSort('change')}>24h %</th>
+                <th className="text-right py-2 px-3 cursor-pointer" onClick={() => handleSort('volume')}>Volume 24h</th>
+                <th className="text-right py-2 px-3 cursor-pointer" onClick={() => handleSort('marketCap')}>Market Cap</th>
+                <th className="text-center py-2 px-3 w-24">7d Chart</th>
+                <th className="text-center py-2 px-3 w-16">Watch</th>
               </tr>
             </thead>
             <tbody>
@@ -529,7 +482,7 @@ const CryptoMarketComponent: React.FC = () => {
                 return (
                   <tr
                     key={coin.id}
-                    className={`${theme.surfaceHover} cursor-pointer hover:${theme.glowSubtle} transition duration-200`}
+                    className={`hover:${theme.surfaceHover} cursor-pointer transition duration-200 border-b border-white/5`}
                   >
                     <td className="py-3 px-3 text-yellow-400 font-semibold">{coin.rank}</td>
                     <td className="py-3 px-3 text-lg">{coin.icon}</td>
@@ -559,7 +512,7 @@ const CryptoMarketComponent: React.FC = () => {
                       >
                         <Star
                           className={`w-5 h-5 transition-colors ${
-                            watchlist.has(coin.id) ? 'text-yellow-400' : 'text-white/30 hover:text-yellow-400'
+                            watchlist.has(coin.id) ? 'text-yellow-400 fill-current' : 'text-white/30 hover:text-yellow-400'
                           }`}
                         />
                       </button>
@@ -576,6 +529,13 @@ const CryptoMarketComponent: React.FC = () => {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Footer with data source info */}
+        <div className="mt-6 text-center">
+          <p className={`text-sm ${theme.textMuted}`}>
+            Data provided by CoinGecko API • Last updated: {new Date().toLocaleTimeString()}
+          </p>
         </div>
       </div>
     </div>

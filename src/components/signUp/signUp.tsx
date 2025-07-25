@@ -1,5 +1,40 @@
 import React, { useState, useEffect, useCallback, useReducer } from "react";
-import { Eye, EyeOff, Lock, Mail, Shield, User, Phone, X, Info, CheckCircle, AlertCircle, Calendar, AtSign } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, Shield, User, Phone, X, Info, CheckCircle, AlertCircle, Calendar, AtSign, ChevronDown } from "lucide-react";
+
+// Constants
+const COUNTRIES = [
+  { code: '+1', name: 'US', flag: '🇺🇸' },
+  { code: '+44', name: 'UK', flag: '🇬🇧' },
+  { code: '+91', name: 'IN', flag: '🇮🇳' },
+  { code: '+86', name: 'CN', flag: '🇨🇳' },
+  { code: '+49', name: 'DE', flag: '🇩🇪' },
+  { code: '+33', name: 'FR', flag: '🇫🇷' },
+  { code: '+234', name: 'NG', flag: '🇳🇬' },
+  { code: '+81', name: 'JP', flag: '🇯🇵' },
+  { code: '+7', name: 'RU', flag: '🇷🇺' },
+  { code: '+55', name: 'BR', flag: '🇧🇷' }
+];
+
+const REQUIRED_FIELDS = ['firstname', 'lastname', 'email', 'username', 'phone', 'dateOfBirth', 'password', 'confirmPassword'];
+
+const PASSWORD_REQUIREMENTS = {
+  length: "At least 8 characters",
+  lowercase: "One lowercase letter", 
+  uppercase: "One uppercase letter",
+  number: "One number",
+  special: "One special character"
+};
+
+const STRENGTH_LEVELS = [
+  { strength: "", color: "" },
+  { strength: "Weak", color: "text-red-400" },
+  { strength: "Weak", color: "text-red-400" },
+  { strength: "Medium", color: "text-yellow-400" },
+  { strength: "Strong", color: "text-green-400" },
+  { strength: "Very Strong", color: "text-emerald-400" }
+];
+
+const API_ENDPOINT = "https://sellfastpayfast-backend.onrender.com/api/auth/sign-up-one";
 
 // Types
 interface FormData {
@@ -8,6 +43,7 @@ interface FormData {
   email: string;
   username: string;
   phone: string;
+  countryCode: string;
   dateOfBirth: string;
   password: string;
   confirmPassword: string;
@@ -22,68 +58,43 @@ interface PasswordStrength {
   strength: string;
   color: string;
   score: number;
-  requirements: {
-    length: boolean;
-    lowercase: boolean;
-    uppercase: boolean;
-    number: boolean;
-    special: boolean;
+  requirements: Record<string, boolean>;
+}
+
+// Utility functions
+const sanitizePhone = (phone: string): string => phone.replace(/[\s\-\(\)]/g, '');
+
+const getMaxDate = (): string => {
+  const today = new Date();
+  const maxDate = new Date(today.getFullYear() - 13, today.getMonth(), today.getDate());
+  return maxDate.toISOString().split('T')[0];
+};
+
+const calculatePasswordStrength = (password: string): PasswordStrength => {
+  const requirements = {
+    length: password.length >= 8,
+    lowercase: /[a-z]/.test(password),
+    uppercase: /[A-Z]/.test(password),
+    number: /[0-9]/.test(password),
+    special: /[^A-Za-z0-9]/.test(password)
   };
-}
 
-interface InputFieldProps {
-  id: keyof FormData;
-  label: string;
-  type: string;
-  icon: React.ComponentType<{ className?: string }>;
-  value: string;
-  onChange: (value: string) => void;
-  onBlur: () => void;
-  error?: string;
-  placeholder: string;
-  autoComplete?: string;
-  required?: boolean;
-  showToggle?: boolean;
-  showPassword?: boolean;
-  onTogglePassword?: () => void;
-  max?: string;
-  className?: string;
-}
-
-interface ValidationRule {
-  (value: string, ...args: any[]): string;
-}
-
-interface ApiResponse {
-  message?: string;
-}
-
-// Constants
-const REQUIRED_FIELDS: Array<keyof FormData> = [
-  'firstname', 'lastname', 'email', 'username', 'phone', 'dateOfBirth', 'password', 'confirmPassword'
-];
-
-const PASSWORD_REQUIREMENTS = {
-  length: "At least 8 characters",
-  lowercase: "One lowercase letter",
-  uppercase: "One uppercase letter",
-  number: "One number",
-  special: "One special character"
-} as const;
-
-const STRENGTH_CONFIG = {
-  0: { strength: "", color: "" },
-  1: { strength: "Weak", color: "text-red-400" },
-  2: { strength: "Weak", color: "text-red-400" },
-  3: { strength: "Medium", color: "text-yellow-400" },
-  4: { strength: "Strong", color: "text-green-400" },
-  5: { strength: "Very Strong", color: "text-emerald-400" }
-} as const;
-
-const API_ENDPOINT = "https://sellfastpayfast-backend.onrender.com/api/auth/sign-up-one";
+  const score = Object.values(requirements).filter(Boolean).length;
+  const config = STRENGTH_LEVELS[score] || STRENGTH_LEVELS[0];
+  
+  return {
+    strength: password.length === 0 ? "" : config.strength,
+    color: password.length === 0 ? "" : config.color,
+    score,
+    requirements
+  };
+};
 
 // Validation rules
-const validationRules: Record<string, ValidationRule> = {
+const createValidator = (rules: Record<string, (value: string, ...args: any[]) => string>) => 
+  (field: string, value: string, ...args: any[]): string => rules[field]?.(value, ...args) || "";
+
+const validationRules = {
   firstname: (value: string): string => {
     if (!value.trim()) return "First name is required";
     if (value.trim().length < 2) return "First name must be at least 2 characters";
@@ -109,7 +120,7 @@ const validationRules: Record<string, ValidationRule> = {
   phone: (value: string): string => {
     if (!value.trim()) return "Phone number is required";
     const cleanPhone = value.replace(/[\s\-\(\)]/g, '');
-    const phoneRegex = /^[\+]?[1-9][\d]{7,15}$/;
+    const phoneRegex = /^[\d]{7,15}$/;
     if (!phoneRegex.test(cleanPhone)) return "Please enter a valid phone number";
     return "";
   },
@@ -123,7 +134,7 @@ const validationRules: Record<string, ValidationRule> = {
     if (actualAge < 13) return "You must be at least 13 years old";
     return "";
   },
-  password: (value: string, requirements: PasswordStrength['requirements']): string => {
+  password: (value: string, requirements: Record<string, boolean>): string => {
     if (!value) return "Password is required";
     const score = Object.values(requirements).filter(Boolean).length;
     if (score < 4) return "Password must meet at least 4 requirements";
@@ -136,14 +147,10 @@ const validationRules: Record<string, ValidationRule> = {
   }
 };
 
-// Error reducer
-type ErrorAction = 
-  | { type: 'SET_ERROR'; field: string; error: string }
-  | { type: 'CLEAR_ERROR'; field: string }
-  | { type: 'CLEAR_ALL' }
-  | { type: 'SET_ERRORS'; errors: FormErrors };
+const validateField = createValidator(validationRules);
 
-const errorReducer = (state: FormErrors, action: ErrorAction): FormErrors => {
+// Error reducer
+const errorReducer = (state: FormErrors, action: any): FormErrors => {
   switch (action.type) {
     case 'SET_ERROR':
       return { ...state, [action.field]: action.error };
@@ -159,67 +166,70 @@ const errorReducer = (state: FormErrors, action: ErrorAction): FormErrors => {
   }
 };
 
-// Utility functions
-const sanitizePhone = (phone: string): string => phone.replace(/[\s\-\(\)]/g, '');
-
-const getMaxDate = (): string => {
-  const today = new Date();
-  const maxDate = new Date(today.getFullYear() - 13, today.getMonth(), today.getDate());
-  return maxDate.toISOString().split('T')[0];
-};
-
-const calculatePasswordStrength = (password: string): PasswordStrength => {
-  const requirements = {
-    length: password.length >= 8,
-    lowercase: /[a-z]/.test(password),
-    uppercase: /[A-Z]/.test(password),
-    number: /[0-9]/.test(password),
-    special: /[^A-Za-z0-9]/.test(password)
+// Reusable Components
+const Alert: React.FC<{ 
+  type: 'success' | 'error'; 
+  message: string; 
+  onDismiss?: () => void;
+}> = ({ type, message, onDismiss }) => {
+  const isSuccess = type === 'success';
+  const styles = {
+    bg: isSuccess ? 'bg-green-500/10' : 'bg-red-500/10',
+    border: isSuccess ? 'border-green-500/30' : 'border-red-500/30',
+    text: isSuccess ? 'text-green-400' : 'text-red-400'
   };
-
-  const score = Object.values(requirements).filter(Boolean).length;
-  const config = STRENGTH_CONFIG[score as keyof typeof STRENGTH_CONFIG] || STRENGTH_CONFIG[0];
-  
-  return {
-    strength: password.length === 0 ? "" : config.strength,
-    color: password.length === 0 ? "" : config.color,
-    score,
-    requirements
-  };
-};
-
-// Reusable Input Component
-const FormInput: React.FC<InputFieldProps> = ({
-  id,
-  label,
-  type,
-  icon: Icon,
-  value,
-  onChange,
-  onBlur,
-  error,
-  placeholder,
-  autoComplete,
-  required = false,
-  showToggle = false,
-  showPassword = false,
-  onTogglePassword,
-  max,
-  className = ""
-}) => {
-  const baseInputClasses = "w-full bg-black/40 border text-white rounded-lg py-3 pl-10 text-sm placeholder-gray-500 transition-all duration-200 focus:outline-none focus:bg-black/60 focus:ring-1";
-  const errorClasses = error 
-    ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-    : 'border-gray-800 focus:border-[#FEFD0C]/50 focus:ring-[#FEFD0C]/20';
-  const paddingClasses = showToggle ? 'pr-10' : 'pr-4';
+  const Icon = isSuccess ? CheckCircle : AlertCircle;
 
   return (
-    <div className={`space-y-2 ${className}`}>
+    <div className={`${styles.bg} border ${styles.border} ${styles.text} px-4 py-3 rounded-lg flex items-center space-x-3`} role="alert">
+      <Icon className="h-4 w-4 flex-shrink-0" />
+      <span className="text-sm flex-1">{message}</span>
+      {onDismiss && (
+        <button type="button" onClick={onDismiss} className={`${styles.text} hover:opacity-70`} aria-label="Dismiss">
+          <X className="h-4 w-4" />
+        </button>
+      )}
+    </div>
+  );
+};
+
+const FormInput: React.FC<{
+  id: string;
+  label: string;
+  type: string;
+  icon: React.ComponentType<{ className?: string }>;
+  value: string;
+  onChange: (value: string) => void;
+  onBlur: () => void;
+  error?: string;
+  placeholder: string;
+  autoComplete?: string;
+  required?: boolean;
+  showToggle?: boolean;
+  showPassword?: boolean;
+  onTogglePassword?: () => void;
+  max?: string;
+  leftElement?: React.ReactNode;
+}> = ({
+  id, label, type, icon: Icon, value, onChange, onBlur, error, placeholder,
+  autoComplete, required = false, showToggle = false, showPassword = false,
+  onTogglePassword, max, leftElement
+}) => {
+  const inputClasses = `
+    w-full bg-black/40 border text-white rounded-lg py-3 text-sm placeholder-gray-500 
+    transition-all duration-200 focus:outline-none focus:bg-black/60 focus:ring-1
+    ${error ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-gray-800 focus:border-[#FEFD0C]/50 focus:ring-[#FEFD0C]/20'}
+    ${leftElement ? 'pl-3' : 'pl-10'}
+    ${showToggle ? 'pr-10' : 'pr-4'}
+  `;
+
+  return (
+    <div className="space-y-2">
       <label htmlFor={id} className="block text-sm font-medium text-white">
         {label} {required && <span className="text-red-400">*</span>}
       </label>
-      <div className="relative">
-        <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+      <div className="relative flex">
+        {leftElement || <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />}
         <input
           id={id}
           type={type}
@@ -227,7 +237,7 @@ const FormInput: React.FC<InputFieldProps> = ({
           onChange={(e) => onChange(e.target.value)}
           onBlur={onBlur}
           max={max}
-          className={`${baseInputClasses} ${errorClasses} ${paddingClasses}`}
+          className={inputClasses}
           placeholder={placeholder}
           autoComplete={autoComplete}
           required={required}
@@ -255,43 +265,56 @@ const FormInput: React.FC<InputFieldProps> = ({
   );
 };
 
-// Alert Component
-const Alert: React.FC<{ 
-  type: 'success' | 'error'; 
-  message: string; 
-  onDismiss?: () => void;
-}> = ({ type, message, onDismiss }) => {
-  const isSuccess = type === 'success';
-  const bgColor = isSuccess ? 'bg-green-500/10' : 'bg-red-500/10';
-  const borderColor = isSuccess ? 'border-green-500/30' : 'border-red-500/30';
-  const textColor = isSuccess ? 'text-green-400' : 'text-red-400';
-  const Icon = isSuccess ? CheckCircle : AlertCircle;
+const CountryCodeSelector: React.FC<{
+  value: string;
+  onChange: (code: string) => void;
+}> = ({ value, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const selectedCountry = COUNTRIES.find(c => c.code === value) || COUNTRIES[0];
 
   return (
-    <div className={`${bgColor} border ${borderColor} ${textColor} px-4 py-3 rounded-lg flex items-center space-x-3`} role="alert">
-      <Icon className="h-4 w-4 flex-shrink-0" />
-      <span className="text-sm flex-1">{message}</span>
-      {onDismiss && (
-        <button
-          type="button"
-          onClick={onDismiss}
-          className={`${textColor} hover:opacity-70`}
-          aria-label="Dismiss error"
-        >
-          <X className="h-4 w-4" />
-        </button>
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="h-full bg-black/40 border border-gray-800 border-r-0 rounded-l-lg px-3 flex items-center space-x-2 text-white hover:bg-black/60 transition-colors duration-200"
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+      >
+        <span className="text-sm">{selectedCountry.flag}</span>
+        <span className="text-sm font-medium">{selectedCountry.code}</span>
+        <ChevronDown className="w-3 h-3 text-gray-400" />
+      </button>
+      
+      {isOpen && (
+        <div className="absolute top-full left-0 z-50 mt-1 bg-black/90 border border-gray-800 rounded-lg shadow-xl max-h-48 overflow-y-auto">
+          {COUNTRIES.map((country) => (
+            <button
+              key={country.code}
+              type="button"
+              onClick={() => {
+                onChange(country.code);
+                setIsOpen(false);
+              }}
+              className="w-full px-3 py-2 text-left hover:bg-gray-800/50 flex items-center space-x-3 text-white text-sm transition-colors duration-200"
+            >
+              <span>{country.flag}</span>
+              <span className="font-medium">{country.code}</span>
+              <span className="text-gray-400">{country.name}</span>
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );
 };
 
-// Password Requirements Component
-const PasswordRequirements: React.FC<{ requirements: PasswordStrength['requirements'] }> = ({ requirements }) => (
+const PasswordRequirements: React.FC<{ requirements: Record<string, boolean> }> = ({ requirements }) => (
   <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 text-xs">
     <p className="text-gray-300 mb-2">Password must include:</p>
     <div className="space-y-1">
       {Object.entries(PASSWORD_REQUIREMENTS).map(([key, description]) => {
-        const isValid = requirements[key as keyof typeof requirements];
+        const isValid = requirements[key];
         return (
           <div key={key} className="flex items-center space-x-2">
             {isValid ? (
@@ -309,7 +332,6 @@ const PasswordRequirements: React.FC<{ requirements: PasswordStrength['requireme
   </div>
 );
 
-// Password Strength Indicator
 const PasswordStrengthIndicator: React.FC<{ strength: PasswordStrength }> = ({ strength }) => {
   const getProgressColor = (score: number): string => {
     if (score <= 2) return 'bg-red-500';
@@ -344,6 +366,7 @@ const SignUp: React.FC = () => {
     email: "",
     username: "",
     phone: "",
+    countryCode: "+234",
     dateOfBirth: "",
     password: "",
     confirmPassword: "",
@@ -359,27 +382,20 @@ const SignUp: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [showPasswordRequirements, setShowPasswordRequirements] = useState<boolean>(false);
 
-  const validateField = useCallback((field: keyof FormData, value: string): string => {
-    const validator = validationRules[field];
-    if (!validator) return "";
-    
-    if (field === 'password') {
-      const passwordStrength = calculatePasswordStrength(value);
-      return validator(value, passwordStrength.requirements);
-    }
-    
-    if (field === 'confirmPassword') {
-      return validator(value, formData.password);
-    }
-    
-    return validator(value);
-  }, [formData.password]);
-
   const validateForm = useCallback((): { isValid: boolean; errors: FormErrors } => {
     const newErrors: FormErrors = {};
     
     REQUIRED_FIELDS.forEach(field => {
-      const error = validateField(field, formData[field]);
+      let error = "";
+      if (field === 'password') {
+        const passwordStrength = calculatePasswordStrength(formData.password);
+        error = validateField(field, formData[field as keyof FormData], passwordStrength.requirements);
+      } else if (field === 'confirmPassword') {
+        error = validateField(field, formData.confirmPassword, formData.password);
+      } else {
+        error = validateField(field, formData[field as keyof FormData]);
+      }
+      
       if (error) {
         newErrors[field] = error;
       }
@@ -393,7 +409,7 @@ const SignUp: React.FC = () => {
       isValid: Object.keys(newErrors).length === 0,
       errors: newErrors
     };
-  }, [formData, acceptTerms, validateField]);
+  }, [formData, acceptTerms]);
 
   // Debounced validation
   useEffect(() => {
@@ -402,7 +418,15 @@ const SignUp: React.FC = () => {
         const touchedErrors: FormErrors = {};
         Array.from(touchedFields).forEach(field => {
           if (field !== 'terms') {
-            const error = validateField(field as keyof FormData, formData[field as keyof FormData]);
+            let error = "";
+            if (field === 'password') {
+              const passwordStrength = calculatePasswordStrength(formData.password);
+              error = validateField(field, formData[field as keyof FormData], passwordStrength.requirements);
+            } else if (field === 'confirmPassword') {
+              error = validateField(field, formData.confirmPassword, formData.password);
+            } else {
+              error = validateField(field, formData[field as keyof FormData]);
+            }
             if (error) {
               touchedErrors[field] = error;
             }
@@ -413,7 +437,7 @@ const SignUp: React.FC = () => {
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [formData, touchedFields, validateField]);
+  }, [formData, touchedFields]);
 
   const handleInputChange = useCallback((field: keyof FormData, value: string): void => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -454,7 +478,7 @@ const SignUp: React.FC = () => {
         lastname: formData.lastname.trim(),
         email: formData.email.trim().toLowerCase(),
         username: formData.username.trim(),
-        phone: sanitizePhone(formData.phone),
+        phone: formData.countryCode + sanitizePhone(formData.phone),
         dateOfBirth: formData.dateOfBirth,
         password: formData.password,
         role: formData.role
@@ -468,7 +492,7 @@ const SignUp: React.FC = () => {
         body: JSON.stringify(sanitizedData),
       });
 
-      const data: ApiResponse = await response.json();
+      const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.message || `Registration failed (${response.status})`);
@@ -490,10 +514,6 @@ const SignUp: React.FC = () => {
       setIsSubmitting(false);
     }
   };
-
-  const handleLoginClick = useCallback((): void => {
-    window.location.href = "/login";
-  }, []);
 
   const passwordStrength = calculatePasswordStrength(formData.password);
   const isFormValid = validateForm().isValid;
@@ -523,12 +543,8 @@ const SignUp: React.FC = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-            {/* Success Message */}
-            {successMessage && (
-              <Alert type="success" message={successMessage} />
-            )}
-
-            {/* General Error Message */}
+            {/* Messages */}
+            {successMessage && <Alert type="success" message={successMessage} />}
             {errors.general && (
               <Alert 
                 type="error" 
@@ -596,7 +612,7 @@ const SignUp: React.FC = () => {
               required
             />
 
-            {/* Phone and Date of Birth */}
+            {/* Phone with Country Code */}
             <FormInput
               id="phone"
               label="Phone Number"
@@ -606,11 +622,18 @@ const SignUp: React.FC = () => {
               onChange={(value) => handleInputChange('phone', value)}
               onBlur={() => handleBlur('phone')}
               error={errors.phone}
-              placeholder="+1 (555) 123-4567"
+              placeholder="812 345 6789"
               autoComplete="tel"
               required
+              leftElement={
+                <CountryCodeSelector 
+                  value={formData.countryCode}
+                  onChange={(code) => handleInputChange('countryCode', code)}
+                />
+              }
             />
 
+            {/* Date of Birth */}
             <FormInput
               id="dateOfBirth"
               label="Date of Birth"
@@ -677,12 +700,10 @@ const SignUp: React.FC = () => {
                 </p>
               )}
 
-              {/* Password Requirements */}
               {showPasswordRequirements && (
                 <PasswordRequirements requirements={passwordStrength.requirements} />
               )}
               
-              {/* Password Strength Indicator */}
               {formData.password && (
                 <PasswordStrengthIndicator strength={passwordStrength} />
               )}
@@ -706,7 +727,7 @@ const SignUp: React.FC = () => {
               onTogglePassword={() => setShowConfirmPassword(!showConfirmPassword)}
             />
 
-            {/* Password Match Indicator */}
+           {/* Password Match Indicator */}
             {formData.confirmPassword && formData.password && (
               <div className="text-xs flex items-center space-x-1">
                 {formData.password === formData.confirmPassword ? (
@@ -717,7 +738,7 @@ const SignUp: React.FC = () => {
                 ) : (
                   <>
                     <AlertCircle className="w-3 h-3 text-red-400" />
-                    <span className="text-red-400">Passwords don't match</span>
+                    <span className="text-red-400">Passwords do not match</span>
                   </>
                 )}
               </div>
@@ -726,24 +747,28 @@ const SignUp: React.FC = () => {
             {/* Terms and Conditions */}
             <div className="space-y-2">
               <div className="flex items-start space-x-3">
-                <div className="flex items-center h-5">
-                  <input
-                    id="terms"
-                    type="checkbox"
-                    checked={acceptTerms}
-                    onChange={(e) => setAcceptTerms(e.target.checked)}
-                    className="w-4 h-4 text-[#FEFD0C] bg-black/40 border-gray-800 rounded focus:ring-[#FEFD0C]/20 focus:ring-2 focus:ring-offset-0"
-                    required
-                    aria-describedby={errors.terms ? 'terms-error' : undefined}
-                  />
-                </div>
+                <input
+                  id="terms"
+                  type="checkbox"
+                  checked={acceptTerms}
+                  onChange={(e) => {
+                    setAcceptTerms(e.target.checked);
+                    if (errors.terms) {
+                      dispatchError({ type: 'CLEAR_ERROR', field: 'terms' });
+                    }
+                  }}
+                  className="mt-1 h-4 w-4 rounded border-gray-600 bg-black/40 text-[#FEFD0C] focus:ring-[#FEFD0C]/20 focus:ring-2"
+                  required
+                  aria-describedby={errors.terms ? 'terms-error' : undefined}
+                  aria-invalid={!!errors.terms}
+                />
                 <label htmlFor="terms" className="text-sm text-gray-300 leading-5">
                   I agree to the{' '}
-                  <a href="#" className="text-[#FEFD0C] hover:text-[#FEFD0C]/80 underline">
+                  <a href="/terms" className="text-[#FEFD0C] hover:underline font-medium">
                     Terms of Service
                   </a>{' '}
                   and{' '}
-                  <a href="#" className="text-[#FEFD0C] hover:text-[#FEFD0C]/80 underline">
+                  <a href="/privacy" className="text-[#FEFD0C] hover:underline font-medium">
                     Privacy Policy
                   </a>
                 </label>
@@ -760,45 +785,43 @@ const SignUp: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting || !isFormValid}
-              className={`w-full py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center space-x-2 ${
+              className={`w-full py-3 px-4 rounded-lg font-semibold text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black ${
                 isSubmitting || !isFormValid
                   ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                  : 'bg-[#FEFD0C] hover:bg-[#FEFD0C]/90 text-black hover:shadow-lg hover:shadow-[#FEFD0C]/20'
+                  : 'bg-[#FEFD0C] text-black hover:bg-[#FEFD0C]/90 focus:ring-[#FEFD0C]/50 transform hover:scale-[1.02] active:scale-[0.98]'
               }`}
+              aria-describedby="submit-status"
             >
               {isSubmitting ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-400 border-t-transparent"></div>
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
                   <span>Creating Account...</span>
-                </>
+                </div>
               ) : (
-                <>
-                  <User className="w-4 h-4" />
-                  <span>Create Account</span>
-                </>
+                'Create Account'
               )}
             </button>
 
-            {/* Login Link */}
+            {/* Sign In Link */}
             <div className="text-center pt-4 border-t border-gray-800">
-              <p className="text-gray-400 text-sm">
+              <p className="text-sm text-gray-400">
                 Already have an account?{' '}
-                <button
-                  type="button"
-                  onClick={handleLoginClick}
-                  className="text-[#FEFD0C] hover:text-[#FEFD0C]/80 font-medium underline"
+                <a
+                  href="/login"
+                  className="text-[#FEFD0C] hover:underline font-semibold transition-colors duration-200"
                 >
                   Sign In
-                </button>
+                </a>
               </p>
             </div>
           </form>
         </div>
 
-        {/* Footer */}
-        <div className="text-center mt-6">
-          <p className="text-gray-500 text-xs">
-            Protected by industry-standard encryption
+        {/* Footer Security Notice */}
+        <div className="mt-6 text-center">
+          <p className="text-xs text-gray-500 flex items-center justify-center space-x-1">
+            <Shield className="w-3 h-3" />
+            <span>Your information is protected with industry-standard encryption</span>
           </p>
         </div>
       </div>
