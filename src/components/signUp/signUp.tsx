@@ -501,7 +501,7 @@ const SignUp: React.FC = () => {
       setSuccessMessage("Account created successfully! Redirecting to login...");
       
       setTimeout(() => {
-        window.location.href = "/login";
+        window.location.href = "/otp-verify";
       }, 2000);
 
     } catch (error) {

@@ -9,6 +9,7 @@ import Error from "./components/error/404";
 import Users from "./components/users/users";
 import Resources from "./components/resources/resources";
 import Settings from "./components/settings/settings";
+import Otp from "./components/signup2/otpPage";
 
 // Import new pages
 import Market from "./components/market/market";
@@ -21,6 +22,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/rates" element={<Rate />} />
+          <Route path="/otp-verify" element={<Otp />} />
           <Route path="/market" element={<Market />} />
           <Route path="/exchange" element={<Exchange />} />
           <Route path="/support" element={<Support />} />

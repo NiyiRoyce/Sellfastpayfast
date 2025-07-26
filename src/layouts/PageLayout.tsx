@@ -23,6 +23,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children }) => {
     "/exchange",
     "/settings",
     "/resources", // <-- Added
+    "/otp-verify",
   ];
 
   const hideFooterPaths = [
@@ -32,6 +33,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children }) => {
     "/exchange",
     "/settings",
     "/resources", // <-- Added
+    "/otp-verify",
   ];
 
   const knownPatterns = [
@@ -46,6 +48,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({ children }) => {
     "/exchange",
     "/settings",
     "/resources", // <-- Added
+    "/otp-verify",
   ];
 
   const is404 = !pathMatches(knownPatterns, currentPath);
