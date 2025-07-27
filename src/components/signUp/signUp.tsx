@@ -498,7 +498,7 @@ const SignUp: React.FC = () => {
         throw new Error(data.message || `Registration failed (${response.status})`);
       }
 
-      setSuccessMessage("Account created successfully! Redirecting to login...");
+      setSuccessMessage("Verifying your Credentials...");
       
       setTimeout(() => {
         window.location.href = "/otp-verify";
