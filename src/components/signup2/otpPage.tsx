@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
-  Shield,
   Mail,
-  Phone,
   ArrowLeft,
   RefreshCw,
   CheckCircle,
@@ -13,18 +11,18 @@ import {
 // Constants
 const OTP_LENGTH = 6;
 const RESEND_COOLDOWN = 60;
-const OTP_EXPIRY_SECONDS = 600; // 10 minutes
+const OTP_EXPIRY_SECONDS = 300; // 5 minutes
 const COLORS = {
   primary: '#FEFD0C',
   background: '#000000',
-  cardBackground: 'rgba(0, 0, 0, 0.4)',
+  cardBackground: 'rgba(0, 0, 0, 0.6)',
   border: 'rgba(254, 253, 12, 0.3)',
   borderHover: 'rgba(254, 253, 12, 0.5)',
-  text: '#FFFFFF',
-  textMuted: '#9CA3AF',
-  success: '#10B981',
-  error: '#EF4444',
-  warning: '#F59E0B',
+  text: '#FEFD0C',
+  textMuted: 'rgba(254, 253, 12, 0.7)',
+  success: '#FEFD0C',
+  error: '#FEFD0C',
+  warning: '#FEFD0C',
 };
 
 const API_ENDPOINTS = {
@@ -33,12 +31,6 @@ const API_ENDPOINTS = {
 };
 
 // Types
-interface OTPData {
-  otp: string;
-  email?: string;
-  phone?: string;
-}
-
 interface UserInfo {
   email: string;
   phone: string;
@@ -66,44 +58,40 @@ const validateOTP = (otp: string): boolean => /^\d{6}$/.test(otp);
 
 // Alert Component
 const Alert: React.FC<AlertProps> = ({ type, message, onDismiss }) => {
-  const alertStyles = {
-    success: {
-      bg: `bg-green-500/10`,
-      border: `border-green-500/30`,
-      text: `text-green-400`,
-      icon: CheckCircle,
-    },
-    error: {
-      bg: `bg-red-500/10`,
-      border: `border-red-500/30`,
-      text: `text-red-400`,
-      icon: AlertCircle,
-    },
-    info: {
-      bg: `bg-yellow-400/10`,
-      border: `border-yellow-400/30`,
-      text: `text-yellow-400`,
-      icon: Mail,
-    },
+  const getIcon = () => {
+    switch (type) {
+      case "success":
+        return CheckCircle;
+      case "error":
+        return AlertCircle;
+      default:
+        return Mail;
+    }
   };
 
-  const { bg, border, text, icon: Icon } = alertStyles[type];
+  const Icon = getIcon();
 
   return (
-    <div
-                className={`${bg} ${border} ${text} border px-4 py-3 rounded-lg flex items-center space-x-3 mb-4`}
+    <div 
+      className="border px-4 py-3 rounded-lg flex items-center justify-center space-x-3 mb-4"
+      style={{
+        backgroundColor: 'rgba(254, 253, 12, 0.1)',
+        borderColor: 'rgba(254, 253, 12, 0.3)',
+        color: COLORS.primary
+      }}
       role="alert"
     >
       <Icon className="h-4 w-4 flex-shrink-0" />
-      <span className="text-sm flex-1">{message}</span>
+      <span className="text-sm text-center flex-1">{message}</span>
       {onDismiss && (
         <button
           type="button"
           onClick={onDismiss}
-          className={`${text} hover:opacity-70 transition-opacity`}
+          className="hover:opacity-70 transition-opacity"
+          style={{ color: COLORS.primary }}
           aria-label="Dismiss alert"
         >
-          <AlertCircle className="h-4 w-4" />
+          ×
         </button>
       )}
     </div>
@@ -121,65 +109,75 @@ const OTPInput: React.FC<OTPInputProps> = ({
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
-    inputRefs.current[0]?.focus();
-  }, []);
-
-  const handleInputChange = useCallback((index: number, inputValue: string): void => {
-    if (disabled) return;
-    
-    const digit = inputValue.replace(/\D/g, "").slice(-1);
-    const newValue = value.split("");
-    newValue[index] = digit;
-    const updatedValue = newValue.join("");
-    
-    onChange(updatedValue);
-
-    // Auto-focus next input
-    if (digit && index < length - 1) {
-      inputRefs.current[index + 1]?.focus();
+    if (!disabled && inputRefs.current[0]) {
+      inputRefs.current[0].focus();
     }
-  }, [value, onChange, disabled, length]);
+  }, [disabled]);
 
-  const handleKeyDown = useCallback((
-    index: number,
-    e: React.KeyboardEvent<HTMLInputElement>
-  ): void => {
-    if (disabled) return;
+  const handleInputChange = useCallback(
+    (index: number, inputValue: string): void => {
+      if (disabled) return;
 
-    switch (e.key) {
-      case "Backspace":
-        if (!value[index] && index > 0) {
-          inputRefs.current[index - 1]?.focus();
-        }
-        break;
-      case "ArrowLeft":
-        if (index > 0) {
-          inputRefs.current[index - 1]?.focus();
-        }
-        break;
-      case "ArrowRight":
-        if (index < length - 1) {
-          inputRefs.current[index + 1]?.focus();
-        }
-        break;
-    }
-  }, [value, disabled, length]);
+      const digit = inputValue.replace(/\D/g, "").slice(-1);
+      const newValue = value.split("");
+      newValue[index] = digit;
+      const updatedValue = newValue.join("");
 
-  const handlePaste = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => {
-    if (disabled) return;
-    
-    e.preventDefault();
-    const pastedData = e.clipboardData
-      .getData("text")
-      .replace(/\D/g, "")
-      .slice(0, length);
-    
-    onChange(pastedData);
-    
-    // Focus the last filled input or the last input
-    const focusIndex = Math.min(pastedData.length, length - 1);
-    inputRefs.current[focusIndex]?.focus();
-  }, [disabled, length, onChange]);
+      onChange(updatedValue);
+
+      // Auto-focus next input
+      if (digit && index < length - 1) {
+        inputRefs.current[index + 1]?.focus();
+      }
+    },
+    [value, onChange, disabled, length]
+  );
+
+  const handleKeyDown = useCallback(
+    (index: number, e: React.KeyboardEvent<HTMLInputElement>): void => {
+      if (disabled) return;
+
+      switch (e.key) {
+        case "Backspace":
+          if (!value[index] && index > 0) {
+            inputRefs.current[index - 1]?.focus();
+          }
+          break;
+        case "ArrowLeft":
+          if (index > 0) {
+            inputRefs.current[index - 1]?.focus();
+          }
+          break;
+        case "ArrowRight":
+          if (index < length - 1) {
+            inputRefs.current[index + 1]?.focus();
+          }
+          break;
+      }
+    },
+    [value, disabled, length]
+  );
+
+  const handlePaste = useCallback(
+    (e: React.ClipboardEvent<HTMLInputElement>) => {
+      if (disabled) return;
+
+      e.preventDefault();
+      const pastedData = e.clipboardData
+        .getData("text")
+        .replace(/\D/g, "")
+        .slice(0, length);
+
+      onChange(pastedData);
+
+      // Focus the last filled input or the last input
+      const focusIndex = Math.min(pastedData.length, length - 1);
+      setTimeout(() => {
+        inputRefs.current[focusIndex]?.focus();
+      }, 0);
+    },
+    [disabled, length, onChange]
+  );
 
   return (
     <div className="flex justify-center space-x-3">
@@ -195,17 +193,14 @@ const OTPInput: React.FC<OTPInputProps> = ({
           onKeyDown={(e) => handleKeyDown(index, e)}
           onPaste={handlePaste}
           disabled={disabled}
-          style={{ 
-            backgroundColor: COLORS.cardBackground, 
+          style={{
+            backgroundColor: COLORS.background,
             color: COLORS.primary,
-            borderColor: error ? COLORS.error : COLORS.border
+            borderColor: COLORS.border,
           }}
-          className={`w-12 h-12 text-center text-lg font-bold border rounded-lg transition-all duration-200 
-            focus:outline-none focus:ring-2 focus:ring-opacity-20 
-            ${error 
-              ? "focus:border-red-500 focus:ring-red-500" 
-              : "focus:ring-yellow-400 hover:border-yellow-400/70"
-            } 
+          className={`w-12 h-12 text-center text-lg font-bold border-2 rounded-lg transition-all duration-200
+            focus:outline-none focus:ring-2 focus:ring-opacity-50
+            hover:border-opacity-70 focus:border-opacity-100
             ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
           aria-label={`OTP digit ${index + 1}`}
         />
@@ -217,11 +212,11 @@ const OTPInput: React.FC<OTPInputProps> = ({
 // Loading Spinner Component
 const LoadingSpinner: React.FC<{ text: string }> = ({ text }) => (
   <div className="flex items-center justify-center space-x-2" style={{ color: COLORS.primary }}>
-    <div 
-      className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" 
-      style={{ 
-        borderColor: COLORS.primary, 
-        borderTopColor: 'transparent' 
+    <div
+      className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin"
+      style={{
+        borderColor: COLORS.primary,
+        borderTopColor: 'transparent',
       }}
     />
     <span className="text-sm">{text}</span>
@@ -230,13 +225,13 @@ const LoadingSpinner: React.FC<{ text: string }> = ({ text }) => (
 
 const OTPVerification: React.FC = () => {
   // State Management
-  const [otp, setOtp] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isResending, setIsResending] = useState(false);
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-  const [resendCooldown, setResendCooldown] = useState(0);
-  const [otpTimer, setOtpTimer] = useState(OTP_EXPIRY_SECONDS);
+  const [otp, setOtp] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isResending, setIsResending] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string>("");
+  const [resendCooldown, setResendCooldown] = useState<number>(0);
+  const [otpTimer, setOtpTimer] = useState<number>(OTP_EXPIRY_SECONDS);
 
   // User Info from URL parameters
   const [userInfo] = useState<UserInfo>(() => {
@@ -247,49 +242,54 @@ const OTPVerification: React.FC = () => {
     };
   });
 
-  // Timer Effects with proper cleanup
+  // OTP timer interval (runs every second)
   useEffect(() => {
     if (otpTimer <= 0) return;
+
     const interval = setInterval(() => {
-      setOtpTimer((prev) => prev - 1);
+      setOtpTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
+
     return () => clearInterval(interval);
   }, [otpTimer]);
 
+  // Resend cooldown timer
   useEffect(() => {
     if (resendCooldown <= 0) return;
-    const timer = setTimeout(() => {
-      setResendCooldown((prev) => prev - 1);
-    }, 1000);
-    return () => clearTimeout(timer);
+
+    const timeout = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+
+    return () => clearTimeout(timeout);
   }, [resendCooldown]);
 
-  // Helper for request body including email/phone
-  const getVerificationPayload = () => {
-    const payload: any = { otp };
+  // Helper for request payload including email/phone
+  const getVerificationPayload = useCallback(() => {
+    const payload: Record<string, string> = { otp };
     if (userInfo.email) payload.email = userInfo.email;
     if (userInfo.phone) payload.phone = userInfo.phone;
     return payload;
-  };
+  }, [otp, userInfo]);
 
-  const getResendPayload = () => {
-    const payload: any = {};
+  const getResendPayload = useCallback(() => {
+    const payload: Record<string, string> = {};
     if (userInfo.email) payload.email = userInfo.email;
     if (userInfo.phone) payload.phone = userInfo.phone;
     return payload;
-  };
+  }, [userInfo]);
 
-  // OTP Submission Handler with real API call
+  // OTP Submission Handler
   const handleSubmit = useCallback(async () => {
-    if (isSubmitting || otp.length !== OTP_LENGTH) return;
+    // Prevent submission if already submitting, resending, OTP incomplete, or expired
+    if (isSubmitting || isResending || otp.length !== OTP_LENGTH || otpTimer === 0) return;
 
     if (!validateOTP(otp)) {
       setError("OTP must be a 6-digit number.");
-      return;
-    }
-
-    if (otpTimer === 0) {
-      setError("OTP has expired. Please request a new one.");
       return;
     }
 
@@ -305,37 +305,36 @@ const OTPVerification: React.FC = () => {
       });
 
       if (!response.ok) {
-        // Attempt to parse error message
         const errorData = await response.json().catch(() => null);
-        throw new Error(
-          errorData?.message || "Verification failed. Please try again."
-        );
+        throw new Error(errorData?.message || "Verification failed. Please try again.");
       }
 
-      // Success response
+      const data = await response.json();
       setSuccessMessage("Account verified successfully! Redirecting...");
-
+      
       setTimeout(() => {
+        // In a real app, you might want to use React Router or Next.js router
         window.location.href = "/login";
       }, 2000);
     } catch (err: any) {
       setError(err.message || "Verification failed. Please try again.");
-      setOtp("");
+      setOtp(""); // Clear OTP on error
     } finally {
       setIsSubmitting(false);
     }
-  }, [otp, isSubmitting, otpTimer, userInfo]);
+  }, [otp, isSubmitting, isResending, otpTimer, getVerificationPayload]);
 
   // Auto-submit when OTP is complete
   useEffect(() => {
-    if (otp.length === OTP_LENGTH && !isSubmitting && otpTimer > 0) {
+    if (otp.length === OTP_LENGTH && !isSubmitting && !isResending && otpTimer > 0) {
       handleSubmit();
     }
-  }, [otp, isSubmitting, otpTimer, handleSubmit]);
+  }, [otp, isSubmitting, isResending, otpTimer, handleSubmit]);
 
-  // Resend OTP Handler with real API call
+  // Resend OTP Handler
   const handleResendOTP = useCallback(async () => {
-    if (isResending || resendCooldown > 0) return;
+    // Prevent resend if already resending, submitting, or in cooldown
+    if (isResending || isSubmitting || resendCooldown > 0) return;
 
     setError("");
     setSuccessMessage("");
@@ -350,226 +349,206 @@ const OTPVerification: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        throw new Error(
-          errorData?.message || "Failed to resend OTP. Please try again."
-        );
+        throw new Error(errorData?.message || "Failed to resend OTP. Please try again.");
       }
 
-      setSuccessMessage("OTP sent successfully!");
+      setSuccessMessage("OTP has been resent successfully!");
       setResendCooldown(RESEND_COOLDOWN);
       setOtpTimer(OTP_EXPIRY_SECONDS);
-      setOtp(""); // Clear previous OTP
+      setOtp(""); // Clear current OTP
     } catch (err: any) {
       setError(err.message || "Failed to resend OTP. Please try again.");
     } finally {
       setIsResending(false);
     }
-  }, [isResending, resendCooldown, userInfo]);
+  }, [isResending, isSubmitting, resendCooldown, getResendPayload]);
 
- 
-   // Back Button Handler
-   const handleBack = useCallback(() => {
-     console.log("Navigating back to registration...");
-     window.history.back();
-   }, []);
- 
-   // Contact Information Display Logic
-   const getContactInfo = useCallback(() => {
-     if (userInfo.email && userInfo.phone) {
-       return { 
-         icon: Mail, 
-         text: `${userInfo.email} and ${userInfo.phone}`,
-         displayText: "email and phone"
-       };
-     }
-     if (userInfo.email) {
-       return { 
-         icon: Mail, 
-         text: userInfo.email,
-         displayText: "email"
-       };
-     }
-     if (userInfo.phone) {
-       return { 
-         icon: Phone, 
-         text: userInfo.phone,
-         displayText: "phone"
-       };
-     }
-     return { 
-       icon: Mail, 
-       text: "your registered contact",
-       displayText: "registered contact"
-     };
-   }, [userInfo]);
- 
-   const contactInfo = getContactInfo();
-   const ContactIcon = contactInfo.icon;
- 
-   return (
-     <div 
-       className="min-h-screen flex items-center justify-center px-4 py-8"
-       style={{ backgroundColor: COLORS.background }}
-     >
-       <div className="max-w-md w-full relative z-10">
-         {/* Security Badge */}
-         <div className="flex justify-center mb-6">
-           <div 
-             style={{ backgroundColor: COLORS.cardBackground }}
-             className="border px-4 py-2 rounded-full flex items-center space-x-2"
-           >
-             <Shield className="w-4 h-4" style={{ color: COLORS.primary }} />
-             <span 
-               className="text-xs font-medium" 
-               style={{ color: COLORS.primary }}
-             >
-               SECURE VERIFICATION
-             </span>
-           </div>
-         </div>
- 
-         {/* Main Card */}
-         <div 
-           style={{ 
-             backgroundColor: COLORS.cardBackground,
-             borderColor: COLORS.border
-           }}
-           className="border p-8 rounded-2xl shadow-2xl backdrop-blur-sm"
-         >
-           {/* Header */}
-           <div className="text-center mb-8">
-             <div 
-               className="h-14 w-14 border rounded-xl mx-auto flex items-center justify-center mb-4"
-               style={{ 
-                 backgroundColor: `${COLORS.primary}10`,
-                 borderColor: COLORS.border
-               }}
-             >
-               <ContactIcon style={{ color: COLORS.primary }} className="w-7 h-7" />
-             </div>
-             
-             <h1 className="text-3xl font-bold mb-2">
-               <span style={{ color: COLORS.primary }}>Verify your</span>{" "}
-               <span style={{ color: COLORS.text }}>Account</span>
-             </h1>
-             
-             <p 
-               className="text-sm font-medium truncate px-2" 
-               style={{ color: COLORS.primary }}
-             >
-               Code sent to {contactInfo.text}
-             </p>
-           </div>
- 
-           {/* Alerts */}
-           {successMessage && (
-             <Alert 
-               type="success" 
-               message={successMessage} 
-             />
-           )}
-           {error && (
-             <Alert 
-               type="error" 
-               message={error} 
-               onDismiss={() => setError("")} 
-             />
-           )}
- 
-           {/* Form Content */}
-           <div className="space-y-6">
-             <div>
-               <label 
-                 className="block text-sm font-medium text-center mb-4" 
-                 style={{ color: COLORS.primary }}
-               >
-                 Enter 6-digit verification code
-               </label>
- 
-               <OTPInput
-                 value={otp}
-                 onChange={setOtp}
-                 length={OTP_LENGTH}
-                 disabled={isSubmitting || otpTimer === 0}
-                 error={!!error}
-               />
-             </div>
- 
-             {/* OTP Expired Message */}
-             {otpTimer === 0 && (
-               <p className="text-red-500 text-sm text-center font-medium">
-                 OTP expired. Please request a new one.
-               </p>
-             )}
- 
-             {/* Loading State */}
-             {otp.length === OTP_LENGTH && isSubmitting && (
-               <LoadingSpinner text="Verifying..." />
-             )}
- 
-             {/* Resend Section */}
-             <div className="text-center pt-4 border-t space-y-3" style={{ borderColor: COLORS.border }}>
-               <p className="text-sm" style={{ color: COLORS.textMuted }}>
-                 Didn't receive the code?
-               </p>
- 
-               {resendCooldown > 0 ? (
-                 <div className="flex items-center justify-center space-x-2" style={{ color: COLORS.textMuted }}>
-                   <Clock className="w-4 h-4" />
-                   <span className="text-sm">
-                     Resend available in {formatTime(resendCooldown)}
-                   </span>
-                 </div>
-               ) : (
-                 <button
-                   type="button"
-                   onClick={handleResendOTP}
-                   disabled={isResending}
-                   style={{ color: COLORS.primary }}
-                   className="hover:opacity-80 font-semibold text-sm flex items-center justify-center space-x-2 transition-opacity disabled:opacity-50"
-                 >
-                   {isResending ? (
-                     <>
-                       <RefreshCw className="w-4 h-4 animate-spin" />
-                       <span>Sending...</span>
-                     </>
-                   ) : (
-                     <>
-                       <RefreshCw className="w-4 h-4" />
-                       <span>Resend Code</span>
-                     </>
-                   )}
-                 </button>
-               )}
-             </div>
- 
-             {/* Back Button */}
-             <button
-               type="button"
-               onClick={handleBack}
-               style={{ 
-                 backgroundColor: COLORS.cardBackground, 
-                 color: COLORS.primary,
-                 borderColor: COLORS.border
-               }}
-               className="w-full border hover:border-yellow-400/50 py-3 px-4 rounded-lg text-sm font-medium flex items-center justify-center space-x-2 transition-all hover:opacity-90"
-             >
-               <ArrowLeft className="w-4 h-4" />
-               <span>Back to Registration</span>
-             </button>
-           </div>
-         </div>
- 
-         {/* Footer */}
-         <div className="mt-6 text-center">
-           <p className="text-xs flex items-center justify-center space-x-1" style={{ color: COLORS.textMuted }}>
-             <Shield className="w-3 h-3" />
-             <span>Code expires in {formatTime(otpTimer)} for your security</span>
-           </p>
-         </div>
-       </div>
-     </div>
-   );
- };
- 
- export default OTPVerification;
+  // Back to login handler
+  const handleBackToLogin = useCallback(() => {
+    window.location.href = "/login";
+  }, []);
+
+  // Clear alerts after 5 seconds
+  useEffect(() => {
+    if (error || successMessage) {
+      const timeout = setTimeout(() => {
+        setError("");
+        setSuccessMessage("");
+      }, 5000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [error, successMessage]);
+
+  return (
+    <div 
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{ backgroundColor: COLORS.background }}
+    >
+      <div 
+        className="w-full max-w-md p-8 rounded-2xl border shadow-2xl"
+        style={{
+          backgroundColor: COLORS.cardBackground,
+          borderColor: COLORS.border,
+        }}
+      >
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div 
+            className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: 'rgba(254, 253, 12, 0.1)' }}
+          >
+            <Mail className="h-8 w-8" style={{ color: COLORS.primary }} />
+          </div>
+          <h1 
+            className="text-2xl font-bold mb-2"
+            style={{ color: COLORS.primary }}
+          >
+            Verify Your Account
+          </h1>
+          <p 
+            className="text-sm"
+            style={{ color: COLORS.textMuted }}
+          >
+            Enter the 6-digit code sent to your provided email{" "}
+            {userInfo.email && (
+              <span className="font-medium" style={{ color: COLORS.primary }}>
+                {userInfo.email}
+              </span>
+            )}
+            {userInfo.email && userInfo.phone && " and "}
+            {userInfo.phone && (
+              <span className="font-medium" style={{ color: COLORS.primary }}>
+                {userInfo.phone}
+              </span>
+            )}
+          </p>
+        </div>
+
+        {/* Alerts */}
+        {error && (
+          <Alert
+            type="error"
+            message={error}
+            onDismiss={() => setError("")}
+          />
+        )}
+
+        {successMessage && (
+          <Alert
+            type="success"
+            message={successMessage}
+            onDismiss={() => setSuccessMessage("")}
+          />
+        )}
+
+        {/* OTP Timer */}
+        {otpTimer > 0 ? (
+          <div className="text-center mb-6">
+            <div className="flex items-center justify-center space-x-2 mb-2">
+              <Clock className="h-4 w-4" style={{ color: COLORS.primary }} />
+              <span 
+                className="text-sm font-medium"
+                style={{ color: COLORS.primary }}
+              >
+                Code expires in: {formatTime(otpTimer)}
+              </span>
+            </div>
+          </div>
+        ) : (
+          <Alert
+            type="error"
+            message="OTP has expired. Please request a new code."
+          />
+        )}
+
+        {/* OTP Input */}
+        <div className="mb-6">
+          <label 
+            className="block text-sm font-medium mb-4 text-center"
+            style={{ color: COLORS.primary }}
+          >
+            Enter Verification Code
+          </label>
+          <OTPInput
+            value={otp}
+            onChange={setOtp}
+            length={OTP_LENGTH}
+            disabled={isSubmitting || isResending || otpTimer === 0}
+            error={!!error}
+          />
+        </div>
+
+        {/* Submit Status */}
+        {isSubmitting && (
+          <div className="mb-6">
+            <LoadingSpinner text="Verifying..." />
+          </div>
+        )}
+
+        {/* Resend Section */}
+        <div className="text-center mb-6">
+          <p 
+            className="text-sm mb-3"
+            style={{ color: COLORS.textMuted }}
+          >
+            Didn't receive the code?
+          </p>
+          
+          {resendCooldown > 0 ? (
+            <p 
+              className="text-sm"
+              style={{ color: COLORS.textMuted }}
+            >
+              Resend available in {resendCooldown}s
+            </p>
+          ) : (
+            <button
+              type="button"
+              onClick={handleResendOTP}
+              disabled={isResending || isSubmitting}
+              className="inline-flex items-center space-x-2 text-sm font-medium hover:opacity-80 
+                         transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ color: COLORS.primary }}
+            >
+              {isResending ? (
+                <>
+                  <div
+                    className="w-3 h-3 border border-t-transparent rounded-full animate-spin"
+                    style={{
+                      borderColor: COLORS.primary,
+                      borderTopColor: 'transparent',
+                    }}
+                  />
+                  <span>Resending...</span>
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4" />
+                  <span>Resend Code</span>
+                </>
+              )}
+            </button>
+          )}
+        </div>
+
+        {/* Back to Login */}
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={handleBackToLogin}
+            disabled={isSubmitting || isResending}
+            className="inline-flex items-center space-x-2 text-sm hover:opacity-80 
+                       transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ color: COLORS.textMuted }}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back to Login</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default OTPVerification;
