@@ -131,7 +131,7 @@ const validationRules = {
     const age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
     const actualAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) ? age - 1 : age;
-    if (actualAge < 13) return "You must be at least 13 years old";
+    if (actualAge < 18) return "You must be at least 18 years old";
     return "";
   },
   password: (value: string, requirements: Record<string, boolean>): string => {
@@ -501,7 +501,9 @@ const SignUp: React.FC = () => {
       setSuccessMessage("Verifying your Credentials...");
       
       setTimeout(() => {
-        window.location.href = "/otp-verify";
+        // Pass email as URL parameter
+        const encodedEmail = encodeURIComponent(sanitizedData.email);
+        window.location.href = `/otp-verify?email=${encodedEmail}`;
       }, 2000);
 
     } catch (error) {

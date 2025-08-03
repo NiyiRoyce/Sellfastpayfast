@@ -30,6 +30,7 @@ const API_ENDPOINTS = {
   resend: "https://sellfastpayfast-backend.onrender.com/api/auth/resend-otp",
 };
 
+
 // Types
 interface UserInfo {
   email: string;
