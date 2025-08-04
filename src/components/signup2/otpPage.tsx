@@ -31,6 +31,7 @@ const API_ENDPOINTS = {
 };
 
 
+
 // Types
 interface UserInfo {
   email: string;
@@ -55,7 +56,7 @@ interface OTPInputProps {
 const formatTime = (seconds: number): string =>
   `${Math.floor(seconds / 60)}:${(seconds % 60).toString().padStart(2, "0")}`;
 
-const validateOTP = (otp: string): boolean => /^\d{6}$/.test(otp);
+const validateOTP = (code: string): boolean => /^\d{6}$/.test(code);
 
 // Alert Component
 const Alert: React.FC<AlertProps> = ({ type, message, onDismiss }) => {
@@ -271,7 +272,7 @@ const OTPVerification: React.FC = () => {
 
   // Helper for request payload including email/phone
   const getVerificationPayload = useCallback(() => {
-    const payload: Record<string, string> = { otp };
+    const payload: Record<string, string> = { code: otp };
     if (userInfo.email) payload.email = userInfo.email;
     if (userInfo.phone) payload.phone = userInfo.phone;
     return payload;
@@ -314,7 +315,7 @@ const OTPVerification: React.FC = () => {
       setSuccessMessage("Account verified successfully! Redirecting...");
       
       setTimeout(() => {
-        // In a real app, you might want to use React Router or Next.js router
+        // you can modify to use  React Router or Next.js router
         window.location.href = "/login";
       }, 2000);
     } catch (err: any) {
