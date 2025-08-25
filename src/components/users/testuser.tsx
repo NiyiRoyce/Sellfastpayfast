@@ -1,959 +1,624 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect } from 'react';
 import {
-  ArrowUpDown,
-  TrendingUp,
-  TrendingDown,
-  Search,
-  Shield,
+  Download,
+  BookOpen,
   Clock,
-  Cpu,
-  RefreshCw,
-  Activity,
-  Globe,
-  DollarSign,
-  BarChart3,
-  Star,
-  Eye,
-  Zap,
-  AlertCircle,
+  Shield,
+  CreditCard,
+  Truck,
   CheckCircle,
-  X,
-  Loader2,
-  Wifi,
-  WifiOff,
-} from "lucide-react";
+  ArrowRight,
+  Users,
+  Award,
+  Globe,
+  Lock,
+  Eye,
+  Heart,
+  Share2,
+  Package,
+  ArrowLeft,
+  QrCode,
+  Copy,
+  RefreshCw,
+  AlertCircle,
+  ExternalLink
+} from 'lucide-react';
 
-type RateItem = {
-  country: string;
-  currency: string;
-  image: string;
-  buyRate: number;
-  sellRate: number;
-  change24h: number;
-  volume: number;
-  marketCap: number;
-  lastUpdated: string;
-  isFavorite?: boolean;
+
+const YellowButton: React.FC<{
+  icon: React.ReactNode;
+  text: string;
+  onClick: () => void;
+  disabled?: boolean;
+}> = ({ icon, text, onClick, disabled }) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className={`w-full flex items-center justify-center gap-3 py-4 px-6 text-lg font-bold rounded-2xl ${
+      theme.primaryBg
+    } ${theme.primaryHover} text-black border-2 border-[#FEFD0C] transition-all duration-200 ${
+      disabled ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-lg hover:shadow-[#FEFD0C]/20'
+    }`}
+  >
+    {icon}
+    <span>{text}</span>
+  </button>
+);
+
+const toast = {
+  loading: (msg: string) => console.log('Loading:', msg),
+  success: (msg: string) => console.log('Success:', msg),
+  error: (msg: string) => console.log('Error:', msg),
 };
 
-type ApiStatus = 'idle' | 'loading' | 'success' | 'error' | 'retrying';
+const Toaster: React.FC<{ position: string }> = () => null;
 
-const countryCodeMap: Record<string, { code: string; currency: string }> = {
-  "United States": { code: "us", currency: "usd" },
-  "Eurozone": { code: "eu", currency: "eur" },
-  "United Kingdom": { code: "gb", currency: "gbp" },
-  "Japan": { code: "jp", currency: "jpy" },
-  "Singapore": { code: "sg", currency: "sgd" },
-  "Australia": { code: "au", currency: "aud" },
-  "Canada": { code: "ca", currency: "cad" },
-  "Nigeria": { code: "ng", currency: "ngn" },
-  "South Africa": { code: "za", currency: "zar" },
-  "India": { code: "in", currency: "inr" },
-  "Germany": { code: "de", currency: "eur" },
-  "France": { code: "fr", currency: "eur" },
-  "Switzerland": { code: "ch", currency: "chf" },
-  "Brazil": { code: "br", currency: "brl" },
-  "Mexico": { code: "mx", currency: "mxn" },
-  "South Korea": { code: "kr", currency: "krw" },
-};
+const theme = {
+  primary: '#FEFD0C',
+  primaryBg: 'bg-[#FEFD0C]',
+  primaryHover: 'hover:bg-[#FEFD0C]/90',
+  background: 'bg-black',
+  surface: 'bg-neutral-900',
+  surfaceHover: 'hover:bg-neutral-800',
+  card: 'bg-neutral-900',
+  cardHover: 'hover:bg-neutral-800',
+  text: 'text-white',
+  textSecondary: 'text-neutral-300',
+  textMuted: 'text-neutral-400',
+  border: 'border-neutral-700',
+} as const;
 
-const formatCurrency = (value: number, currency: string): string => {
-  const lowDecimalCurrencies = ['jpy', 'krw', 'ngn', 'inr'];
-  const maxFractionDigits = lowDecimalCurrencies.includes(currency.toLowerCase()) ? 0 : 2;
+interface FeatureProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}
 
-  return value.toLocaleString('en-US', {
-    minimumFractionDigits: maxFractionDigits,
-    maximumFractionDigits: maxFractionDigits
-  });
-};
+const Feature: React.FC<FeatureProps> = ({ icon, title, description }) => (
+  <div className="flex items-start gap-3 p-4 rounded-lg bg-neutral-800/50 border border-neutral-700">
+    <div className="w-8 h-8 rounded-lg bg-[#FEFD0C] flex items-center justify-center text-black flex-shrink-0">
+      {icon}
+    </div>
+    <div className="flex-1">
+      <h4 className={`${theme.text} font-semibold mb-1 text-sm`}>{title}</h4>
+      <p className={`${theme.textMuted} text-xs leading-relaxed`}>{description}</p>
+    </div>
+  </div>
+);
 
-// Enhanced mock data with more realistic values
-const getMockData = (): RateItem[] => {
-  const baseUsdPrice = 45000 + (Math.random() - 0.5) * 2000; // Add some variance
-  const fxRates: Record<string, number> = {
-    usd: 1, eur: 0.93, gbp: 0.82, jpy: 157, sgd: 1.35,
-    aud: 1.48, cad: 1.31, ngn: 1600, zar: 18.9, inr: 83,
-    chf: 0.89, brl: 5.4, mxn: 18.2, krw: 1370
-  };
+interface StatCardProps {
+  icon: React.ComponentType<{ className?: string }>;
+  value: string;
+  label: string;
+}
 
-  return Object.entries(countryCodeMap).map(([country, { code, currency }]) => {
-    const fxRate = fxRates[currency] || 1;
-    const price = baseUsdPrice * fxRate;
-    const change = (Math.random() - 0.5) * 15; // More realistic change range
-    const volume = Math.floor(Math.random() * 1_000_000_000) + 100_000_000;
-    const marketCap = Math.floor(Math.random() * 20_000_000_000) + 1_000_000_000;
-    const spread = 0.001 + Math.random() * 0.003; // Variable spread
-    const buyRate = price * (1 - spread);
-    const sellRate = price * (1 + spread);
+const StatCard: React.FC<StatCardProps> = ({ icon: Icon, value, label }) => (
+  <div
+    className={`${theme.card} rounded-xl p-4 ${theme.border} border text-center ${theme.cardHover} transition-all duration-200`}
+  >
+    <Icon className="w-6 h-6 text-[#FEFD0C] mx-auto mb-2" />
+    <p className={`${theme.text} text-lg font-bold mb-1`}>{value}</p>
+    <p className={`${theme.textMuted} text-xs font-medium uppercase tracking-wide`}>{label}</p>
+  </div>
+);
 
-    return {
-      country,
-      currency: currency.toUpperCase(),
-      image: `https://flagcdn.com/w40/${code}.png`,
-      buyRate,
-      sellRate,
-      change24h: change,
-      volume,
-      marketCap,
-      lastUpdated: new Date().toLocaleTimeString(),
-    };
-  });
-};
+// Payment status enum
+type PaymentStatus = 'idle' | 'initiating' | 'pending' | 'confirmed' | 'expired' | 'error';
 
-// Enhanced API fetch with retry logic and better error handling
-const fetchCoinDataWithRetry = async (retries = 3): Promise<RateItem[]> => {
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      const currencies = Object.values(countryCodeMap).map((c) => c.currency).join(",");
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+interface PaymentData {
+  paymentId: string;
+  address: string;
+  amount: string;
+  btcAmount: string;
+  qrCode?: string;
+  expiresAt: string;
+}
 
-      const priceResponse = await fetch(
-        `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=${currencies}&include_24hr_change=true&include_24hr_vol=true&include_market_cap=true&include_last_updated_at=true`,
-        { 
-          signal: controller.signal,
-          headers: {
-            'Accept': 'application/json',
-          }
-        }
-      );
+const stats = [
+  { icon: BookOpen, value: '324', label: 'Pages' },
+  { icon: Clock, value: '6‑8h', label: 'Read Time' },
+  { icon: Award, value: '#1', label: 'Bestseller' },
+];
 
-      clearTimeout(timeoutId);
+const EBookStore: React.FC = () => {
+  const [selectedOption, setSelectedOption] = useState<'digital' | 'physical'>('digital');
+  const [loading, setLoading] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('idle');
+  const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
+  const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
-      if (!priceResponse.ok) {
-        throw new Error(`HTTP ${priceResponse.status}: ${priceResponse.statusText}`);
-      }
+  const BOOK_ID = 'make-money-while-you-sleep'; // Your actual book ID
+  const POLLING_INTERVAL = 10000; // 10 seconds
 
-      const priceData = await priceResponse.json();
-
-      if (!priceData.bitcoin) {
-        throw new Error("No bitcoin data in API response");
-      }
-
-      const result = Object.entries(countryCodeMap).map(([country, { code, currency }]) => {
-        const price = priceData.bitcoin[currency] || 45000;
-        const change = priceData.bitcoin[`${currency}_24h_change`] || 0;
-        const volume = priceData.bitcoin[`${currency}_24h_vol`] || 0;
-        const marketCap = priceData.bitcoin[`${currency}_market_cap`] || 0;
-        const lastUpdatedAt = priceData.bitcoin.last_updated_at;
-
-        const spread = 0.001 + Math.random() * 0.002; // Realistic spread
-        const buyRate = price * (1 - spread);
-        const sellRate = price * (1 + spread);
-
-        return {
-          country,
-          currency: currency.toUpperCase(),
-          image: `https://flagcdn.com/w40/${code}.png`,
-          buyRate,
-          sellRate,
-          change24h: change,
-          volume,
-          marketCap,
-          lastUpdated: lastUpdatedAt
-            ? new Date(lastUpdatedAt * 1000).toLocaleTimeString()
-            : new Date().toLocaleTimeString(),
-        };
-      });
-
-      return result;
-    } catch (error) {
-      console.error(`Fetch attempt ${attempt} failed:`, error);
-      
-      if (attempt === retries) {
-        throw error;
-      }
-      
-      // Exponential backoff
-      await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
-    }
-  }
-  
-  throw new Error("All retry attempts failed");
-};
-
-// Loading Modal Component
-const LoadingModal: React.FC<{ isOpen: boolean; status: ApiStatus; onClose: () => void }> = ({ 
-  isOpen, 
-  status, 
-  onClose 
-}) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-      <div className="bg-gradient-to-br from-black/90 to-black/70 border-2 border-[#FEFD0C] rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl shadow-[#FEFD0C]/25">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-white">Loading Exchange Rates</h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors duration-200"
-          >
-            <X className="h-6 w-6" />
-          </button>
-        </div>
+  // Timer countdown effect
+  useEffect(() => {
+    if (paymentData && paymentStatus === 'pending') {
+      const interval = setInterval(() => {
+        const now = new Date().getTime();
+        const expiry = new Date(paymentData.expiresAt).getTime();
+        const remaining = expiry - now;
         
-        <div className="text-center">
-          <div className="relative mb-6">
-            <div className="w-16 h-16 mx-auto mb-4 relative">
-              <div className="absolute inset-0 rounded-full border-4 border-[#FEFD0C]/20"></div>
-              <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#FEFD0C] animate-spin"></div>
-              <div className="absolute inset-2 rounded-full border-4 border-transparent border-t-[#FEFD0C] animate-spin animation-delay-150"></div>
-            </div>
-            
-            <div className="space-y-2">
-              {status === 'loading' && (
-                <div className="flex items-center justify-center gap-2 text-[#FEFD0C]">
-                  <Wifi className="h-5 w-5 animate-pulse" />
-                  <span className="font-semibold">Fetching real-time data...</span>
-                </div>
-              )}
-              
-              {status === 'retrying' && (
-                <div className="flex items-center justify-center gap-2 text-yellow-500">
-                  <RefreshCw className="h-5 w-5 animate-spin" />
-                  <span className="font-semibold">Retrying connection...</span>
-                </div>
-              )}
-              
-              {status === 'error' && (
-                <div className="flex items-center justify-center gap-2 text-red-400">
-                  <WifiOff className="h-5 w-5" />
-                  <span className="font-semibold">Using fallback data...</span>
-                </div>
-              )}
-            </div>
-          </div>
-          
-          <div className="text-sm text-gray-400 space-y-1">
-            <p>• Connecting to CoinGecko API</p>
-            <p>• Fetching 16 currency pairs</p>
-            <p>• Processing real-time market data</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+        if (remaining <= 0) {
+          setTimeLeft(0);
+          setPaymentStatus('expired');
+          clearInterval(interval);
+        } else {
+          setTimeLeft(Math.floor(remaining / 1000));
+        }
+      }, 1000);
 
-// Toast Notification Component
-const Toast: React.FC<{ 
-  message: string; 
-  type: 'success' | 'error' | 'info'; 
-  isVisible: boolean; 
-  onClose: () => void;
-}> = ({ message, type, isVisible, onClose }) => {
+      return () => clearInterval(interval);
+    }
+  }, [paymentData, paymentStatus]);
+
+  // Payment status polling effect
   useEffect(() => {
-    if (isVisible) {
-      const timer = setTimeout(onClose, 5000);
-      return () => clearTimeout(timer);
+    if (paymentStatus === 'pending' && paymentData?.paymentId) {
+      const interval = setInterval(() => {
+        checkPaymentStatus(paymentData.paymentId);
+      }, POLLING_INTERVAL);
+
+      return () => clearInterval(interval);
     }
-  }, [isVisible, onClose]);
+  }, [paymentStatus, paymentData]);
 
-  if (!isVisible) return null;
-
-  const icons = {
-    success: <CheckCircle className="h-5 w-5 text-green-400" />,
-    error: <AlertCircle className="h-5 w-5 text-red-400" />,
-    info: <Activity className="h-5 w-5 text-blue-400" />,
-  };
-
-  const colors = {
-    success: 'border-green-400 bg-green-400/10',
-    error: 'border-red-400 bg-red-400/10',
-    info: 'border-blue-400 bg-blue-400/10',
-  };
-
-  return (
-    <div className="fixed top-4 right-4 z-50 animate-slide-in">
-      <div className={`flex items-center gap-3 p-4 rounded-lg border ${colors[type]} backdrop-blur-sm`}>
-        {icons[type]}
-        <span className="text-white font-medium">{message}</span>
-        <button
-          onClick={onClose}
-          className="text-gray-400 hover:text-white transition-colors duration-200"
-        >
-          <X className="h-4 w-4" />
-        </button>
-      </div>
-    </div>
-  );
-};
-
-// Main Component
-const RateSection: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [apiStatus, setApiStatus] = useState<ApiStatus>('idle');
-  const [data, setData] = useState<RateItem[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortConfig, setSortConfig] = useState<{
-    key: keyof RateItem | null;
-    direction: "ascending" | "descending";
-  }>({ key: null, direction: "ascending" });
-  const [activeTab, setActiveTab] = useState<"all" | "bestBuy" | "bestSell" | "favorites">("all");
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
-  const [viewMode, setViewMode] = useState<"table" | "cards">("table");
-  const [lastUpdated, setLastUpdated] = useState("");
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [showLoadingModal, setShowLoadingModal] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info'; isVisible: boolean }>({
-    message: '',
-    type: 'info',
-    isVisible: false,
-  });
-  const [isUsingMockData, setIsUsingMockData] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
-
-  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info') => {
-    setToast({ message, type, isVisible: true });
-  }, []);
-
-  const hideToast = useCallback(() => {
-    setToast(prev => ({ ...prev, isVisible: false }));
-  }, []);
-
-  const loadData = useCallback(async (showModal = false) => {
-    if (showModal) {
-      setShowLoadingModal(true);
+  const handlePurchase = async (type: 'digital' | 'physical') => {
+    if (type === 'physical') {
+      toast.error('Physical book ordering not available yet.');
+      return;
     }
-    
+
     try {
-      setApiStatus('loading');
-      const items = await fetchCoinDataWithRetry(3);
+      setLoading(true);
+      setPaymentStatus('initiating');
+      toast.loading('Initiating Bitcoin payment...');
+
+      const response = await fetch('/api/payments/ebook', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ bookId: BOOK_ID }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data: PaymentData = await response.json();
       
-      setData(items);
-      setLastUpdated(new Date().toLocaleTimeString());
-      setApiStatus('success');
-      setIsUsingMockData(false);
-      setRetryCount(0);
+      setPaymentData(data);
+      setPaymentStatus('pending');
+      toast.success('Bitcoin payment initiated! Please send payment to complete.');
+
+    } catch (error) {
+      console.error('Payment initiation error:', error);
+      setPaymentStatus('error');
+      toast.error(error instanceof Error ? error.message : 'Failed to initiate payment');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const checkPaymentStatus = async (paymentId: string) => {
+    try {
+      const response = await fetch(`/api/payments/status/${paymentId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const statusData = await response.json();
       
-      if (showModal) {
-        showToast('Successfully loaded real-time data from CoinGecko API', 'success');
+      if (statusData.status === 'confirmed') {
+        setPaymentStatus('confirmed');
+        toast.success('Payment confirmed! Unlocking your eBook...');
+        await unlockEbook(paymentId);
+      } else if (statusData.status === 'expired') {
+        setPaymentStatus('expired');
+        toast.error('Payment expired. Please try again.');
       }
     } catch (error) {
-      console.error("Failed to load data:", error);
-      setApiStatus('error');
-      
-      // Fallback to mock data
-      const mockData = getMockData();
-      setData(mockData);
-      setLastUpdated(new Date().toLocaleTimeString());
-      setIsUsingMockData(true);
-      setRetryCount(prev => prev + 1);
-      
-      if (showModal) {
-        showToast('API unavailable. Using demo data with simulated values.', 'error');
-      }
-    } finally {
-      if (showModal) {
-        setShowLoadingModal(false);
-      }
+      console.error('Status check error:', error);
+      toast.error('Failed to check payment status');
     }
-  }, [showToast]);
-
-  // Initial data load
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      setIsLoading(true);
-      setShowLoadingModal(true);
-      await loadData(false);
-      setIsLoading(false);
-      setShowLoadingModal(false);
-    };
-    
-    fetchInitialData();
-  }, [loadData]);
-
-  // Set initial favorites
-  useEffect(() => {
-    if (data.length > 0 && favorites.size === 0) {
-      const initialFavs = new Set(data.slice(0, 3).map((i) => i.country));
-      setFavorites(initialFavs);
-    }
-  }, [data, favorites.size]);
-
-  // Auto-refresh every minute
-  useEffect(() => {
-    const interval = setInterval(() => {
-      loadData(false);
-    }, 60000); // 1 minute instead of 2 minutes for more real-time feeling
-    
-    return () => clearInterval(interval);
-  }, [loadData]);
-
-  const requestSort = (key: keyof RateItem) => {
-    let direction: "ascending" | "descending" = "ascending";
-    if (sortConfig.key === key && sortConfig.direction === "ascending") {
-      direction = "descending";
-    }
-    setSortConfig({ key, direction });
   };
 
-  const toggleFavorite = (country: string) => {
-    const newFavorites = new Set(favorites);
-    if (newFavorites.has(country)) {
-      newFavorites.delete(country);
-    } else {
-      newFavorites.add(country);
-    }
-    setFavorites(newFavorites);
-  };
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await loadData(true);
-    setIsRefreshing(false);
-  };
-
-  const filteredData = useMemo(() => {
-    if (!data.length) return [];
-
-    let filtered = [...data];
-
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (item) =>
-          item.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.currency.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (activeTab === "favorites") {
-      filtered = filtered.filter((item) => favorites.has(item.country));
-    } else if (activeTab === "bestBuy") {
-      filtered.sort((a, b) => a.buyRate - b.buyRate);
-      filtered = filtered.slice(0, 8);
-    } else if (activeTab === "bestSell") {
-      filtered.sort((a, b) => b.sellRate - a.sellRate);
-      filtered = filtered.slice(0, 8);
-    }
-
-    if (sortConfig.key) {
-      filtered.sort((a, b) => {
-        const aVal = a[sortConfig.key!];
-        const bVal = b[sortConfig.key!];
-
-        if (typeof aVal === "number" && typeof bVal === "number") {
-          return sortConfig.direction === "ascending" ? aVal - bVal : bVal - aVal;
-        }
-
-        const aStr = String(aVal).toLowerCase();
-        const bStr = String(bVal).toLowerCase();
-        return sortConfig.direction === "ascending"
-          ? aStr.localeCompare(bStr)
-          : bStr.localeCompare(aStr);
+  const unlockEbook = async (paymentId: string) => {
+    try {
+      const response = await fetch('/api/unlock', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ paymentId, bookId: BOOK_ID }),
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const unlockData = await response.json();
+      setDownloadUrl(unlockData.downloadUrl);
+      toast.success('eBook unlocked! Download link ready.');
+    } catch (error) {
+      console.error('Unlock error:', error);
+      toast.error('Failed to unlock eBook. Please contact support.');
     }
-
-    return filtered;
-  }, [data, searchTerm, activeTab, sortConfig, favorites]);
-
-  const getRateDifference = (buy: number, sell: number) => {
-    if (buy === 0) return "0.00";
-    const diff = ((sell - buy) / buy) * 100;
-    return diff.toFixed(2);
   };
 
-  const marketStats = useMemo(() => {
-    if (!data.length) return { avgBuy: "0", avgSell: "0", totalVolume: "0", activeMarkets: 0 };
+const copyToClipboard = async (text: string) => {
+  if (!navigator?.clipboard) {
+    toast.error('Clipboard not supported');
+    return;
+  }
 
-    const avgBuy = data.reduce((sum, item) => sum + item.buyRate, 0) / data.length;
-    const avgSell = data.reduce((sum, item) => sum + item.sellRate, 0) / data.length;
-    const totalVolume = data.reduce((sum, item) => sum + item.volume, 0);
+  try {
+    await navigator.clipboard.writeText(text);
+    toast.success('Copied to clipboard!');
+  } catch (error) {
+    toast.error('Failed to copy to clipboard');
+  }
+};
 
-    return {
-      avgBuy: avgBuy.toLocaleString('en-US', { maximumFractionDigits: 0 }),
-      avgSell: avgSell.toLocaleString('en-US', { maximumFractionDigits: 0 }),
-      totalVolume: totalVolume.toLocaleString('en-US', { maximumFractionDigits: 0 }),
-      activeMarkets: data.length,
-    };
-  }, [data]);
 
-  const tabConfig = [
-    { key: "all", label: "All Markets", icon: Globe, count: data.length },
-    { key: "bestBuy", label: "Best Buy", icon: TrendingDown, count: 8 },
-    { key: "bestSell", label: "Best Sell", icon: TrendingUp, count: 8 },
-    { key: "favorites", label: "Favorites", icon: Star, count: favorites.size },
-  ];
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const resetPayment = () => {
+    setPaymentStatus('idle');
+    setPaymentData(null);
+    setTimeLeft(0);
+    setDownloadUrl(null);
+  };
+
+  const handleGoBack = () => {
+    if (window.history.length > 1) window.history.back();
+    else window.location.href = '/';
+  };
 
   return (
-    <>
-      <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-        rel="stylesheet"
-      />
-      
-      <style>
-        {`
-          @keyframes slide-in {
-            from {
-              transform: translateX(100%);
-              opacity: 0;
-            }
-            to {
-              transform: translateX(0);
-              opacity: 1;
-            }
-          }
-          .animate-slide-in {
-            animation: slide-in 0.3s ease-out;
-          }
-          .animation-delay-150 {
-            animation-delay: 0.15s;
-          }
-        `}
-      </style>
+    <div className={`${theme.background} min-h-screen`} style={{ fontFamily: '"Inter", sans-serif' }}>
+      <Toaster position="top-right" />
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Header */}
+        <div className="mb-8 flex items-center">
+          <button
+            onClick={handleGoBack}
+            aria-label="Go back"
+            className={`p-3 rounded-full ${theme.card} ${theme.cardHover} ${theme.border} border transition-shadow duration-300 shadow-lg hover:shadow-[#FEFD0C]/20 text-white`}
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h1 className="ml-4 text-2xl font-extrabold text-white">Purchase E-book</h1>
+        </div>
 
-      <LoadingModal 
-        isOpen={showLoadingModal} 
-        status={apiStatus} 
-        onClose={() => setShowLoadingModal(false)} 
-      />
-
-      <Toast 
-        message={toast.message}
-        type={toast.type}
-        isVisible={toast.isVisible}
-        onClose={hideToast}
-      />
-      
-      <section 
-        className="w-full py-16 md:py-24 lg:py-32 bg-black relative overflow-hidden"
-        style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif' }}
-      >
-        <div className="container mx-auto px-4 md:px-6 relative z-10 max-w-7xl">
-          {/* Header */}
-          <div className="text-center mb-16">
-            <div className="inline-block bg-black/40 text-[#FEFD0C] font-medium px-4 py-2 rounded-full text-sm mb-4 border border-[#FEFD0C]">
-              {isUsingMockData ? (
-                <>
-                  <AlertCircle className="inline w-4 h-4 mr-2" />
-                  Demo Mode
-                </>
-              ) : (
-                <>
-                  <Zap className="inline w-4 h-4 mr-2" />
-                  Real-Time Data
-                </>
-              )}
-            </div>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white leading-tight mb-6">
-              Live Bitcoin 
-              <span className="text-[#FEFD0C] block mt-2">Exchange Rates</span>
-            </h2>
-            <div className="w-20 h-1 bg-[#FEFD0C] rounded-full mx-auto mb-8"></div>
-            <p className="text-base md:text-lg text-gray-300 leading-relaxed max-w-3xl mx-auto mb-12">
-              {isUsingMockData 
-                ? "Currently showing demo data with simulated values. Real-time updates will resume when API is available."
-                : "Powered by CoinGecko API for authentic market data with real-time updates every minute."
-              }
-            </p>
-            
-            {/* Market Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-              <div className="bg-black/40 border border-[#FEFD0C] rounded-lg p-4 hover:bg-black/60 transition-all duration-300 group hover:scale-105">
-                <div className="flex items-center justify-center mb-2">
-                  <DollarSign className="h-5 w-5 text-[#FEFD0C] group-hover:scale-110 transition-transform duration-300" />
+        <div className="grid lg:grid-cols-3 gap-8 items-start">
+          {/* Left Column */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Book Preview */}
+            <div className={`${theme.card} rounded-2xl p-8 ${theme.border} border`}>
+              <div className="flex justify-center mb-6">
+                <div className="w-48 h-64 bg-black rounded-xl border-2 border-[#FEFD0C] p-5 flex flex-col justify-between relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-8 h-8 bg-[#FEFD0C] rotate-45 translate-x-4 -translate-y-4" />
+                  <div className="relative z-10 text-center">
+                    <h3 className="text-lg font-black text-[#FEFD0C] mb-2">MAKE MONEY</h3>
+                    <h4 className="text-sm font-bold text-white mb-4">WHILE YOU SLEEP</h4>
+                    <div className="mx-auto w-12 h-0.5 bg-[#FEFD0C]" />
+                  </div>
+                  <div className="relative z-10 text-center">
+                    <p className="text-[#FEFD0C] font-black text-lg">BNAIRA</p>
+                    <p className="text-neutral-300 text-xs mt-1">Financial Freedom Guide</p>
+                  </div>
                 </div>
-                <p className="text-lg font-bold text-[#FEFD0C]">${marketStats.avgBuy}</p>
-                <p className="text-xs text-gray-400">Avg Buy Rate</p>
               </div>
-              <div className="bg-black/40 border border-[#FEFD0C] rounded-lg p-4 hover:bg-black/60 transition-all duration-300 group hover:scale-105">
-                <div className="flex items-center justify-center mb-2">
-                  <DollarSign className="h-5 w-5 text-[#FEFD0C] rotate-180 group-hover:scale-110 transition-transform duration-300" />
-                </div>
-                <p className="text-lg font-bold text-[#FEFD0C]">${marketStats.avgSell}</p>
-                <p className="text-xs text-gray-400">Avg Sell Rate</p>
-              </div>
-              <div className="bg-black/40 border border-[#FEFD0C] rounded-lg p-4 hover:bg-black/60 transition-all duration-300 group hover:scale-105">
-                <div className="flex items-center justify-center mb-2">
-                  <Activity className="h-5 w-5 text-[#FEFD0C] group-hover:scale-110 transition-transform duration-300" />
-                </div>
-                <p className="text-lg font-bold text-[#FEFD0C]">{marketStats.totalVolume}</p>
-                <p className="text-xs text-gray-400">Total Volume</p>
-              </div>
-              <div className="bg-black/40 border border-[#FEFD0C] rounded-lg p-4 hover:bg-black/60 transition-all duration-300 group hover:scale-105">
-                <div className="flex items-center justify-center mb-2">
-                  <BarChart3 className="h-5 w-5 text-[#FEFD0C] group-hover:scale-110 transition-transform duration-300" />
-                </div>
-                <p className="text-lg font-bold text-[#FEFD0C]">{marketStats.activeMarkets}</p>
-                <p className="text-xs text-gray-400">Active Markets</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Controls */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-            {/* Search Input */}
-            <div className="relative w-full md:w-1/3">
-              <input
-                type="text"
-                placeholder="Search by country or currency"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full rounded-xl bg-black/40 border border-[#FEFD0C] text-white placeholder-gray-400 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#FEFD0C] focus:border-[#FEFD0C] transition-all duration-300"
-              />
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#FEFD0C]" />
-            </div>
-
-            {/* View Mode Toggle */}
-            <div className="inline-flex rounded-xl bg-black/40 border border-[#FEFD0C] p-1.5">
               <button
-                onClick={() => setViewMode("table")}
-                className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                  viewMode === "table" 
-                    ? "bg-[#FEFD0C] text-black transform scale-105" 
-                    : "text-white hover:text-[#FEFD0C] hover:bg-black/20"
-                }`}
-                aria-label="Table view"
-                title="Table View"
+                aria-label="Preview sample pages"
+                className={`w-full flex items-center justify-center gap-2 py-3 px-6 ${theme.surface} ${theme.surfaceHover} rounded-xl ${theme.border} border transition-colors duration-200`}
               >
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Table
-              </button>
-              <button
-                onClick={() => setViewMode("cards")}
-                className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                  viewMode === "cards" 
-                    ? "bg-[#FEFD0C] text-black transform scale-105" 
-                    : "text-white hover:text-[#FEFD0C] hover:bg-black/20"
-                }`}
-                aria-label="Card view"
-                title="Card View"
-              >
-                <Eye className="h-4 w-4 mr-2" />
-                Cards
+                <Eye className="w-4 h-4 text-[#FEFD0C]" />
+                <span className={`${theme.text} font-medium text-sm`}>Preview Sample Pages</span>
               </button>
             </div>
 
-            {/* Refresh Button */}
-            <button
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className={`group inline-flex items-center justify-center px-6 py-3 rounded-xl font-bold transition-all duration-500 transform disabled:cursor-not-allowed ${
-                isRefreshing
-                  ? "bg-[#FEFD0C]/20 border-2 border-[#FEFD0C] text-[#FEFD0C] scale-105 animate-pulse"
-                  : "bg-transparent border-2 border-[#FEFD0C] text-[#FEFD0C] hover:bg-[#FEFD0C] hover:text-black hover:scale-105 hover:shadow-lg hover:shadow-[#FEFD0C]/25"
-              }`}
-              aria-label="Refresh data"
-              title="Refresh Data"
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 transition-transform duration-900 ${
-                isRefreshing 
-                  ? "animate-spin" 
-                  : "group-hover:rotate-180"
-              }`} />
-              {isRefreshing ? "Refreshing..." : "Refresh Data"}
-            </button>
-          </div>
-
-          {/* Tabs */}
-          <div className="flex justify-center mb-12">
-            <div className="inline-flex rounded-xl bg-black/40 border border-[#FEFD0C] p-1.5">
-              {tabConfig.map(({ key, label, icon: Icon, count }) => (
-                <button
-                  key={key}
-                  onClick={() => setActiveTab(key as any)}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${
-                    activeTab === key
-                      ? "bg-[#FEFD0C] text-black transform scale-105"
-                      : "text-white hover:text-[#FEFD0C] hover:bg-black/20"}`}
-                  aria-label={`View ${label.toLowerCase()}`}
-                  title={label}
-                >
-                  <Icon className="h-4 w-4" />
-                  {label}
-                  <span className="ml-2 px-2 py-1 rounded-full bg-black/20 text-xs">
-                    {count}
-                  </span>
-                </button>
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-3">
+              {stats.map((stat, index) => (
+                <StatCard key={index} {...stat} />
               ))}
             </div>
-          </div>
 
-          {/* Last Updated */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 text-gray-400 text-sm">
-              <Clock className="h-4 w-4" />
-              Last updated: {lastUpdated}
-              {isUsingMockData && (
-                <span className="text-yellow-500 font-medium">(Demo Data)</span>
-              )}
+            {/* Testimonials */}
+            <div className={`${theme.card} rounded-2xl p-6 ${theme.border} border`}>
+              <h4 className="flex items-center gap-2 mb-4 text-sm font-semibold text-white">
+                <Users className="w-4 h-4 text-[#FEFD0C]" />
+                What Readers Are Saying
+              </h4>
+              {[
+                {
+                  quote: 'Changed my entire approach to passive income. Already making $2k/month!',
+                  author: '— Sarah M., Entrepreneur',
+                },
+                {
+                  quote: 'The strategies in this book are pure gold. Worth every penny and more.',
+                  author: '— Michael R., Investor',
+                },
+              ].map((review, idx) => (
+                <div key={idx} className="border-l-2 border-[#FEFD0C] pl-4 py-1 mb-3 last:mb-0">
+                  <p className={`${theme.textSecondary} text-sm leading-relaxed mb-2`}>{review.quote}</p>
+                  <p className={`${theme.textMuted} text-xs font-medium`}>{review.author}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Action Icons */}
+            <div className="flex items-center justify-center gap-4">
+              <button
+                aria-label="Favorite"
+                className={`p-3 rounded-xl ${theme.card} ${theme.cardHover} ${theme.border} border transition-colors duration-200`}
+              >
+                <Heart className="w-5 h-5 text-[#FEFD0C]" />
+              </button>
+              <button
+                aria-label="Share"
+                className={`p-3 rounded-xl ${theme.card} ${theme.cardHover} ${theme.border} border transition-colors duration-200`}
+              >
+                <Share2 className="w-5 h-5 text-[#FEFD0C]" />
+              </button>
             </div>
           </div>
 
-          {/* Data Display */}
-          {isLoading ? (
-            <div className="flex items-center justify-center py-20">
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 relative">
-                  <div className="absolute inset-0 rounded-full border-4 border-[#FEFD0C]/20"></div>
-                  <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#FEFD0C] animate-spin"></div>
-                </div>
-                <p className="text-[#FEFD0C] font-semibold">Loading Exchange Rates...</p>
+          {/* Right Column */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Format Selector */}
+            <div className={`${theme.card} rounded-2xl p-4 ${theme.border} border`}>
+              <div className="grid grid-cols-2 gap-3">
+                {(['digital', 'physical'] as const).map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setSelectedOption(type)}
+                    aria-pressed={selectedOption === type}
+                    className={`py-3 px-4 rounded-xl font-semibold text-sm flex flex-col items-center gap-2 transition-colors duration-200 ${
+                      selectedOption === type
+                        ? `${theme.primaryBg} text-black`
+                        : `${theme.text} bg-neutral-800 hover:bg-neutral-700`
+                    }`}
+                  >
+                    {type === 'digital' ? <Download className="w-5 h-5" /> : <Package className="w-5 h-5" />}
+                    <span>{type === 'digital' ? 'Digital Copy' : 'Physical Copy'}</span>
+                  </button>
+                ))}
               </div>
             </div>
-          ) : (
-            <>
-              {viewMode === "table" ? (
-                <div className="overflow-x-auto rounded-xl bg-black/40 border border-[#FEFD0C] backdrop-blur-sm">
-                  <table className="w-full">
-                    <thead className="bg-[#FEFD0C]/10 border-b border-[#FEFD0C]">
-                      <tr>
-                        <th className="text-left p-4 font-bold text-[#FEFD0C]">
-                          <button
-                            onClick={() => requestSort("country")}
-                            className="flex items-center gap-2 hover:text-yellow-300 transition-colors duration-200"
-                          >
-                            Country/Currency
-                            <ArrowUpDown className="h-4 w-4" />
-                          </button>
-                        </th>
-                        <th className="text-left p-4 font-bold text-[#FEFD0C]">
-                          <button
-                            onClick={() => requestSort("buyRate")}
-                            className="flex items-center gap-2 hover:text-yellow-300 transition-colors duration-200"
-                          >
-                            Buy Rate
-                            <ArrowUpDown className="h-4 w-4" />
-                          </button>
-                        </th>
-                        <th className="text-left p-4 font-bold text-[#FEFD0C]">
-                          <button
-                            onClick={() => requestSort("sellRate")}
-                            className="flex items-center gap-2 hover:text-yellow-300 transition-colors duration-200"
-                          >
-                            Sell Rate
-                            <ArrowUpDown className="h-4 w-4" />
-                          </button>
-                        </th>
-                        <th className="text-left p-4 font-bold text-[#FEFD0C]">Spread</th>
-                        <th className="text-left p-4 font-bold text-[#FEFD0C]">
-                          <button
-                            onClick={() => requestSort("change24h")}
-                            className="flex items-center gap-2 hover:text-yellow-300 transition-colors duration-200"
-                          >
-                            24h Change
-                            <ArrowUpDown className="h-4 w-4" />
-                          </button>
-                        </th>
-                        <th className="text-left p-4 font-bold text-[#FEFD0C]">
-                          <button
-                            onClick={() => requestSort("volume")}
-                            className="flex items-center gap-2 hover:text-yellow-300 transition-colors duration-200"
-                          >
-                            Volume
-                            <ArrowUpDown className="h-4 w-4" />
-                          </button>
-                        </th>
-                        <th className="text-left p-4 font-bold text-[#FEFD0C]">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredData.map((item, index) => (
-                        <tr
-                          key={item.country}
-                          className={`border-b border-[#FEFD0C]/20 hover:bg-[#FEFD0C]/5 transition-all duration-300 ${
-                            index % 2 === 0 ? "bg-black/20" : "bg-transparent"
-                          }`}
-                        >
-                          <td className="p-4">
-                            <div className="flex items-center gap-3">
-                              <img
-                                src={item.image}
-                                alt={`${item.country} flag`}
-                                className="w-8 h-6 rounded object-cover shadow-sm"
-                              />
-                              <div>
-                                <p className="font-semibold text-white">{item.country}</p>
-                                <p className="text-sm text-gray-400">{item.currency}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="p-4">
-                            <p className="font-bold text-green-400 text-lg">
-                              {formatCurrency(item.buyRate, item.currency)}
-                            </p>
-                          </td>
-                          <td className="p-4">
-                            <p className="font-bold text-red-400 text-lg">
-                              {formatCurrency(item.sellRate, item.currency)}
-                            </p>
-                          </td>
-                          <td className="p-4">
-                            <p className="text-yellow-400 font-medium">
-                              {getRateDifference(item.buyRate, item.sellRate)}%
-                            </p>
-                          </td>
-                          <td className="p-4">
-                            <div className="flex items-center gap-2">
-                              {item.change24h >= 0 ? (
-                                <TrendingUp className="h-4 w-4 text-green-400" />
-                              ) : (
-                                <TrendingDown className="h-4 w-4 text-red-400" />
-                              )}
-                              <span
-                                className={`font-bold ${
-                                  item.change24h >= 0 ? "text-green-400" : "text-red-400"
-                                }`}
-                              >
-                                {item.change24h >= 0 ? "+" : ""}{item.change24h.toFixed(2)}%
-                              </span>
-                            </div>
-                          </td>
-                          <td className="p-4">
-                            <p className="text-white font-medium">
-                              {item.volume.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                            </p>
-                          </td>
-                          <td className="p-4">
-                            <button
-                              onClick={() => toggleFavorite(item.country)}
-                              className={`p-2 rounded-full transition-all duration-300 hover:scale-110 ${
-                                favorites.has(item.country)
-                                  ? "text-[#FEFD0C] bg-[#FEFD0C]/20"
-                                  : "text-gray-400 hover:text-[#FEFD0C] hover:bg-[#FEFD0C]/10"
-                              }`}
-                              aria-label={`${favorites.has(item.country) ? "Remove from" : "Add to"} favorites`}
-                            >
-                              <Star className="h-4 w-4" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+
+            {/* Digital Purchase */}
+            {selectedOption === 'digital' && (
+              <div className={`${theme.card} rounded-2xl p-6 ${theme.border} border space-y-6`}>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className={`text-2xl font-bold ${theme.text} mb-2`}>Digital eBook</h3>
+                    <p className={`${theme.textSecondary} text-sm`}>Instant download after payment confirmation</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="flex items-baseline gap-2">
+                      <span className={`text-3xl font-black ${theme.text}`}>$50</span>
+                      <span className={`${theme.textMuted} text-lg line-through`}>$97</span>
+                    </div>
+                    <span className="mt-2 inline-block bg-green-500 text-xs text-white font-bold px-3 py-1 rounded-full">
+                      48% OFF
+                    </span>
+                  </div>
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {filteredData.map((item) => (
-                    <div
-                      key={item.country}
-                      className="bg-black/40 border border-[#FEFD0C] rounded-xl p-6 hover:bg-black/60 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#FEFD0C]/25 group"
-                    >
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={item.image}
-                            alt={`${item.country} flag`}
-                            className="w-10 h-8 rounded object-cover shadow-sm"
-                          />
-                          <div>
-                            <h3 className="font-bold text-white group-hover:text-[#FEFD0C] transition-colors duration-300">
-                              {item.country}
-                            </h3>
-                            <p className="text-sm text-gray-400">{item.currency}</p>
-                          </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Feature icon={<Download className="w-4 h-4" />} title="Instant Download" description="Get immediate access to PDF, EPUB, and MOBI formats" />
+                  <Feature icon={<Globe className="w-4 h-4" />} title="Read Anywhere" description="Compatible with all devices and e‑readers" />
+                  <Feature icon={<Shield className="w-4 h-4" />} title="Lifetime Access" description="Download and keep forever with free updates" />
+                  <Feature icon={<Lock className="w-4 h-4" />} title="Secure Payment" description="Bitcoin payment with blockchain confirmation" />
+                </div>
+
+                {/* Payment States */}
+                {paymentStatus === 'idle' && (
+                  <button
+                    type="button"
+                    onClick={() => handlePurchase('digital')}
+                    disabled={loading}
+                    className={`w-full flex items-center justify-center gap-3 py-4 px-6 text-lg font-bold rounded-2xl transition-all duration-200 ${
+                      theme.primaryBg
+                    } ${theme.primaryHover} text-black border-2 border-[#FEFD0C] ${
+                      loading ? 'opacity-70 cursor-not-allowed' : 'hover:shadow-lg hover:shadow-[#FEFD0C]/20'
+                    }`}
+                  >
+                    <CreditCard className="w-5 h-5" />
+                    <span>{loading ? 'Processing...' : 'Buy Digital Copy – $50'}</span>
+                    <ArrowRight className="w-5 h-5" />
+                  </button>
+                )}
+
+                {/* Bitcoin Payment Details */}
+                {paymentStatus === 'pending' && paymentData && (
+                  <div className="space-y-4">
+                    <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Clock className="w-4 h-4 text-orange-400" />
+                        <span className="text-orange-400 font-semibold text-sm">
+                          Payment expires in {formatTime(timeLeft)}
+                        </span>
+                      </div>
+                      <p className="text-neutral-300 text-xs">
+                        Send exactly {paymentData.btcAmount} BTC to the address below
+                      </p>
+                    </div>
+
+                    {/* QR Code Display */}
+                    {paymentData.qrCode && (
+                      <div className="text-center">
+                        <div className="inline-block p-4 bg-white rounded-xl">
+                          <img src={paymentData.qrCode} alt="Bitcoin Payment QR Code" className="w-48 h-48" />
                         </div>
-                        <button
-                          onClick={() => toggleFavorite(item.country)}
-                          className={`p-2 rounded-full transition-all duration-300 hover:scale-110 ${
-                            favorites.has(item.country)
-                              ? "text-[#FEFD0C] bg-[#FEFD0C]/20"
-                              : "text-gray-400 hover:text-[#FEFD0C] hover:bg-[#FEFD0C]/10"
-                          }`}
-                          aria-label={`${favorites.has(item.country) ? "Remove from" : "Add to"} favorites`}
-                        >
-                          <Star className="h-4 w-4" />
-                        </button>
+                        <p className="text-xs text-neutral-400 mt-2">Scan with your Bitcoin wallet</p>
+                      </div>
+                    )}
+
+                    {/* Payment Details */}
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-neutral-400 mb-1">Bitcoin Address</label>
+                        <div className="flex items-center gap-2">
+                          <code className="flex-1 p-3 bg-neutral-800 rounded-lg text-xs text-white break-all">
+                            {paymentData.address}
+                          </code>
+                          <button
+                            onClick={() => copyToClipboard(paymentData.address)}
+                            className="p-3 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors"
+                            aria-label="Copy address"
+                          >
+                            <Copy className="w-4 h-4 text-[#FEFD0C]" />
+                          </button>
+                        </div>
                       </div>
 
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-400 text-sm">Buy Rate</span>
-                          <span className="font-bold text-green-400 text-lg">
-                            {formatCurrency(item.buyRate, item.currency)}
-                          </span>
-                        </div>
-                        
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-400 text-sm">Sell Rate</span>
-                          <span className="font-bold text-red-400 text-lg">
-                            {formatCurrency(item.sellRate, item.currency)}
-                          </span>
-                        </div>
-                        
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-400 text-sm">Spread</span>
-                          <span className="font-bold text-yellow-400">
-                            {getRateDifference(item.buyRate, item.sellRate)}%
-                          </span>
-                        </div>
-                        
-                        <div className="flex justify-between items-center pt-2 border-t border-[#FEFD0C]/20">
-                          <span className="text-gray-400 text-sm">24h Change</span>
-                          <div className="flex items-center gap-1">
-                            {item.change24h >= 0 ? (
-                              <TrendingUp className="h-4 w-4 text-green-400" />
-                            ) : (
-                              <TrendingDown className="h-4 w-4 text-red-400" />
-                            )}
-                            <span
-                              className={`font-bold ${
-                                item.change24h >= 0 ? "text-green-400" : "text-red-400"
-                              }`}
-                            >
-                              {item.change24h >= 0 ? "+" : ""}{item.change24h.toFixed(2)}%
-                            </span>
-                          </div>
-                        </div>
-                        
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-400 text-sm">Volume</span>
-                          <span className="font-medium text-white text-sm">
-                            {item.volume.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                          </span>
+                      <div>
+                        <label className="block text-xs font-semibold text-neutral-400 mb-1">Amount (BTC)</label>
+                        <div className="flex items-center gap-2">
+                          <code className="flex-1 p-3 bg-neutral-800 rounded-lg text-xs text-white">
+                            {paymentData.btcAmount}
+                          </code>
+                          <button
+                            onClick={() => copyToClipboard(paymentData.btcAmount)}
+                            className="p-3 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors"
+                            aria-label="Copy amount"
+                          >
+                            <Copy className="w-4 h-4 text-[#FEFD0C]" />
+                          </button>
                         </div>
                       </div>
                     </div>
-                  ))}
+
+                    <div className="flex items-center justify-center gap-2 text-sm">
+                      <RefreshCw className="w-4 h-4 text-blue-400 animate-spin" />
+                      <span className="text-neutral-400">Waiting for payment confirmation...</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Payment Confirmed */}
+                {paymentStatus === 'confirmed' && downloadUrl && (
+                  <div className="text-center space-y-4">
+                    <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-6">
+                      <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-4" />
+                      <h4 className="text-xl font-bold text-green-400 mb-2">Payment Confirmed!</h4>
+                      <p className="text-neutral-300 text-sm">Your eBook is ready for download</p>
+                    </div>
+
+                    <a
+                      href={downloadUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`w-full flex items-center justify-center gap-3 py-4 px-6 text-lg font-bold rounded-2xl transition-all duration-200 ${
+                        theme.primaryBg
+                      } ${theme.primaryHover} text-black border-2 border-[#FEFD0C] hover:shadow-lg hover:shadow-[#FEFD0C]/20`}
+                    >
+                      <Download className="w-5 h-5" />
+                      <span>Download Your eBook</span>
+                      <ExternalLink className="w-5 h-5" />
+                    </a>
+                  </div>
+                )}
+
+                {/* Payment Expired */}
+                {paymentStatus === 'expired' && (
+                  <div className="text-center space-y-4">
+                    <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6">
+                      <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+                      <h4 className="text-xl font-bold text-red-400 mb-2">Payment Expired</h4>
+                      <p className="text-neutral-300 text-sm">The payment window has closed. Please try again.</p>
+                    </div>
+
+                    <button
+                      onClick={resetPayment}
+                      className={`w-full flex items-center justify-center gap-3 py-4 px-6 text-lg font-bold rounded-2xl transition-all duration-200 ${
+                        theme.primaryBg
+                      } ${theme.primaryHover} text-black border-2 border-[#FEFD0C] hover:shadow-lg hover:shadow-[#FEFD0C]/20`}
+                    >
+                      <RefreshCw className="w-5 h-5" />
+                      <span>Try Again</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* Payment Error */}
+                {paymentStatus === 'error' && (
+                  <div className="text-center space-y-4">
+                    <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6">
+                      <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+                      <h4 className="text-xl font-bold text-red-400 mb-2">Payment Error</h4>
+                      <p className="text-neutral-300 text-sm">Something went wrong. Please try again or contact support.</p>
+                    </div>
+
+                    <button
+                      onClick={resetPayment}
+                      className={`w-full flex items-center justify-center gap-3 py-4 px-6 text-lg font-bold rounded-2xl transition-all duration-200 ${
+                        theme.primaryBg
+                      } ${theme.primaryHover} text-black border-2 border-[#FEFD0C] hover:shadow-lg hover:shadow-[#FEFD0C]/20`}
+                    >
+                      <RefreshCw className="w-5 h-5" />
+                      <span>Try Again</span>
+                    </button>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-center gap-2 text-sm">
+                  <Shield className="w-4 h-4 text-green-400" />
+                  <span className={`${theme.textMuted}`}>Secure Bitcoin payment with 30-day guarantee</span>
                 </div>
-              )}
-            </>
-          )}
-
-          {/* Empty State */}
-          {!isLoading && filteredData.length === 0 && (
-            <div className="text-center py-20">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#FEFD0C]/10 flex items-center justify-center">
-                <Search className="h-8 w-8 text-[#FEFD0C]" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">No Results Found</h3>
-              <p className="text-gray-400">
-                Try adjusting your search terms or filter criteria.
-              </p>
-            </div>
-          )}
+            )}
 
-          {/* Footer Info */}
-          <div className="mt-16 text-center">
-            <div className="inline-flex items-center gap-2 text-gray-400 text-sm mb-4">
-              <Shield className="h-4 w-4" />
-              <span>
-                {isUsingMockData 
-                  ? "Demo data for illustration purposes only"
-                  : "Real-time data powered by CoinGecko API"
-                }
-              </span>
-            </div>
-            <div className="flex flex-wrap justify-center gap-4 text-xs text-gray-500">
-              <span>• Updates every 60 seconds</span>
-              <span>• {data.length} currency pairs</span>
-              <span>• Live market data</span>
-              <span>• Secure & reliable</span>
-            </div>
+            {/* Physical Placeholder */}
+            {selectedOption === 'physical' && (
+              <div className={`${theme.card} rounded-2xl p-6 ${theme.border} border space-y-6`}>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className={`text-2xl font-bold ${theme.text} mb-2`}>Signed Physical Copy</h3>
+                    <p className={`${theme.textSecondary} text-sm`}>Premium hardcover with author signature</p>
+                  </div>
+                  <div className="text-right">
+                    <span className={`text-3xl font-black ${theme.text}`}>$150</span>
+                    <span className="mt-2 inline-block bg-[#FEFD0C] text-xs text-black font-bold px-3 py-1 rounded-full">
+                      FREE SHIPPING
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Feature icon={<Award className="w-4 h-4" />} title="Author Signed" description="Signed by Bnaira + certificate of authenticity" />
+                  <Feature icon={<BookOpen className="w-4 h-4" />} title="Premium Hardcover" description="High-quality binding with dust jacket" />
+                  <Feature icon={<Truck className="w-4 h-4" />} title="Free Worldwide Shipping" description="Arrives in 5–10 business days" />
+                  <Feature icon={<Download className="w-4 h-4" />} title="Digital Copy Included" description="Immediate digital access while shipping" />
+                </div>
+
+                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 text-center">
+                  <h4 className="text-yellow-400 font-semibold mb-2">Coming Soon</h4>
+                  <p className="text-neutral-300 text-sm">We're preparing the signed hardcovers. Check back soon!</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-
-        {/* Background Effects */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-black to-gray-900 opacity-50"></div>
-        <div className="absolute top-0 left-0 w-full h-full">
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-[#FEFD0C]/5 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#FEFD0C]/3 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        </div>
-      </section>
-    </>
+      </div>
+    </div>
   );
 };
 
-export default RateSection;
+export default EBookStore;
